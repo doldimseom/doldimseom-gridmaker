@@ -300,6 +300,15 @@
           </div>
         </section>
 
+        <!-- 슬롯 · 초기화 (B-5: 우하단 메뉴에서 이동) -->
+        <section class="grp">
+          <div class="grp-head">슬롯 · 초기화</div>
+          <div class="grp-body">
+            <button class="equalize-btn" onclick="openSlotModal()">저장 / 불러오기</button>
+            <button class="equalize-btn" style="color:var(--warn);border-color:var(--warn);" onclick="resetAll()">전체 리셋</button>
+          </div>
+        </section>
+
       </div><!-- /panel-body -->
     </div><!-- /panel-tools -->
 
@@ -366,7 +375,7 @@
             <!-- SNS -->
             <div id="bp-hdr-sns-opts" style="display:none;">
               <div class="fieldlbl" style="margin-bottom:8px;">네비바</div>
-              <div class="row" style="margin-bottom:8px;">
+              <div class="row">
                 <span class="row-lbl">높이</span>
                 <div class="row-slider" id="bp-sl-nav-h" data-min="24" data-max="56" data-val="32" data-fn="syncHeaderProp('navH',this.value)"><div class="row-slider-fill" style="width:25.0%"></div><div class="row-slider-thumb" style="left:25.0%"></div></div>
                 <input type="number" class="row-num" id="bp-sn-nav-h" min="24" max="56" value="32" oninput="syncHeaderProp('navH',this.value)">
@@ -407,7 +416,7 @@
 
             <!-- 라운드 -->
             <div id="bp-hdr-round-opts" style="display:none;">
-              <div class="row" style="margin-bottom:8px;">
+              <div class="row">
                 <span class="row-lbl">배너 높이</span>
                 <div class="row-slider" id="bp-sl-round-h" data-min="40" data-max="300" data-val="120" data-fn="syncHeaderProp('roundH',this.value)"><div class="row-slider-fill" style="width:30.8%"></div><div class="row-slider-thumb" style="left:30.8%"></div></div>
                 <input type="number" class="row-num" id="bp-sn-round-h" min="40" max="300" value="120" oninput="syncHeaderProp('roundH',this.value)">
@@ -843,6 +852,26 @@
           </div>
         </section>
 
+        <!-- 배경 제거 / 여백 제거 — C-1: 전역 설정 커스텀 토글과 무관하게 항상 노출
+             (컬러칩 블록은 의도적으로 opacity/shadow가 0이라 자동으로 커스텀 판정되어
+             전역 유지 상태에서도 매번 커스텀 패널을 펼쳐야 했던 불편 해소) -->
+        <section class="grp">
+          <div class="grp-body">
+            <div class="field">
+              <div class="tiles c2">
+                <button class="tile big" id="bp-bg-remove-tile" onclick="toggleBgRemove()">
+                  <div class="tile-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="M3.5 12h17M12 3.5v17" stroke-width="1.2"/></svg></div>
+                  <span class="tile-lbl">배경 제거</span><span class="tile-sub">투명하게</span>
+                </button>
+                <button class="tile big" id="bp-pad-remove-tile" onclick="togglePadRemove()">
+                  <div class="tile-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="2"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg></div>
+                  <span class="tile-lbl">여백 제거</span><span class="tile-sub">딱 맞게</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section class="grp" id="bp-common-grp">
           <div class="grp-body">
 
@@ -871,19 +900,6 @@
                 <button class="tile" onclick="syncBlkStroke(0)"><div class="tile-ico"><div class="prev st0"></div></div><span class="tile-lbl">없음</span></button>
                 <button class="tile" onclick="syncBlkStroke(1)"><div class="tile-ico"><div class="prev st1"></div></div><span class="tile-lbl">약</span></button>
                 <button class="tile" onclick="syncBlkStroke(2)"><div class="tile-ico"><div class="prev st2"></div></div><span class="tile-lbl">강</span></button>
-              </div>
-            </div>
-
-            <div class="field">
-              <div class="tiles c2">
-                <button class="tile big" id="bp-bg-remove-tile" onclick="toggleBgRemove()">
-                  <div class="tile-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="M3.5 12h17M12 3.5v17" stroke-width="1.2"/></svg></div>
-                  <span class="tile-lbl">배경 제거</span><span class="tile-sub">투명하게</span>
-                </button>
-                <button class="tile big" id="bp-pad-remove-tile" onclick="togglePadRemove()">
-                  <div class="tile-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="2"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg></div>
-                  <span class="tile-lbl">여백 제거</span><span class="tile-sub">딱 맞게</span>
-                </button>
               </div>
             </div>
 
@@ -1196,20 +1212,6 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
       </span>
       사용 가이드
-    </button>
-    <div class="float-menu-divider"></div>
-    <button class="float-menu-item" onclick="openSlotModal();togglePillMenu()">
-      <span class="mi-ico">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M17 4v16M4 8l3-3 3 3M14 16l3 3 3-3"/></svg>
-      </span>
-      저장 / 불러오기
-    </button>
-    <div class="float-menu-divider"></div>
-    <button class="float-menu-item warn" onclick="resetAll();togglePillMenu()">
-      <span class="mi-ico">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L3 10"/></svg>
-      </span>
-      전체 리셋
     </button>
   </div>
 </div>

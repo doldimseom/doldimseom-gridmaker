@@ -1230,10 +1230,15 @@ function _blkHasCustomStyle(blk) {
   if (!blk) return false;
   if (blk.styleCustom === true)  return true;
   if (blk.styleCustom === false) return false;
+  /* C-1: 배경 제거(opacity===0)는 커스텀 판정에서 제외 — 별도 토글로 분리됨.
+     toggleBgRemove()는 배경 제거 시 그림자도 같이 0으로 끄므로(의도된 동작),
+     그 조합(opacity===0 && shadow===0)도 커스텀으로 보지 않음 — 컬러칩 기본값이
+     이 조합이라 분리 전에는 항상 "커스텀"으로 오인되던 문제 해결 */
+  var isBgRemoved = blk.opacity === 0;
   return (blk.radius  !== null && blk.radius  !== undefined) ||
-         (blk.shadow  !== null && blk.shadow  !== undefined) ||
+         (blk.shadow  !== null && blk.shadow  !== undefined && !(isBgRemoved && blk.shadow === 0)) ||
          (blk.stroke  !== 0 && blk.stroke !== null && blk.stroke !== undefined) ||
-         (blk.opacity !== null && blk.opacity !== undefined && blk.opacity !== 100) ||
+         (blk.opacity !== null && blk.opacity !== undefined && blk.opacity !== 100 && !isBgRemoved) ||
          (blk.bgColor !== null && blk.bgColor !== undefined) ||
          (blk.padV    !== null && blk.padV    !== undefined);
 }

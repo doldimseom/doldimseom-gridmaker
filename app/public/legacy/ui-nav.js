@@ -566,9 +566,7 @@ function _addBlkOfType(type, snapX, snapY) {
     newBlk.chips = [
       { id: 'cc0_' + Date.now(), color: '#2F4D9E', label: 'A', textColor: '#ffffff', desc: '' },
       { id: 'cc1_' + Date.now(), color: '#5B7CE6', label: 'B', textColor: '#ffffff', desc: '' },
-      { id: 'cc2_' + Date.now(), color: '#7E9BEE', label: 'C', textColor: '#212121', desc: '' },
-      { id: 'cc3_' + Date.now(), color: '#A9BEF5', label: 'D', textColor: '#212121', desc: '' },
-      { id: 'cc4_' + Date.now(), color: '#CCDBFD', label: 'E', textColor: '#212121', desc: '' }
+      { id: 'cc2_' + Date.now(), color: '#7E9BEE', label: 'C', textColor: '#212121', desc: '' }
     ];
     newBlk.chipLayout = 'row'; newBlk.chipRadius = 0;
     newBlk.showSwatch = true; newBlk.showText = false;
