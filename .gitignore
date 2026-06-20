@@ -1,0 +1,10 @@
+.claude/settings.local.json
+Thumbs.db
+desktop.ini
+
+# Claude 협업용 내부 문서 — 공개 저장소에 AI 협업 흔적을 남기지 않기 위해 git 추적 제외
+# (로컬에는 그대로 남아있고, Claude Code는 계속 이 파일들을 읽고 참고함)
+/CLAUDE.md
+/docs/
+/bug_inbox/
+/design_brief/
