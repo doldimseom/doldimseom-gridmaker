@@ -981,7 +981,11 @@ function autoCanvasH() {
     var b = blk.y + blk.h;
     if (b > maxBottom) maxBottom = b;
   });
-  pad.style.height = (maxBottom + gaps.pad + canvasExtraBottom) + 'px';
+  var contentH = maxBottom + gaps.pad;
+  /* 콘텐츠가 canvasH보다 커지면 자동으로 확장. 콘텐츠가 줄어도(블록 삭제 등) canvasH는
+     축소하지 않음 — canvasW와 대칭되는 모델(0620_2: 핸들 4방향 동작 통일) */
+  if (contentH > canvasH) canvasH = contentH;
+  pad.style.height = canvasH + 'px';
   updateResizeHandles();
   updateSizeInfo();
 }

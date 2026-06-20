@@ -623,7 +623,7 @@ function updateResizeHandles() {
    캔버스 확장 공통 처리
    left/right: 늘어날 px (양수=확장, 음수=축소)
    top: 블록 y 오프셋 이동량
-   bottom: canvasExtraBottom 조정량
+   bottom: canvasH 조정량
 ══════════════════════════════════════════ */
 function _applyCanvasExpand(left, right, top, bottom) {
   var stageEl = document.getElementById('canvas-stage');
@@ -701,21 +701,18 @@ function _applyCanvasExpand(left, right, top, bottom) {
     }
   }
 
-  /* ── 하단: canvasExtraBottom — 스티커 하단이 잘리지 않도록 브레이크 ── */
+  /* ── 하단: canvasH — 블록·스티커 하단이 잘리지 않도록 브레이크 (canvasW 모델과 대칭) ── */
   if (bottom !== 0) {
-    var minExtraBottom = 0;
-    if (stickers.length > 0) {
-      var naturalH = gaps.pad;
-      blocks.forEach(function(b) {
-        var be = b.y + b.h + gaps.pad;
-        if (be > naturalH) naturalH = be;
-      });
-      stickers.forEach(function(s) {
-        var needed = s.y + (s.size || 0) + gaps.pad - naturalH;
-        if (needed > minExtraBottom) minExtraBottom = needed;
-      });
-    }
-    canvasExtraBottom = Math.max(minExtraBottom, canvasExtraBottom + bottom);
+    var minNeededH = gaps.pad;
+    blocks.forEach(function(b) {
+      var be = b.y + b.h + gaps.pad;
+      if (be > minNeededH) minNeededH = be;
+    });
+    stickers.forEach(function(s) {
+      var se = s.y + (s.size || 0) + gaps.pad;
+      if (se > minNeededH) minNeededH = se;
+    });
+    canvasH = Math.max(minNeededH, canvasH + bottom);
   }
 
   autoCanvasH();

@@ -3,7 +3,9 @@ var _blkIdCounter = 0;
 function _nextBlkId() { return 'b_' + (++_blkIdCounter); }
 var _blkCopyClipboard = null;  /* Ctrl+C 블록 복사 클립보드 */
 var _blkStyleClipboard = null; /* 블록 옵션 복사 클립보드 { radius, shadow, bgColor, stroke, opacity } */
-var canvasW = 800; /* 캔버스 너비 (px). 높이는 blocks 기준 자동 계산. */
+var canvasW = 800; /* 캔버스 너비 (px) */
+var canvasH = 0;   /* 캔버스 높이 (px) — autoCanvasH()가 콘텐츠보다 작으면 확장만 함(축소 없음).
+                       0은 "아직 계산 안 됨" 상태로, 첫 render() 시 콘텐츠 높이로 채워짐 */
 var blocks = [
   { id: _nextBlkId(), x: 12,  y: 12,  w: 260, h: 500, groupId: 'g_01', type: 'img', imgSrc: null, imgTransform: { scale:1, x:0, y:0 }, radius: null, shadow: null, opacity: null, bgColor: null },
   { id: _nextBlkId(), x: 284, y: 12,  w: 216, h: 247, groupId: 'g_01', type: 'img', imgSrc: null, imgTransform: { scale:1, x:0, y:0 }, radius: null, shadow: null, opacity: null, bgColor: null },
@@ -63,7 +65,6 @@ var bgLayer = {
   gridColor: '#D4D4D8'      /* 모눈종이 선 색상 */
 };
 var gaps = { pad: 12 }; /* col/blk/grp 제거 — 자유 배치 엔진에서 불필요 */
-var canvasExtraBottom = 0; /* 하단 핸들로 추가한 하단 여백 (px) */
 var globalVals = { radius: 16, shadow: 2, bgColor: '#ffffff', font: 'Pretendard', fontColor: '#212121', stroke: 0, tstroke: 0 };
 var blkDrag     = null;
 var blkResize   = null; /* { id, startX, startY, startW, startH } */

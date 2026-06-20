@@ -61,7 +61,7 @@ function collectLayout() {
   result.blocks.forEach(function(item) {
     _maxBlkBottom = Math.max(_maxBlkBottom, item.y - result.pad.y + item.h);
   });
-  result.pad.h  = _maxBlkBottom + gaps.pad + canvasExtraBottom;
+  result.pad.h  = Math.max(canvasH, _maxBlkBottom + gaps.pad);
   result.sheetH = result.pad.y + result.pad.h;
   if (result.header && result.header.pos === 'bot') result.sheetH += result.header.h;
 

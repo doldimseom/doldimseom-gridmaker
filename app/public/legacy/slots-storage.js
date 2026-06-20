@@ -23,7 +23,7 @@ function collectData(includeImages) {
   return {
     blocks:        blkCopy,
     canvasW:          canvasW,
-    canvasExtraBottom: canvasExtraBottom,
+    canvasH:          canvasH,
     headerPos:        headerPos,
     headerData:    hdrCopy,
     globalVals:    JSON.parse(JSON.stringify(globalVals)),
@@ -87,11 +87,10 @@ function applyData(data) {
     });
   }
 
-  /* canvasW / canvasExtraBottom 복원 */
+  /* canvasW 복원 (canvasH는 gaps 복원 이후 처리 — 구버전 canvasExtraBottom 마이그레이션에 gaps.pad 필요) */
   if (data.canvasW !== undefined) {
     canvasW = typeof data.canvasW === 'number' ? data.canvasW : parseInt(data.canvasW) || 800;
   }
-  canvasExtraBottom = (typeof data.canvasExtraBottom === 'number') ? data.canvasExtraBottom : 0;
   /* canvas-stage DOM 동기화 (render()는 pad만 업데이트하므로 여기서 stage도 반영) */
   var _stageEl = document.getElementById('canvas-stage');
   if (_stageEl) { _stageEl.style.width = canvasW + 'px'; _stageEl.style.marginLeft = (-canvasW / 2) + 'px'; }
@@ -124,6 +123,17 @@ function applyData(data) {
     _updateSliderUI('sl-pad', gaps.pad);
     var snPad = document.getElementById('sn-pad');
     if (snPad) snPad.value = gaps.pad;
+  }
+  /* canvasH 복원 — canvasW와 대칭되는 절대 높이값(0620_2: 자동 축소 방지 모델) */
+  if (typeof data.canvasH === 'number') {
+    canvasH = data.canvasH;
+  } else {
+    /* 구버전 데이터 마이그레이션: canvasExtraBottom(콘텐츠 기준 상대 여백) → canvasH(절대값).
+       저장 당시 사용자가 늘려둔 높이가 그대로 보존되도록 그 시점 콘텐츠 높이 + 여백으로 환산 */
+    var _migExtraBottom = (typeof data.canvasExtraBottom === 'number') ? data.canvasExtraBottom : 0;
+    var _migMaxBottom = 0;
+    (data.blocks || []).forEach(function(b) { var be = b.y + b.h; if (be > _migMaxBottom) _migMaxBottom = be; });
+    canvasH = _migMaxBottom + gaps.pad + _migExtraBottom;
   }
   if (data.sheetBg) {
     sheetBg = data.sheetBg;
@@ -605,7 +615,7 @@ function resetAll() {
   selKey = null;
   selKeys = [];
   gaps = { pad: 12 };
-  canvasExtraBottom = 0;
+  canvasH = 0; /* autoCanvasH()가 다음 render()에서 콘텐츠 기준으로 다시 계산 */
   _updateSliderUI('sl-pad', 12);
   var snPad = document.getElementById('sn-pad');
   if (snPad) snPad.value = 12;
