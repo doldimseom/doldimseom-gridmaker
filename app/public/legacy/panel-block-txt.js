@@ -685,19 +685,23 @@ function tfbApplyColor(kind, val) {
       if (blkCR) blkCR.fontColor = val;
     }
   } else {
-    /* 선택 범위 없음 → 블록 전체 변경 */
-    var blkCF = getSelBlk();
-    if (blkCF) {
-      var propCF = kind === 'color' ? 'color' : 'bg';
-      var spansCF = blkCF.spans || [{ text: blkCF.text || '' }];
-      blkCF.spans = spansCF.map(function(s) {
-        var ns = Object.assign({}, s);
-        delete ns.fontSize; /* fontSize는 blk.fontSize로만 관리 */
-        if (val === null) { delete ns[propCF]; } else { ns[propCF] = val; }
-        return ns;
-      });
-      if (kind === 'color' && val !== null) blkCF.fontColor = val;
-      render();
+    /* 선택 범위 없음(커서만 있음) — 기존 텍스트는 그대로 두고, 이후 입력될 글자에만
+       적용되도록 execCommand 사용(bold/italic/underline의 tfbToggle과 동일 패턴).
+       구글독스처럼 "커서 위치 기준으로 색 이어받기"가 브라우저 기본 동작으로 살아남음
+       (0620.txt A-2: 이전엔 블록 전체를 재색칠해서 기존 텍스트 색까지 덮어쓰던 버그) */
+    if (texEl) texEl.focus();
+    if (activeRange) {
+      var selCF = window.getSelection();
+      selCF.removeAllRanges();
+      selCF.addRange(activeRange);
+    }
+    document.execCommand('styleWithCSS', false, true);
+    if (kind === 'color') {
+      document.execCommand('foreColor', false, val || (globalVals.fontColor || '#212121'));
+      var blkCF = getSelBlk();
+      if (blkCF && val !== null) blkCF.fontColor = val;
+    } else {
+      document.execCommand('hiliteColor', false, val || 'transparent');
     }
   }
 
