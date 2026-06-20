@@ -1002,39 +1002,6 @@
           </div>
         </section>
 
-        <!-- 텍스트 섹션 -->
-        <section class="grp">
-          <div class="grp-head">텍스트 <span class="gh-count" id="sp-grp-txt-count">0</span></div>
-          <div class="grp-body">
-            <div class="sp-txt-add">
-              <input type="text" id="text-sticker-input" placeholder="시트에 올릴 텍스트"
-                onkeydown="if(event.key==='Enter') addTextSticker()">
-              <button class="sp-add-btn" onclick="addTextSticker()">＋</button>
-            </div>
-            <div class="field">
-              <div class="fieldlbl">글자색</div>
-              <div style="display:flex; align-items:center; gap:8px;">
-                <div class="text-sticker-color" id="text-sticker-color-swatch" style="background:#2C2825;">
-                  <input type="color" id="text-sticker-color" value="#2C2825"
-                    oninput="document.getElementById('text-sticker-color-swatch').style.background=this.value">
-                </div>
-              </div>
-            </div>
-            <div class="field">
-              <div class="fieldlbl">크기</div>
-              <div class="sz-chips">
-                <button class="sz-chip" onclick="selectSizeChip(this,11)">작게</button>
-                <button class="sz-chip on" onclick="selectSizeChip(this,12)">보통</button>
-                <button class="sz-chip" onclick="selectSizeChip(this,14)">크게</button>
-                <button class="sz-chip" onclick="selectSizeChip(this,16)">매우크게</button>
-              </div>
-            </div>
-            <div class="text-library-grid" id="text-library-grid">
-              <div class="text-library-empty">추가한 텍스트가 없어요</div>
-            </div>
-          </div>
-        </section>
-
         <!-- 사용 가이드 섹션 -->
         <section class="grp">
           <div class="grp-head">사용 가이드</div>

@@ -15,13 +15,10 @@ function collectData(includeImages) {
     if (hdrCopy.bannerImgSrc) hdrCopy.bannerImgSrc = null;
   }
   /* 스티커 수집
-     슬롯(includeImages=false): 텍스트 스티커만 저장, 이미지 스티커 content null 처리, stickerLibrary 미포함
+     슬롯(includeImages=false): 용량 문제로 스티커 미포함(C-7: 텍스트 스티커 제거로
+     슬롯에 저장 가능한 가벼운 스티커 타입이 없어짐 — 스티커 없이 저장하는 쪽으로 결정)
      JSON 내보내기(includeImages=true): 전체 포함 */
-  var stickersCopy = JSON.parse(JSON.stringify(stickers || []));
-  if (!includeImages) {
-    stickersCopy = stickersCopy.filter(function(s) { return s.type === 'text'; });
-  }
-  var textLibCopy = JSON.parse(JSON.stringify(textLibrary || []));
+  var stickersCopy = includeImages ? JSON.parse(JSON.stringify(stickers || [])) : [];
   var stickerLibCopy = includeImages ? JSON.parse(JSON.stringify(stickerLibrary || [])) : [];
   return {
     blocks:        blkCopy,
@@ -37,7 +34,6 @@ function collectData(includeImages) {
     pngBg:         pngBg,
     bgLayer:       JSON.parse(JSON.stringify(bgLayer)),
     stickers:      stickersCopy,
-    textLibrary:   textLibCopy,
     stickerLibrary: stickerLibCopy
   };
 }
@@ -173,12 +169,11 @@ function applyData(data) {
     selectedStickerIds = [];
     stickers       = [];
     stickerLibrary = [];
-    textLibrary    = [];
     stickerIdCounter    = 0;
     stickerLibIdCounter = 0;
-    textLibIdCounter    = 0;
     if (data.stickers && data.stickers.length) {
       data.stickers.forEach(function(s) {
+        if (s.type === 'text') return; /* C-7: 텍스트 스티커 기능 제거 — 구버전 데이터 방어적 스킵 */
         stickers.push(JSON.parse(JSON.stringify(s)));
         if (s.id > stickerIdCounter) stickerIdCounter = s.id;
       });
@@ -190,13 +185,6 @@ function applyData(data) {
         if (lib.libId > stickerLibIdCounter) stickerLibIdCounter = lib.libId;
       });
       renderStickerLibrary();
-    }
-    if (data.textLibrary && data.textLibrary.length) {
-      data.textLibrary.forEach(function(lib) {
-        textLibrary.push(JSON.parse(JSON.stringify(lib)));
-        if (lib.libId > textLibIdCounter) textLibIdCounter = lib.libId;
-      });
-      renderTextLibrary();
     }
   })();
   selKey = null;
@@ -571,10 +559,8 @@ function doImport() {
     if (slotToSave.data && slotToSave.data.blocks) {
       slotToSave.data.blocks.forEach(function(b) { if (b.imgSrc) b.imgSrc = null; });
     }
-    /* 이미지 스티커 content 제거 — 슬롯은 텍스트 스티커만 저장 */
-    if (slotToSave.data && slotToSave.data.stickers) {
-      slotToSave.data.stickers = slotToSave.data.stickers.filter(function(s) { return s.type === 'text'; });
-    }
+    /* 슬롯은 용량 문제로 스티커 미포함 */
+    if (slotToSave.data) slotToSave.data.stickers = [];
     if (slotToSave.data) slotToSave.data.stickerLibrary = [];
     slots[targetIdx] = slotToSave;
     lastSlot = _importedSlots[k];
@@ -651,13 +637,10 @@ function resetAll() {
   if (stickerEditMode) toggleStickerEdit();
   stickers            = [];
   stickerLibrary      = [];
-  textLibrary         = [];
   stickerIdCounter    = 0;
   stickerLibIdCounter = 0;
-  textLibIdCounter    = 0;
   selectedStickerIds  = [];
   renderStickerLibrary();
-  renderTextLibrary();
   showCanvasPanel();
   render();
   showToast('초기화했습니다');

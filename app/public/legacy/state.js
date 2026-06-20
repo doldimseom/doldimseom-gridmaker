@@ -115,7 +115,4 @@ var selectedStickerIds = [];
 var stickerEditMode = false;
 var stickerLibrary = [];
 var stickerLibIdCounter = 0;
-var textLibrary = [];
-var textLibIdCounter = 0;
-var _textStickerSize = 12;
 var _ctxTargetId = null;

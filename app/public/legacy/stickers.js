@@ -33,9 +33,7 @@ function toggleSpAcc(id) {
 
 function updateSpAccCount() {
   var imgCount = document.getElementById('sp-grp-img-count');
-  var txtCount = document.getElementById('sp-grp-txt-count');
   if (imgCount) imgCount.textContent = stickerLibrary.length;
-  if (txtCount) txtCount.textContent = textLibrary.length;
 }
 
 function toggleStickerEdit() {
@@ -138,123 +136,6 @@ function placeSticker(src) {
   tmpImg.src = src;
 }
 
-function switchStickerTab(tab) {
-  var isImage = tab === 'image';
-  var imagePanel = document.getElementById('sticker-tab-panel-image');
-  var textPanel  = document.getElementById('sticker-tab-panel-text');
-  var imageBtn   = document.getElementById('sticker-tab-image');
-  var textBtn    = document.getElementById('sticker-tab-text');
-  if (imagePanel) imagePanel.classList.toggle('active', isImage);
-  if (textPanel)  textPanel.classList.toggle('active', !isImage);
-  if (imageBtn)   imageBtn.classList.toggle('active', isImage);
-  if (textBtn)    textBtn.classList.toggle('active', !isImage);
-}
-
-function selectSizeChip(btn, size) {
-  _textStickerSize = size;
-  document.querySelectorAll('.sz-chip').forEach(function(c){ c.classList.remove('on'); });
-  btn.classList.add('on');
-}
-
-function addTextSticker() {
-  var input   = document.getElementById('text-sticker-input');
-  var colorEl = document.getElementById('text-sticker-color');
-  var text    = input ? input.value.trim() : '';
-  var color   = colorEl ? colorEl.value : '#2C2825';
-  if (!text) { if (input) input.focus(); return; }
-  var sizeLabel = (document.querySelector('.sz-chip.on') || {}).textContent || '보통';
-  var sheet = document.getElementById('sheet');
-  var sw = sheet.offsetWidth;
-  var sh = sheet.offsetHeight;
-  /* 텍스트 라이브러리에 등록 */
-  var libItem = { libId: ++textLibIdCounter, content: text, color: color, size: _textStickerSize, sizeLabel: sizeLabel };
-  textLibrary.push(libItem);
-  renderTextLibrary();
-  /* 시트에 배치 */
-  var sticker = {
-    id: ++stickerIdCounter,
-    type: 'text',
-    content: text,
-    color: color,
-    x: Math.round(sw * 0.15 + Math.random() * sw * 0.5),
-    y: Math.round(sh * 0.1  + Math.random() * sh * 0.4),
-    size: _textStickerSize,
-    rotate: 0,
-    locked: false
-  };
-  saveHistory();
-  stickers.push(sticker);
-  renderSticker(sticker);
-  if (!stickerEditMode) toggleStickerEdit();
-  selectSticker(sticker.id);
-  if (input) { input.value = ''; input.focus(); }
-}
-
-function renderTextLibrary() {
-  var grid = document.getElementById('text-library-grid');
-  if (!grid) return;
-  if (textLibrary.length === 0) {
-    grid.innerHTML = '<div class="text-library-empty">추가한 텍스트가 없어요</div>';
-    return;
-  }
-  grid.innerHTML = '';
-  textLibrary.forEach(function(item) {
-    var row = document.createElement('div');
-    row.className = 'text-lib-item';
-    row.title = '클릭: 시트에 재배치';
-    var dot = document.createElement('div');
-    dot.className = 'text-lib-color-dot';
-    dot.style.background = item.color;
-    var preview = document.createElement('span');
-    preview.className = 'text-lib-preview';
-    preview.style.color = item.color;
-    preview.textContent = item.content;
-    var meta = document.createElement('span');
-    meta.className = 'text-lib-meta';
-    meta.textContent = item.sizeLabel;
-    var delBtn = document.createElement('button');
-    delBtn.className = 'text-lib-del';
-    delBtn.title = '라이브러리에서 삭제';
-    delBtn.textContent = '✕';
-    (function(id) {
-      delBtn.onclick = function(e) { e.stopPropagation(); removeTextLibItem(id); };
-    })(item.libId);
-    (function(it) {
-      row.addEventListener('click', function() { placeTextSticker(it); });
-    })(item);
-    row.appendChild(dot); row.appendChild(preview); row.appendChild(meta); row.appendChild(delBtn);
-    grid.appendChild(row);
-  });
-  updateSpAccCount();
-}
-
-function placeTextSticker(item) {
-  var sheet = document.getElementById('sheet');
-  var sw = sheet.offsetWidth;
-  var sh = sheet.offsetHeight;
-  var sticker = {
-    id: ++stickerIdCounter,
-    type: 'text',
-    content: item.content,
-    color: item.color,
-    x: Math.round(sw * 0.15 + Math.random() * sw * 0.5),
-    y: Math.round(sh * 0.1  + Math.random() * sh * 0.4),
-    size: item.size,
-    rotate: 0,
-    locked: false
-  };
-  saveHistory();
-  stickers.push(sticker);
-  renderSticker(sticker);
-  if (!stickerEditMode) toggleStickerEdit();
-  selectSticker(sticker.id);
-}
-
-function removeTextLibItem(libId) {
-  textLibrary = textLibrary.filter(function(i) { return i.libId !== libId; });
-  renderTextLibrary();
-}
-
 function renderSticker(sticker) {
   var layer = stickerLayer();
   var el = document.getElementById('sticker-' + sticker.id);
@@ -268,60 +149,7 @@ function renderSticker(sticker) {
   el.style.top       = sticker.y + 'px';
   el.style.transform = 'rotate(' + sticker.rotate + 'deg)';
 
-  if (sticker.type === 'text') {
-    el.innerHTML = '<span class="sticker-text-span" style="font-size:' + sticker.size + 'px;line-height:1.2;color:' + (sticker.color || '#2C2825') + ';display:block;white-space:nowrap;font-family:\'Noto Sans KR\',sans-serif;">' + sticker.content + '</span>';
-    if (!el.dataset.dblbound) {
-      el.dataset.dblbound = '1';
-      el.addEventListener('dblclick', function(e) {
-        if (!stickerEditMode) return;
-        e.stopPropagation();
-        var span = el.querySelector('.sticker-text-span');
-        if (!span) return;
-        var wrap = document.createElement('div');
-        wrap.className = 'sticker-inline-editor';
-        var colorSwatch = document.createElement('div');
-        colorSwatch.className = 'sticker-inline-color';
-        colorSwatch.style.background = sticker.color || '#2C2825';
-        var colorInput = document.createElement('input');
-        colorInput.type = 'color'; colorInput.value = sticker.color || '#2C2825';
-        colorInput.addEventListener('input', function(){
-          colorSwatch.style.background = colorInput.value;
-          textInput.style.color = colorInput.value;
-        });
-        colorSwatch.appendChild(colorInput);
-        var textInput = document.createElement('input');
-        textInput.className = 'sticker-text-editor';
-        textInput.value = sticker.content;
-        textInput.style.fontSize   = span.style.fontSize;
-        textInput.style.color      = sticker.color || '#2C2825';
-        textInput.style.fontFamily = span.style.fontFamily;
-        textInput.style.width      = Math.max(span.offsetWidth + 20, 40) + 'px';
-        wrap.appendChild(colorSwatch); wrap.appendChild(textInput);
-        span.replaceWith(wrap);
-        wrap.addEventListener('mousedown', function(e){ e.stopPropagation(); });
-        textInput.focus(); textInput.select();
-        var finish = function() {
-          sticker.content = textInput.value.trim() || sticker.content;
-          sticker.color   = colorInput.value;
-          renderSticker(sticker);
-          renderTextLibrary();
-        };
-        textInput.addEventListener('blur', function(){
-          setTimeout(function(){ if (!el.contains(document.activeElement)) finish(); }, 100);
-        });
-        colorInput.addEventListener('blur', function(){
-          setTimeout(function(){ if (!el.contains(document.activeElement)) finish(); }, 100);
-        });
-        textInput.addEventListener('keydown', function(e){
-          if (e.key === 'Enter')  textInput.blur();
-          if (e.key === 'Escape') renderSticker(sticker);
-          e.stopPropagation();
-        });
-      });
-    }
-  } else {
-    el.innerHTML = '<img src="' + sticker.content + '" style="width:' + sticker.size + 'px;height:auto;display:block;pointer-events:none;" draggable="false">';
-  }
+  el.innerHTML = '<img src="' + sticker.content + '" style="width:' + sticker.size + 'px;height:auto;display:block;pointer-events:none;" draggable="false">';
 
   if (!el.dataset.bound) {
     el.dataset.bound = '1';
@@ -523,13 +351,8 @@ function bindResizeHandleDir(handle, sticker, dxSign, dySign) {
     function onMove(e2) {
       var delta = (dxSign * (e2.clientX - startX) + dySign * (e2.clientY - startY)) / (axes || 1);
       sticker.size = Math.max(20, startSize + delta);
-      if (sticker.type === 'text') {
-        var span = el.querySelector('.sticker-text-span');
-        if (span) span.style.fontSize = sticker.size + 'px';
-      } else {
-        var img = el.querySelector('img');
-        if (img) img.style.width = sticker.size + 'px';
-      }
+      var img = el.querySelector('img');
+      if (img) img.style.width = sticker.size + 'px';
     }
     function onUp() {
       window.removeEventListener('mousemove', onMove);
@@ -558,8 +381,7 @@ function bindResizeHandleMultiDir(handle, triggerSticker, dxSign, dySign) {
         var el2 = document.getElementById('sticker-' + id);
         if (!s || !el2 || s.locked) return;
         s.size = Math.max(20, initSizes[id] + delta);
-        if (s.type === 'text') { var sp = el2.querySelector('.sticker-text-span'); if (sp) sp.style.fontSize = s.size + 'px'; }
-        else { var img = el2.querySelector('img'); if (img) img.style.width = s.size + 'px'; }
+        var img = el2.querySelector('img'); if (img) img.style.width = s.size + 'px';
       });
     }
     function onUp() {
@@ -763,7 +585,6 @@ function removeSticker(id) {
   if (el) el.remove();
   selectedStickerIds = selectedStickerIds.filter(function(i){ return i !== id; });
   _refreshStickerActionUI();
-  renderTextLibrary();
 }
 
 function clearAllStickers() {
@@ -776,9 +597,7 @@ function clearAllStickers() {
   });
   stickers = [];
   selectedStickerIds = [];
-  textLibrary = [];
   if (stickerEditMode) toggleStickerEdit();
-  renderTextLibrary();
 }
 
 /* ── 스티커 드래그앤드롭 (라이브러리 → 시트) ── */
@@ -837,11 +656,23 @@ function clearAllStickers() {
   });
 })();
 
-/* ── 스티커 휠 클릭(button===1) 드래그 방지 — capture 단계로 bindStickerEvents 앞서 차단 ── */
+/* ── 스티커 위 휠 클릭(button===1) → 캔버스 팬 ──
+   C-4: 기존엔 단순 stopPropagation으로 bindStickerEvents(재작성 금지)의 드래그
+   시작만 막으려 했는데, capture 단계에서 멈춰버려 #canvas-area의 팬 시작 로직
+   (main.js)까지 같이 막혀 휠클릭 화면이동이 안 되는 부작용이 있었음. 전파를
+   끊는 대신 여기서 팬을 직접 시작시켜, 스티커 드래그는 막고 화면이동은 살림 */
 document.addEventListener('mousedown', function(e) {
   if (e.button === 1 && e.target.closest('.sticker-item')) {
-    e.stopPropagation();
     e.preventDefault();
+    e.stopPropagation();
+    var area = document.getElementById('canvas-area');
+    if (!area) return;
+    _isPanning    = true;
+    _panStartX    = e.clientX;
+    _panStartY    = e.clientY;
+    _panStartOffX = _panX;
+    _panStartOffY = _panY;
+    area.classList.add('panning');
   }
 }, true);
 
@@ -860,25 +691,16 @@ function renderStickersToCanvas(ctx, ox, oy, DPR) {
         ctx.rotate(s.rotate * Math.PI / 180);
         ctx.translate(-px, -py);
       }
-      if (s.type === 'text') {
-        ctx.font = '400 ' + s.size + 'px Pretendard, "Noto Sans KR", sans-serif';
-        ctx.fillStyle = s.color || '#2C2825';
-        ctx.textBaseline = 'top';
-        ctx.fillText(s.content, px, py);
+      var img = new Image();
+      img.onload = function() {
+        var w = s.size;
+        var h = (img.naturalHeight / img.naturalWidth) * w;
+        ctx.drawImage(img, px, py, w, h);
         ctx.restore();
         resolve();
-      } else {
-        var img = new Image();
-        img.onload = function() {
-          var w = s.size;
-          var h = (img.naturalHeight / img.naturalWidth) * w;
-          ctx.drawImage(img, px, py, w, h);
-          ctx.restore();
-          resolve();
-        };
-        img.onerror = function() { ctx.restore(); resolve(); };
-        img.src = s.content;
-      }
+      };
+      img.onerror = function() { ctx.restore(); resolve(); };
+      img.src = s.content;
     });
   });
   return Promise.all(promises);
