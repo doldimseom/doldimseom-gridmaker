@@ -650,12 +650,13 @@ function _applyCanvasExpand(left, right, top, bottom) {
     var newW = Math.round(Math.min(1400, Math.max(400, requestedW)));
     var actual = newW - canvasW;
     if (actual !== 0) {
-      /* 좌측 확장/축소분: 블록·스티커 전체 x 오프셋 이동.
-         단, 좌측 핸들 단독 축소(actual<0)는 블록을 안 움직이고 위 브레이크로만 제한
-         (우측 핸들과 동일 동작 — 0620_2) */
+      /* 좌측 핸들 단독 조작은 우측 핸들과 완전히 동일하게 — 블록을 전혀 이동시키지 않고
+         canvasW만 조정(0620_2 재확인: "블록이 안 움직이는 것처럼" 보여야 함 — 늘릴 때 좌측에
+         여백이 생기는 기존 효과는 포기). Shift/Alt 좌우 동시 조작(대칭 리사이즈)은 기존 그대로
+         블록을 부분 이동시키는 동작 유지(이번 범위 제외) */
       var actualLeft = (left !== 0 && right !== 0)
         ? Math.round(actual * left / (left + right))
-        : (left !== 0 ? (actual < 0 ? 0 : actual) : 0);
+        : 0;
       if (actualLeft !== 0) {
         /* 좌측 축소 브레이크: 블록·스티커가 x=0 미만으로 이동하지 않도록 */
         var minX = Infinity;
@@ -684,8 +685,9 @@ function _applyCanvasExpand(left, right, top, bottom) {
     var minY = Infinity;
     blocks.forEach(function(b) { if (b.y < minY) minY = b.y; });
     stickers.forEach(function(s) { if (s.y < minY) minY = s.y; });
-    /* 확장(top>0): 헤더 높이만큼 위로 허용 / 축소(top<0): y=0 이하 이동 불가(브레이크) */
-    var _yFloor = top > 0 ? -getHeaderH() : 0;
+    /* 확장(top>0): 헤더 높이만큼 위로 허용 / 축소(top<0): 블록 끝 + gaps.pad까지만 허용
+       (좌/우/하단과 동일한 여백 기준으로 통일 — 0620_2: 핸들마다 정지 패딩이 다르던 문제) */
+    var _yFloor = top > 0 ? -getHeaderH() : gaps.pad;
     var safeT = Math.max(_yFloor - (minY === Infinity ? 0 : minY), top);
     if (safeT !== 0) {
       blocks.forEach(function(b) {
