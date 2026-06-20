@@ -632,10 +632,10 @@ function _applyCanvasExpand(left, right, top, bottom) {
   /* ── 좌/우 ── */
   if (left !== 0 || right !== 0) {
     var requestedW = canvasW + left + right;
-    /* 우측 축소 브레이크: 블록·스티커 우측 끝보다 더 줄어들지 않도록
-       (좌측 핸들 단독 조작(right===0)일 때는 콘텐츠가 같이 밀려 우측 여백이 보존되므로 적용 안 함 —
-       좌측 축소 한계는 아래 minX 기반 브레이크가 별도로 처리) */
-    if (requestedW < canvasW && right !== 0) {
+    /* 축소 브레이크: 블록·스티커 우측 끝보다 더 줄어들지 않도록.
+       우측 핸들 단독·좌측 핸들 단독(0620_2: 좌측도 블록 고정 요구) 모두 동일하게 적용 —
+       블록을 안 움직이는 한 "콘텐츠 우측 끝" 기준 브레이크가 좌/우 어느 쪽이든 그대로 유효함 */
+    if (requestedW < canvasW) {
       var minNeededW = gaps.pad * 2;
       blocks.forEach(function(b) {
         var re = b.x + b.w + gaps.pad;
@@ -650,10 +650,12 @@ function _applyCanvasExpand(left, right, top, bottom) {
     var newW = Math.round(Math.min(1400, Math.max(400, requestedW)));
     var actual = newW - canvasW;
     if (actual !== 0) {
-      /* 좌측 확장/축소분: 블록·스티커 전체 x 오프셋 이동 */
+      /* 좌측 확장/축소분: 블록·스티커 전체 x 오프셋 이동.
+         단, 좌측 핸들 단독 축소(actual<0)는 블록을 안 움직이고 위 브레이크로만 제한
+         (우측 핸들과 동일 동작 — 0620_2) */
       var actualLeft = (left !== 0 && right !== 0)
         ? Math.round(actual * left / (left + right))
-        : (left !== 0 ? actual : 0);
+        : (left !== 0 ? (actual < 0 ? 0 : actual) : 0);
       if (actualLeft !== 0) {
         /* 좌측 축소 브레이크: 블록·스티커가 x=0 미만으로 이동하지 않도록 */
         var minX = Infinity;

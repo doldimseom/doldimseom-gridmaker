@@ -2334,58 +2334,6 @@ select.row-input {
   pointer-events: none;
   outline: none;
 }
-.cc-chip-x {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #fff;
-  border: 1px solid var(--panel-border);
-  color: var(--text-dim);
-  font-size: 12px;
-  line-height: 1;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
-  z-index: 3;
-  cursor: pointer;
-  padding: 0;
-}
-.cc-chip:hover .cc-chip-x { display: flex; }
-.cc-chip-x:hover { border-color: #e2574c; color: #e2574c; }
-.cc-add-chip {
-  height: 30px;
-  min-width: 30px;
-  border-radius: 6px;
-  border: 1.5px dashed #C9C9C9;
-  background: transparent;
-  color: #B0B0B0;
-  font-size: 16px;
-  font-weight: 300;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: border-color 0.12s, color 0.12s, background 0.12s;
-  flex-shrink: 0;
-}
-.cc-add-chip:hover {
-  border-color: var(--accent-mid);
-  color: var(--accent);
-  background: var(--accent-light);
-}
-.cc-add-chip:disabled {
-  opacity: 0;
-  pointer-events: none;
-  width: 0;
-  min-width: 0;
-  padding: 0;
-  border: none;
-}
 .cc-chip-row {
   display: flex;
   align-items: center;
@@ -2511,7 +2459,6 @@ select.row-input {
 .pm.div-line .ir:first-child { border-top:none; padding-top:0; }
 .pm-grid.div-line .ir { border-top:none; padding-top:0; }
 .pm-grid.div-none .ir { border-top:none; }
-.pm-grid .add-inline { grid-column:1/-1; justify-self:end; }
 
 /* ── 프리셋 선택 카드 (ps-tile) ── */
 .ps-tiles { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
@@ -2622,13 +2569,6 @@ select.row-input {
   min-width: 0;
   position: relative;
 }
-/* 세로형 + 버튼 — cell 우하단 absolute 고정 (flow 분리로 vAlign 영향 차단) */
-.item-v-cell .add-inline {
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  margin-left: 0;
-}
 .item-v-key {
   font-size: 9px;
   color: var(--label-color);
@@ -2655,63 +2595,6 @@ select.row-input {
   width: 100%;
 }
 
-
-/* 행 삭제 버튼 — 블록 호버 시만 표시 */
-.item-row-del {
-  font-size: 7px;
-  background: rgba(220,80,60,0.1);
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  padding: 1px 3px;
-  color: #a00;
-  opacity: 0;
-  transition: opacity 0.13s;
-  font-family: sans-serif;
-  line-height: 1.4;
-  position: absolute;
-  right: 4px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-.blk:hover .item-row-del { opacity: 1; }
-
-/* 항목 추가 버튼 — 가로형: 마지막 행 우측 인라인 */
-.add-inline {
-  display: none;
-  width: 16px;
-  height: 16px;
-  border-radius: 3px;
-  border: 0.5px solid #D0D0D0;
-  background: #fff;
-  color: #BDBDBD;
-  font-size: 13px;
-  font-weight: 300;
-  line-height: 1;
-  cursor: pointer;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  margin-left: 4px;
-  font-family: sans-serif;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.07);
-  transition: border-color 0.12s, color 0.12s, box-shadow 0.12s;
-  position: relative;
-  z-index: 2;
-}
-.blk:hover .add-inline { display: flex; }
-.add-inline:hover {
-  border-color: var(--accent-mid);
-  color: var(--accent);
-  box-shadow: 0 1px 4px rgba(91,124,230,0.2);
-}
-/* 패딩 0 모드: absolute 대피 */
-.blk.pad0 .add-inline {
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  margin-left: 0;
-}
 
 /* 패널 항목 편집 목록 */
 .panel-item-list {

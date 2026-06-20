@@ -78,42 +78,15 @@ function renderItemContent(blk, el) {
     v.className = 'v';
     v.textContent = item.v || '';
 
+    /* 행 추가/삭제는 패널 리스트(bp-item-list)로 통일 — 캔버스 위 +/✕ 버튼은 중복이라 제거(0620_2) */
     ir.addEventListener('click', function(e) {
-      if (e.target.closest('.item-row-del')) return;
       _focusItemRow(idx);
     });
 
-    /* 행 삭제 버튼 (CR: IIFE 불필요 — forEach idx가 이미 고유 스코프) */
-    var del = document.createElement('button');
-    del.className = 'item-row-del';
-    del.textContent = '✕';
-    del.title = '행 삭제';
-    del.addEventListener('click', (function(i) { return function(e) {
-      e.stopPropagation();
-      if (blk.items.length <= 1) return;
-      saveHistory();
-      blk.items.splice(i, 1);
-      render();
-    }; })(idx));
-
     ir.appendChild(k);
     ir.appendChild(v);
-    ir.appendChild(del);
     wrap.appendChild(ir);
   });
-
-  /* 행 추가 버튼 */
-  var addBtn = document.createElement('button');
-  addBtn.className = 'add-inline';
-  addBtn.textContent = '+';
-  addBtn.title = '행 추가';
-  addBtn.addEventListener('click', function(e) {
-    e.stopPropagation();
-    saveHistory();
-    blk.items.push({ k: '항목', v: '' });
-    render();
-  });
-  wrap.appendChild(addBtn);
 
   el.appendChild(wrap);
 }
@@ -591,7 +564,6 @@ function _ccWireDrag(chipEl, chip, blk, axis, key) {
 function renderColorchipContent(blk, el, key) {
   var chips  = blk.chips || [];
   var rad    = (blk.chipRadius !== null && blk.chipRadius !== undefined) ? blk.chipRadius : 0;
-  var MAX    = 5;
   var showText = blk.showText === true;
   var sizeScale = (blk.ccSizeScale || 100) / 100;
   var gapScale  = (blk.ccGapScale  || 100) / 100;
@@ -629,28 +601,11 @@ function renderColorchipContent(blk, el, key) {
     lbl.style.pointerEvents = 'none';
     chipEl.appendChild(lbl);
 
-    /* ── × 삭제 버튼 ── */
-    var xBtn = document.createElement('button');
-    xBtn.className   = 'cc-chip-x';
-    xBtn.textContent = '×';
-    xBtn.title       = '삭제';
-    xBtn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      if (blk.chips.length <= 1) return;
-      saveHistory();
-      blk.chips.splice(idx, 1);
-      if (blk._activeChipId === chip.id) blk._activeChipId = null;
-      render();
-      selKey = key;
-      showBlockPanel('colorchip', '컬러칩 블록', blk);
-    });
-    chipEl.appendChild(xBtn);
-
     /* F-13 4번: 색상·라벨 편집은 패널로 이동 — 캔버스 클릭은 active 표시 + 패널 행 포커스 이동만.
        패널 플래시는 setTimeout으로 한 틱 미룸(이유: _focusItemRow 주석 참고 — .blk의 el.onclick이
-       같은 틱에서 나중에 패널을 재렌더하므로, 그 뒤에 플래시해야 살아남음) */
+       같은 틱에서 나중에 패널을 재렌더하므로, 그 뒤에 플래시해야 살아남음)
+       삭제는 패널 리스트(bp-cc-list)의 le-del 버튼으로 통일 — 캔버스 위 ×버튼은 중복이라 제거(0620_2) */
     chipEl.addEventListener('click', function(e) {
-      if (xBtn.contains(e.target)) return;
       var prev = wrap.querySelector('.cc-chip.active');
       if (prev && prev !== chipEl) prev.classList.remove('active');
       blk._activeChipId = chip.id;
@@ -676,28 +631,7 @@ function renderColorchipContent(blk, el, key) {
     }
   });
 
-  /* + 추가 버튼 */
-  var addBtn = document.createElement('button');
-  addBtn.className = 'cc-add-chip';
-  addBtn.style.height   = ccSize + 'px';
-  addBtn.style.minWidth = ccSize + 'px';
-  addBtn.textContent = '+';
-  addBtn.title    = '칩 추가 (최대 ' + MAX + '개)';
-  addBtn.disabled = chips.length >= MAX;
-  addBtn.addEventListener('click', function(e) {
-    e.stopPropagation();
-    if (blk.chips.length >= MAX) return;
-    saveHistory();
-    var palette = ['#5B7CE6','#E2574C','#3E8E6E','#E0A23B','#4A7FB5'];
-    var color  = palette[blk.chips.length % palette.length];
-    var letter = String.fromCharCode(65 + blk.chips.length);
-    blk.chips.push({ id: 'cc' + Date.now(), color: color, label: letter, textColor: _ccAutoText(color), desc: '' });
-    render();
-    selKey = key;
-    if (_ccAutoExpand(blk, key)) render();
-    showBlockPanel('colorchip', '컬러칩 블록', blk);
-  });
-  wrap.appendChild(addBtn);
+  /* 칩 추가는 패널 리스트(bp-cc-list-add)로 통일 — 캔버스 위 +버튼은 중복이라 제거(0620_2) */
 
   el.appendChild(wrap);
 }
