@@ -95,119 +95,6 @@ function _openBlkPopup(anchorEl) {
 /* ══════════════════════════════════════════
    패널 전환
 ══════════════════════════════════════════ */
-/* 헤더 전용 패널 열기 */
-function showHeaderPanel() {
-  /* 현재 활성 nav 탭 기억 (블록 닫을 때 복귀용) */
-  var activeBtn = document.querySelector('.float-tab.active');
-  if (activeBtn) showCanvasPanel._lastNav = activeBtn.id.replace('nb-','');
-  /* 모든 nav 뷰 비활성화 */
-  ['panel-preset','panel-canvas','panel-header-nav'].forEach(function(id) {
-    var el = document.getElementById(id); if (el) el.classList.remove('active');
-  });
-  document.getElementById('panel-block').classList.add('active');
-  var _hdrBpSub = document.getElementById('bp-sub');
-  if (_hdrBpSub) _hdrBpSub.textContent = '헤더 블록 선택됨';
-  var _ctxThumb = document.getElementById('bp-ctx-thumb');
-  var _ctxName  = document.getElementById('bp-ctx-name');
-  if (_ctxThumb) _ctxThumb.textContent = 'HDR';
-  if (_ctxName)  _ctxName.textContent  = '헤더 블록';
-
-
-  /* 공통 스타일 섹션 숨김 (헤더는 라운딩/드롭쉐도우/투명도 미적용) */
-  var commonSection = document.querySelector('#panel-block .section-title');
-  if (commonSection) commonSection.style.display = 'none';
-  ['bp-sl-radius','bp-sn-radius','bp-sl-shadow','bp-sn-shadow',
-   'bp-sl-stroke','bp-sn-stroke',
-   'bp-sl-opacity','bp-sn-opacity'].forEach(function(id) {
-    var row = document.getElementById(id);
-    if (row && row.closest('.row')) row.closest('.row').style.display = 'none';
-  });
-  /* 공통 그룹 숨김 */
-  var grpCommon = document.getElementById('bp-common-grp');
-  if (grpCommon) grpCommon.style.display = 'none';
-  /* BUG-003: 헤더는 복제 미지원 — action-dock 숨김 */
-  var actionDock = document.getElementById('bp-action-dock');
-  if (actionDock) actionDock.style.display = 'none';
-  var actionDivider = document.getElementById('bp-action-divider');
-  if (actionDivider) actionDivider.style.display = 'none';
-  /* BUG-004: 헤더는 패딩 미지원 — padV 슬라이더 숨김 */
-  var padvRow = document.getElementById('bp-padv-row');
-  if (padvRow) padvRow.style.display = 'none';
-  var padvAutoRow = document.getElementById('bp-padv-auto-row');
-  if (padvAutoRow) padvAutoRow.style.display = 'none';
-
-  /* 블록 타입별 전용 패널 전부 숨김 */
-  ['bp-img-opts','bp-txt-opts','bp-colorchip-opts'].forEach(function(id) {
-    var el = document.getElementById(id); if (el) el.style.display = 'none';
-  });
-  /* 헤더 전용 패널 표시 */
-  var hOpts = document.getElementById('bp-header-opts');
-  if (hOpts) hOpts.style.display = '';
-
-  /* 타입 선택 버튼 on 상태 갱신 */
-  var type = headerData.type || 'basic';
-  ['basic','sns','round'].forEach(function(t) {
-    var btn = document.getElementById('hdr-type-' + t);
-    if (btn) btn.classList.toggle('on', t === type);
-  });
-
-  /* 타입별 섹션 표시/숨김 */
-  var typeMap = { basic: 'bp-hdr-basic-opts', sns: 'bp-hdr-sns-opts', round: 'bp-hdr-round-opts' };
-  Object.keys(typeMap).forEach(function(t) {
-    var el = document.getElementById(typeMap[t]);
-    if (el) el.style.display = (t === type) ? '' : 'none';
-  });
-
-  /* 값 로드 — 공통 헬퍼 */
-  var setV = function(id, v) { var el = document.getElementById(id); if (el && v !== undefined && v !== null) el.value = v; };
-  var setSw = function(swId, lbId, color) {
-    var sw = document.getElementById(swId); if (sw) sw.style.background = color;
-    var lb = document.getElementById(lbId); if (lb) lb.textContent = color.toUpperCase();
-  };
-  var setGradSw = function(swId, lbId, color) {
-    var sw = document.getElementById(swId);
-    if (sw) sw.style.background = bannerGradient(color);
-    var lb = document.getElementById(lbId); if (lb) lb.textContent = color.toUpperCase();
-  };
-  var setToggle = function(btnId, panelId, on) {
-    var btn = document.getElementById(btnId);
-    if (btn) btn.classList.toggle('on', !!on);
-    var panel = document.getElementById(panelId);
-    if (panel) panel.style.display = on ? '' : 'none';
-  };
-
-  /* ── 타입별 고유 섹션 값 ── */
-  if (type === 'basic') {
-    setV('bp-sl-banner-h', headerData.bannerH);
-    setV('bp-sn-banner-h', headerData.bannerH);
-  } else if (type === 'sns') {
-    setV('bp-sl-nav-h',  headerData.navH);
-    setV('bp-sn-nav-h',  headerData.navH);
-    setV('bp-nav-text',  headerData.navText);
-    setV('bp-nav-bg-color',   headerData.navBgColor);
-    setV('bp-nav-font-color', headerData.navFontColor);
-    setSw('bp-nav-bg-swatch',   'bp-nav-bg-label',   headerData.navBgColor   || '#ffffff');
-    setSw('bp-nav-font-swatch', 'bp-nav-font-label',  headerData.navFontColor || '#212121');
-    setV('bp-sl-sns-h',  headerData.snsH);
-    setV('bp-sn-sns-h',  headerData.snsH);
-  } else if (type === 'round') {
-    setV('bp-sl-round-h',       headerData.roundH       || 120);
-    setV('bp-sn-round-h',       headerData.roundH       || 120);
-    setV('bp-sl-round-overlap', headerData.roundOverlap !== undefined ? headerData.roundOverlap : 24);
-    setV('bp-sn-round-overlap', headerData.roundOverlap !== undefined ? headerData.roundOverlap : 24);
-  }
-
-  /* ── 공통 섹션 값 (전 타입) ── */
-  var bbc = headerData.bannerBgColor || '#5B7CE6';
-  setV('bp-banner-bg-color', bbc);
-  setSw('bp-banner-bg-swatch', 'bp-banner-bg-label', bbc);
-
-  /* 이미지 토글 */
-  setToggle('bp-banner-img-sw', 'bp-hdr-img-opts', headerData.bannerImgOn);
-  /* 업로드 박스 썸네일 복원 */
-  updateHdrImgThumb();
-}
-
 /* 헤더 패널 닫을 때 공통 스타일 섹션 복원 */
 function restoreBlockPanelCommon() {
   /* 공통 그룹 복원 */
@@ -220,8 +107,6 @@ function restoreBlockPanelCommon() {
   if (actionDock) actionDock.style.display = '';
   var actionDivider = document.getElementById('bp-action-divider');
   if (actionDivider) actionDivider.style.display = '';
-  var hOpts = document.getElementById('bp-header-opts');
-  if (hOpts) hOpts.style.display = 'none';
 }
 
 /* headerData 속성 동기화 */
@@ -591,6 +476,8 @@ function triggerHeaderImgUpload(kind) {
 }
 
 function showBlockPanel(type, label, blk) {
+  /* 다른 블록 선택 시 스티커 편집 모드 종료 — 스티커 패널과 블록 패널이 동시에 떠 있는 문제 방지 */
+  if (stickerEditMode) toggleStickerEdit();
   /* 다중 선택 상태이면 캔버스 패널로 복귀 */
   if (selKeys.length > 1) {
     showCanvasPanel();
@@ -601,8 +488,8 @@ function showBlockPanel(type, label, blk) {
   /* 현재 활성 nav 탭 기억 (블록 닫을 때 복귀용) */
   var activeBtn = document.querySelector('.float-tab.active');
   if (activeBtn) showCanvasPanel._lastNav = activeBtn.id.replace('nb-','');
-  /* 모든 nav 뷰 비활성화 (BUG-9: panel-bg 추가) */
-  ['panel-preset','panel-canvas','panel-header-nav','panel-bg'].forEach(function(id) {
+  /* 모든 nav 뷰 비활성화 (BUG-9: panel-bg 추가, B-2: panel-sticker 추가) */
+  ['panel-preset','panel-canvas','panel-header-nav','panel-bg','panel-sticker'].forEach(function(id) {
     var el = document.getElementById(id); if (el) el.classList.remove('active');
   });
   document.getElementById('panel-block').classList.add('active');

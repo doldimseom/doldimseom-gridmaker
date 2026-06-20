@@ -121,31 +121,27 @@ function makeHeaderBlock() {
     el.onclick = function(e) {
       e.stopPropagation();
       if (activeHdrImgKind) return;
+      /* B-3: 더미 안내 패널(showHeaderPanel) 대신 실제 헤더 탭으로 직접 전환
+         — switchNav가 selKey를 null로 비우므로 그 다음에 selKey를 설정해야 함 */
+      switchNav('header');
       selKey = 'header';
-      showHeaderPanel();
       document.querySelectorAll('.blk').forEach(function(b) {
         b.style.outline = ''; b.style.outlineOffset = '';
         b.classList.remove('selected');
       });
       el.classList.add('selected');
 
-      /* 배너 레이어가 있으면 플로팅 툴바 삽입 */
+      /* 배너 레이어가 있으면 플로팅 툴바 삽입(편집/리셋만 — 업로드 버튼은 B-6에서 제거,
+         더블클릭으로 업로드) */
       var bannerEl = el.querySelector('.sheet-header-banner');
       if (!bannerEl) return;
       var oldFtb = el.querySelector('.hdr-float-toolbar');
       if (oldFtb) oldFtb.remove();
       if (activeHdrImgKind) return;
 
-      var ftb = document.createElement('div');
-      ftb.className = 'hdr-float-toolbar';
-
-      var upBtn = document.createElement('button');
-      upBtn.className   = 'float-btn';
-      upBtn.textContent = '업로드';
-      upBtn.onclick = function(e2) { e2.stopPropagation(); triggerHeaderImgUpload('banner'); };
-      ftb.appendChild(upBtn);
-
       if (headerData.bannerImgSrc) {
+        var ftb = document.createElement('div');
+        ftb.className = 'hdr-float-toolbar';
         var edBtn = document.createElement('button');
         edBtn.className   = 'float-btn';
         edBtn.textContent = '편집';
@@ -156,8 +152,8 @@ function makeHeaderBlock() {
         rsBtn.onclick = function(e2) { e2.stopPropagation(); resetHeaderImgTransform('banner', bannerEl); };
         ftb.appendChild(edBtn);
         ftb.appendChild(rsBtn);
+        el.appendChild(ftb);
       }
-      el.appendChild(ftb);
     };
     return el;
   }
@@ -592,7 +588,7 @@ function makeBlk(blk) {
       imgWrap.appendChild(imgEl);
     } else {
       var lb = document.createElement('div'); lb.className = 'blk-inner-label';
-      lb.textContent = '이미지';
+      lb.textContent = '더블클릭으로 이미지 업로드';
       imgWrap.appendChild(lb);
     }
     /* 이미지 있을 때 — 그라디언트·텍스트 오버레이 */
@@ -1043,20 +1039,15 @@ function makeBlk(blk) {
     curEl.style.outlineOffset = '-1px';
     curEl.style.boxShadow = _blkSelBoxShadow(b);
     curEl.classList.add('selected');
-    /* img 블록 — 편집 모드 중이면 툴바 삽입 생략 */
-    if (bt === 'img' && activeImgKey !== k) {
+    /* img 블록 — 편집 모드 중이면 툴바 삽입 생략. 업로드 버튼은 B-7에서 제거(더블클릭으로 업로드) */
+    if (bt === 'img' && activeImgKey !== k && b.imgSrc) {
       var ftb = document.createElement('div'); ftb.className = 'blk-float-toolbar';
-      var upBtn = document.createElement('button'); upBtn.className = 'float-btn'; upBtn.textContent = '업로드';
-      upBtn.onclick = function(e2) { e2.stopPropagation(); triggerImgUpload(k); };
-      ftb.appendChild(upBtn);
-      if (b.imgSrc) {
-        var edBtn = document.createElement('button'); edBtn.className = 'float-btn'; edBtn.textContent = '편집';
-        edBtn.onclick = function(e2) { e2.stopPropagation(); enterImgEditMode(k); };
-        var rsBtn = document.createElement('button'); rsBtn.className = 'float-btn'; rsBtn.textContent = '리셋';
-        rsBtn.onclick = function(e2) { e2.stopPropagation(); resetImgTransform(k); };
-        ftb.appendChild(edBtn);
-        ftb.appendChild(rsBtn);
-      }
+      var edBtn = document.createElement('button'); edBtn.className = 'float-btn'; edBtn.textContent = '편집';
+      edBtn.onclick = function(e2) { e2.stopPropagation(); enterImgEditMode(k); };
+      var rsBtn = document.createElement('button'); rsBtn.className = 'float-btn'; rsBtn.textContent = '리셋';
+      rsBtn.onclick = function(e2) { e2.stopPropagation(); resetImgTransform(k); };
+      ftb.appendChild(edBtn);
+      ftb.appendChild(rsBtn);
       curEl.appendChild(ftb);
     }
   };})(key, blk.type, blk, el);
