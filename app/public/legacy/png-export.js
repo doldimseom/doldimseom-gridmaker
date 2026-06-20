@@ -704,27 +704,48 @@ function saveAsPNG() {
           var drawX = Math.round(tAlign === 'center' ? bx + bw / 2 - totalW / 2
                     : tAlign === 'right'  ? bx + bw - pad - totalW
                     : bx + pad);
-          /* span 단위로 그리기 */
-          tokens.forEach(function(t) {
+          /* 글자별 위치를 먼저 계산 — 형광펜을 글자 단위가 아니라 연속 구간 단위로
+             한 번에 그리기 위함(글자마다 따로 그리면 사이에 흰 틈이 보임 — 0620_2) */
+          var positioned = tokens.map(function(t) {
             var fw = t.bold ? '700' : '400';
             var fs = t.italic ? 'italic ' : '';
             ctx.font = fs + fw + ' ' + t.fontSize + 'px \'' + tFont + '\', \'Noto Sans KR\', sans-serif';
             var cw = ctx.measureText(t.ch).width;
-            if (!dryRun) {
-              if (t.bg) {
-                ctx.fillStyle = t.bg;
-                ctx.fillRect(drawX, y, cw, t.fontSize * 1.2);
-              }
-              /* 글자 외곽선 — strokeText 선행 */
-              if (pTsh) { ctx.save(); ctx.strokeStyle=pTsh.color; ctx.lineWidth=pTsh.lw; ctx.lineJoin='round'; ctx.strokeText(t.ch, drawX, y); ctx.restore(); }
-              ctx.fillStyle = t.color;
-              ctx.fillText(t.ch, drawX, y);
-              if (t.underline) {
-                ctx.fillStyle = t.color;
-                ctx.fillRect(drawX, y + t.fontSize + 1, cw, 1);
-              }
-            }
+            var x = drawX;
             drawX = Math.round(drawX + cw);
+            return { t: t, x: x, cw: cw };
+          });
+          if (dryRun) return;
+          /* 형광펜(배경) — 같은 색이 연속된 구간을 fillRect 1회로 묶어서 그림 */
+          var ri = 0;
+          while (ri < positioned.length) {
+            var bg = positioned[ri].t.bg;
+            if (!bg) { ri++; continue; }
+            var runStart = positioned[ri].x;
+            var runEnd   = positioned[ri].x + positioned[ri].cw;
+            var runSize  = positioned[ri].t.fontSize;
+            var rj = ri + 1;
+            while (rj < positioned.length && positioned[rj].t.bg === bg) {
+              runEnd = positioned[rj].x + positioned[rj].cw;
+              rj++;
+            }
+            ctx.fillStyle = bg;
+            ctx.fillRect(runStart, y, runEnd - runStart, runSize * 1.2);
+            ri = rj;
+          }
+          /* 글자·외곽선·밑줄 */
+          positioned.forEach(function(p) {
+            var t = p.t;
+            var fw = t.bold ? '700' : '400';
+            var fs = t.italic ? 'italic ' : '';
+            ctx.font = fs + fw + ' ' + t.fontSize + 'px \'' + tFont + '\', \'Noto Sans KR\', sans-serif';
+            if (pTsh) { ctx.save(); ctx.strokeStyle=pTsh.color; ctx.lineWidth=pTsh.lw; ctx.lineJoin='round'; ctx.strokeText(t.ch, p.x, y); ctx.restore(); }
+            ctx.fillStyle = t.color;
+            ctx.fillText(t.ch, p.x, y);
+            if (t.underline) {
+              ctx.fillStyle = t.color;
+              ctx.fillRect(p.x, y + t.fontSize + 1, p.cw, 1);
+            }
           });
         }
 
