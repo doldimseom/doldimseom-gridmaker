@@ -332,6 +332,9 @@ function onBgLayerFileChange(input) {
     };
     imgTemp.src = e.target.result;
   };
+  reader.onerror = function() {
+    showToast('이미지 파일을 읽지 못했습니다');
+  };
   reader.readAsDataURL(file);
   input.value = '';
 }

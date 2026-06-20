@@ -632,8 +632,10 @@ function _applyCanvasExpand(left, right, top, bottom) {
   /* ── 좌/우 ── */
   if (left !== 0 || right !== 0) {
     var requestedW = canvasW + left + right;
-    /* 우측 축소 브레이크: 블록·스티커 우측 끝보다 더 줄어들지 않도록 */
-    if (requestedW < canvasW) {
+    /* 우측 축소 브레이크: 블록·스티커 우측 끝보다 더 줄어들지 않도록
+       (좌측 핸들 단독 조작(right===0)일 때는 콘텐츠가 같이 밀려 우측 여백이 보존되므로 적용 안 함 —
+       좌측 축소 한계는 아래 minX 기반 브레이크가 별도로 처리) */
+    if (requestedW < canvasW && right !== 0) {
       var minNeededW = gaps.pad * 2;
       blocks.forEach(function(b) {
         var re = b.x + b.w + gaps.pad;
@@ -1145,6 +1147,10 @@ function syncTstroke(val) {
   if (!blk) return;
   if (!_pendingHistorySave) { saveHistory(); _pendingHistorySave = true; }
   blk.tstroke = val;
+  /* 편집 중에는 render()가 차단되므로 DOM에 직접 반영 — 실시간 적용 */
+  var blkEl = document.querySelector('.blk[data-key="' + selKey + '"]');
+  var texEl = blkEl ? blkEl.querySelector('.blk-text-area') : null;
+  if (texEl) texEl.style.textShadow = _textShadowCSS(blk.tstroke, blk.tstrokeColor);
   render();
 }
 
@@ -1158,6 +1164,10 @@ function syncTstrokeColor(val) {
   if (!blk) return;
   if (!_pendingHistorySave) { saveHistory(); _pendingHistorySave = true; }
   blk.tstrokeColor = val;
+  /* 편집 중에는 render()가 차단되므로 DOM에 직접 반영 — 실시간 적용 */
+  var blkEl = document.querySelector('.blk[data-key="' + selKey + '"]');
+  var texEl = blkEl ? blkEl.querySelector('.blk-text-area') : null;
+  if (texEl) texEl.style.textShadow = _textShadowCSS(blk.tstroke, blk.tstrokeColor);
   render();
 }
 

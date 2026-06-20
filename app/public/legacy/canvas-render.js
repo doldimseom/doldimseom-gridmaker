@@ -432,8 +432,10 @@ function render() {
     el.style.left     = blk.x + 'px';
     el.style.top      = blk.y + 'px';
     el.style.width    = blk.w + 'px';
-    /* 선택 블록을 다른 블록 위에 — 겹침 시 외곽선 가려짐 방지 */
-    var _isSelBlk = blk.id === selKey || selKeys.indexOf(blk.id) !== -1;
+    /* 선택 블록을 다른 블록 위에 — 겹침 시 외곽선 가려짐 방지
+       단, 편집 중인 블록은 제외 — 중첩 블록 편집 진입 시 z-order(배치 순서)가 유지되어야 함 */
+    var _isEditingThis = isEditing && editingKey === blk.id;
+    var _isSelBlk = !_isEditingThis && (blk.id === selKey || selKeys.indexOf(blk.id) !== -1);
     el.style.zIndex = _isSelBlk ? String(blocks.length + 10) : String(_bi + 1);
     pad.appendChild(el);
     var bottom = blk.y + blk.h;

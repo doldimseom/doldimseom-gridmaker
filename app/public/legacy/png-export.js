@@ -699,9 +699,11 @@ function saveAsPNG() {
             ctx.font = (t.bold ? '700' : '400') + ' ' + t.fontSize + 'px \'' + tFont + '\', \'Noto Sans KR\', sans-serif';
             return sum + ctx.measureText(t.ch).width;
           }, 0);
-          var drawX = tAlign === 'center' ? bx + bw / 2 - totalW / 2
+          /* 좌표를 정수로 고정 — 글자 단위 measureText 폭을 그대로 누적하면
+             부동소수점 오차가 글자 수만큼 쌓여 뒤쪽 글자/형광펜 위치가 어긋남 */
+          var drawX = Math.round(tAlign === 'center' ? bx + bw / 2 - totalW / 2
                     : tAlign === 'right'  ? bx + bw - pad - totalW
-                    : bx + pad;
+                    : bx + pad);
           /* span 단위로 그리기 */
           tokens.forEach(function(t) {
             var fw = t.bold ? '700' : '400';
@@ -722,7 +724,7 @@ function saveAsPNG() {
                 ctx.fillRect(drawX, y + t.fontSize + 1, cw, 1);
               }
             }
-            drawX += cw;
+            drawX = Math.round(drawX + cw);
           });
         }
 

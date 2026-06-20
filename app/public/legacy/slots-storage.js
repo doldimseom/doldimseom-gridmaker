@@ -215,7 +215,13 @@ function loadSlots() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
 }
 function saveSlots(slots) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(slots));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(slots));
+    return true;
+  } catch (e) {
+    showToast('저장 공간이 부족해 저장하지 못했습니다');
+    return false;
+  }
 }
 function formatDate(iso) {
   if (!iso) return '';
@@ -351,9 +357,10 @@ function saveToSlot(i) {
     data:    collectData(),
     savedAt: new Date().toISOString()
   };
-  saveSlots(slots);
-  renderSlotList();
-  showToast('슬롯 ' + (i + 1) + '에 저장했습니다');
+  if (saveSlots(slots)) {
+    renderSlotList();
+    showToast('슬롯 ' + (i + 1) + '에 저장했습니다');
+  }
 }
 
 function overwriteSlot(i) {
@@ -368,9 +375,10 @@ function overwriteSlot(i) {
     data:    collectData(),
     savedAt: new Date().toISOString()
   };
-  saveSlots(slots);
-  renderSlotList();
-  showToast('슬롯 ' + (i + 1) + '을 덮어썼습니다');
+  if (saveSlots(slots)) {
+    renderSlotList();
+    showToast('슬롯 ' + (i + 1) + '을 덮어썼습니다');
+  }
 }
 
 function loadFromSlot(i) {
@@ -389,10 +397,11 @@ function deleteSlot(i) {
   document.getElementById('delete-backdrop').classList.add('open');
   document.getElementById('delete-confirm-btn').onclick = function() {
     delete slots[i];
-    saveSlots(slots);
-    closeDeleteModal();
-    renderSlotList();
-    showToast('"' + name + '" 삭제됨');
+    if (saveSlots(slots)) {
+      closeDeleteModal();
+      renderSlotList();
+      showToast('"' + name + '" 삭제됨');
+    }
   };
 }
 
