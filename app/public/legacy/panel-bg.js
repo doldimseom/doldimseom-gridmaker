@@ -275,6 +275,7 @@ function _syncSlider(slId, snId, val, min, max) {
 /* ── 배경지 이벤트 핸들러 ── */
 
 function updateBgLayerColor(val) {
+  if (!_pendingHistorySave) { saveHistory(); _pendingHistorySave = true; }
   bgLayer.color = val;
   var ch = document.getElementById('bgl-color-hex');
   var cs = document.getElementById('bgl-color-cw');
@@ -284,12 +285,14 @@ function updateBgLayerColor(val) {
 }
 
 function clearBgLayerColor() {
+  saveHistory();
   bgLayer.color = '';
   applySheetBgLayer();
   syncBgLayerPanel();
 }
 
 function setBgLayerMode(mode) {
+  saveHistory();
   if (bgLayer.imgOn && bgLayer.imgMode === mode) {
     bgLayer.imgOn = false;
     bgLayer.imgMode = null;
@@ -313,6 +316,7 @@ function onBgLayerFileChange(input) {
   if (!file) return;
   var reader = new FileReader();
   reader.onload = function(e) {
+    saveHistory();
     bgLayer.imgSrc  = e.target.result;
     bgLayer.imgOn   = true;
     bgLayer.imgMode = 'upload';
@@ -340,6 +344,7 @@ function onBgLayerFileChange(input) {
 }
 
 function clearBgLayerImg() {
+  saveHistory();
   bgLayer.imgSrc = null;
   bgLayer._imgNaturalW = null;
   bgLayer._imgNaturalH = null;
@@ -348,6 +353,7 @@ function clearBgLayerImg() {
 }
 
 function setBgLayerRepeat(val) {
+  saveHistory();
   bgLayer.repeat = val;
   if (val === 'cover') {
     bgLayer.posX = 0;
@@ -361,48 +367,56 @@ function setBgLayerRepeat(val) {
 }
 
 function setBgLayerTileAngle(val) {
+  saveHistory();
   bgLayer.tileAngle = val;
   applySheetBgLayer();
   syncBgLayerPanel();
 }
 
 function setBgLayerPosX(val) {
+  if (!_pendingHistorySave) { saveHistory(); _pendingHistorySave = true; }
   bgLayer.posX = parseInt(val) || 0;
   _syncSlider('sl-bgl-x', 'sn-bgl-x', bgLayer.posX, -200, 200);
   applySheetBgLayer();
 }
 
 function setBgLayerPosY(val) {
+  if (!_pendingHistorySave) { saveHistory(); _pendingHistorySave = true; }
   bgLayer.posY = parseInt(val) || 0;
   _syncSlider('sl-bgl-y', 'sn-bgl-y', bgLayer.posY, -200, 200);
   applySheetBgLayer();
 }
 
 function setBgLayerZoom(val) {
+  if (!_pendingHistorySave) { saveHistory(); _pendingHistorySave = true; }
   bgLayer.zoom = Math.max(20, Math.min(200, parseInt(val) || 100));
   _syncSlider('sl-bgl-zoom', 'sn-bgl-zoom', bgLayer.zoom, 20, 200);
   applySheetBgLayer();
 }
 
 function setBgLayerOpacity(val) {
+  if (!_pendingHistorySave) { saveHistory(); _pendingHistorySave = true; }
   bgLayer.opacity = Math.max(0, Math.min(100, parseInt(val) || 100));
   _syncSlider('sl-bgl-op', 'sn-bgl-op', bgLayer.opacity, 0, 100);
   applySheetBgLayer();
 }
 
 function setBgLayerGridSize(val) {
+  if (!_pendingHistorySave) { saveHistory(); _pendingHistorySave = true; }
   bgLayer.gridSize = Math.max(8, Math.min(80, parseInt(val) || 20));
   _syncSlider('sl-bgl-gs', 'sn-bgl-gs', bgLayer.gridSize, 8, 80);
   applySheetBgLayer();
 }
 
 function setBgLayerGridAngle(val) {
+  saveHistory();
   bgLayer.gridAngle = val;
   applySheetBgLayer();
   syncBgLayerPanel();
 }
 
 function setBgLayerGridColor(val) {
+  if (!_pendingHistorySave) { saveHistory(); _pendingHistorySave = true; }
   bgLayer.gridColor = val;
   var gc = document.getElementById('bgl-grid-color-swatch');
   var gh = document.getElementById('bgl-grid-color-hex');

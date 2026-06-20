@@ -129,6 +129,7 @@ function placeSticker(src) {
       rotate: 0,
       locked: false
     };
+    saveHistory();
     stickers.push(sticker);
     renderSticker(sticker);
     if (!stickerEditMode) toggleStickerEdit();
@@ -181,6 +182,7 @@ function addTextSticker() {
     rotate: 0,
     locked: false
   };
+  saveHistory();
   stickers.push(sticker);
   renderSticker(sticker);
   if (!stickerEditMode) toggleStickerEdit();
@@ -241,6 +243,7 @@ function placeTextSticker(item) {
     rotate: 0,
     locked: false
   };
+  saveHistory();
   stickers.push(sticker);
   renderSticker(sticker);
   if (!stickerEditMode) toggleStickerEdit();
@@ -412,6 +415,19 @@ function updateStickerHandles(el, sticker) {
   _refreshStickerActionUI();
 }
 
+/* bindStickerEvents 내부 keydown 리스너 — 스티커 DOM이 재생성될 때마다(undo/redo,
+   슬롯 불러오기) bindStickerEvents가 다시 호출되며 동일 로직의 리스너가 계속 누적되는
+   문제 방지. 로직은 그대로 두고 이름 있는 함수로 분리해 addEventListener의 동일 참조
+   중복등록 방지 기본동작에 맡김(bindStickerEvents 본문은 호출부 한 줄만 교체) */
+function _stickerDeleteKeyHandler(e) {
+  if (!stickerEditMode) return;
+  if ((e.key === 'Delete' || e.key === 'Backspace') && selectedStickerIds.length > 0) {
+    var inInput = document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA');
+    if (inInput) return;
+    selectedStickerIds.slice().forEach(function(id){ removeSticker(id); });
+  }
+}
+
 function bindStickerEvents(el, sticker) {
   var dragging = false, startX = 0, startY = 0, startSX = 0, startSY = 0, didDrag = false;
   el.addEventListener('mousedown', function(e) {
@@ -466,14 +482,7 @@ function bindStickerEvents(el, sticker) {
     if (didDrag) { didDrag = false; e.stopPropagation(); }
   }, true);
   /* Delete 키 삭제 */
-  document.addEventListener('keydown', function(e) {
-    if (!stickerEditMode) return;
-    if ((e.key === 'Delete' || e.key === 'Backspace') && selectedStickerIds.length > 0) {
-      var inInput = document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA');
-      if (inInput) return;
-      selectedStickerIds.slice().forEach(function(id){ removeSticker(id); });
-    }
-  });
+  document.addEventListener('keydown', _stickerDeleteKeyHandler);
 }
 
 function bindResizeHandle(handle, sticker) {
@@ -719,6 +728,7 @@ function toggleStickerLock() {
   if (selectedStickerIds.length !== 1) return;
   var s = stickers.find(function(s){ return s.id === selectedStickerIds[0]; });
   if (!s) return;
+  saveHistory();
   s.locked = !s.locked;
   _refreshStickerSelection();
 }
@@ -726,6 +736,7 @@ function toggleStickerLock() {
 function bringToFront(id) {
   var idx = stickers.findIndex(function(s){ return s.id === id; });
   if (idx === -1) return;
+  saveHistory();
   var item = stickers.splice(idx, 1)[0];
   stickers.push(item);
   var layer = stickerLayer();
@@ -736,6 +747,7 @@ function bringToFront(id) {
 function sendToBack(id) {
   var idx = stickers.findIndex(function(s){ return s.id === id; });
   if (idx === -1) return;
+  saveHistory();
   var item = stickers.splice(idx, 1)[0];
   stickers.unshift(item);
   var layer = stickerLayer();
@@ -745,6 +757,7 @@ function sendToBack(id) {
 }
 
 function removeSticker(id) {
+  saveHistory();
   stickers = stickers.filter(function(s){ return s.id !== id; });
   var el = document.getElementById('sticker-' + id);
   if (el) el.remove();
@@ -756,6 +769,7 @@ function removeSticker(id) {
 function clearAllStickers() {
   if (stickers.length === 0) { showToast('삭제할 스티커가 없어요.'); return; }
   if (!confirm('스티커를 모두 삭제할까요?')) return;
+  saveHistory();
   stickers.forEach(function(s) {
     var el = document.getElementById('sticker-' + s.id);
     if (el) el.remove();
@@ -797,6 +811,7 @@ function clearAllStickers() {
         size: Math.max(80, Math.min(tmpImg.naturalWidth || 80, Math.round(sheet.offsetWidth * 0.25))),
         rotate: 0, locked: false
       };
+      saveHistory();
       stickers.push(sticker);
       renderSticker(sticker);
       if (!stickerEditMode) toggleStickerEdit();
