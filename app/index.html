@@ -1070,23 +1070,22 @@
 
       <div class="tfb-sep"></div>
 
-      <!-- 글자색 -->
+      <!-- 글자색 · 형광펜 · 외곽선 (공용 컬러피커 gmOpenColorPicker 공유) -->
       <div class="tfb-group" id="tfb-color-group">
-        <button class="tfb-color-btn" id="tfb-color-btn" onclick="tfbOpenColor('color')">
+        <button class="tfb-color-btn" id="tfb-color-btn" onclick="tfbOpenFontColorCP(this)">
           <span class="tfb-color-btn-label">A</span>
           <div class="tfb-color-underline" id="tfb-color-underline" style="background:#212121;"></div>
-          <input class="tfb-color-input" id="tfb-color-input" type="color" value="#212121" oninput="tfbApplyColor('color', this.value)">
           <span class="tfb-tip">글자색</span>
         </button>
-      </div>
-
-      <div class="tfb-sep"></div>
-
-      <!-- 효과▾ (형광펜 + 글자 외곽선) -->
-      <div class="tfb-group tfb-pop-wrap">
-        <button class="tfb-pop-btn" id="tfb-fx-btn" onclick="tfbOpenPop('tfb-fx-pop')">
-          효과<span class="tfb-caret">▾</span>
-          <span class="tfb-tip">형광펜 · 글자 외곽선</span>
+        <button class="tfb-hl-btn" id="tfb-hl-btn" onclick="tfbOpenHighlightCP(this)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3A3A3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 11-6 6v3h9l3-3"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/></svg>
+          <div class="tfb-color-underline" id="tfb-hl-underline" style="background:#E0E0E0;"></div>
+          <span class="tfb-tip">형광펜</span>
+        </button>
+        <button class="tfb-out-btn" id="tfb-out-btn" onclick="tfbOpenOutlineCP(this)">
+          <span class="tfb-out-a">A</span>
+          <div class="tfb-color-underline" id="tfb-ts-color-underline" style="background:#888888;"></div>
+          <span class="tfb-tip">글자 외곽선</span>
         </button>
       </div>
 
@@ -1276,6 +1275,7 @@
 <div id="slot-toast"></div>
 
 <script src="/legacy/state.js"></script>
+<script src="/legacy/color-picker.js"></script>
 <script src="/legacy/undo-redo.js"></script>
 <script src="/legacy/slots-storage.js"></script>
 <script src="/legacy/panel-colorchip-item.js"></script>
@@ -1334,43 +1334,6 @@
   <button class="tfb-preset-item" data-sz="10" onclick="tfbApplyPreset('10')"><span>캡션</span><span class="tfb-sz-badge">10px</span><span class="tfb-fi-check">✓</span></button>
 </div>
 
-<div class="tfb-popover" id="tfb-fx-pop">
-  <div class="tfb-pop-label">형광펜</div>
-  <div class="cpC-chip tfb-cpC" onclick="if(event.target.tagName!=='INPUT')document.getElementById('tfb-bg-input').click()">
-    <span class="cw" id="tfb-bg-swatch" style="background:#FFE066">
-      <input type="color" id="tfb-bg-input" value="#FFE066" oninput="tfbApplyColor('bg', this.value)">
-    </span>
-    <span class="meta">
-      <span class="nm">형광펜 색상</span>
-      <input class="hexedit" id="tfb-bg-hexedit" value="#FFE066" spellcheck="false"
-        oninput="var v=this.value.trim().replace(/^([^#])/,'#$1');if(/^#[0-9a-fA-F]{6}$/.test(v))tfbApplyColor('bg',v)">
-    </span>
-    <button class="tfb-chip-reset" onclick="event.stopPropagation();tfbApplyColor('bg',null)" title="형광펜 제거">✕</button>
-  </div>
-  <div class="tfb-pop-sep"></div>
-  <div class="tfb-pop-label">글자 외곽선</div>
-  <div class="tfb-pop-row">
-    <button class="tfb-btn" id="tfb-ts-0" onclick="syncTstroke(0)">
-      <span style="font-size:13px;font-weight:700;">가</span>
-      <span class="tfb-tip">없음</span>
-    </button>
-    <button class="tfb-btn" id="tfb-ts-1" onclick="syncTstroke(1)">
-      <span style="font-size:13px;font-weight:700;text-shadow:-0.9px -0.9px 0 #aaa,0.9px -0.9px 0 #aaa,-0.9px 0.9px 0 #aaa,0.9px 0.9px 0 #aaa;">가</span>
-      <span class="tfb-tip">약</span>
-    </button>
-    <button class="tfb-btn" id="tfb-ts-2" onclick="syncTstroke(2)">
-      <span style="font-size:13px;font-weight:700;text-shadow:-1.4px 0 0 #888,1.4px 0 0 #888,0 -1.4px 0 #888,0 1.4px 0 #888,-1px -1px 0 #888,1px -1px 0 #888,-1px 1px 0 #888,1px 1px 0 #888;">가</span>
-      <span class="tfb-tip">강</span>
-    </button>
-    <button class="tfb-color-btn" id="tfb-ts-color-btn" onclick="document.getElementById('tfb-ts-color-input').click()" style="display:none;">
-      <span class="tfb-color-btn-label" style="font-size:11px;font-weight:700;">가</span>
-      <div class="tfb-color-underline" id="tfb-ts-color-underline" style="background:#ffffff;"></div>
-      <input class="tfb-color-input" id="tfb-ts-color-input" type="color" value="#ffffff" oninput="syncTstrokeColor(this.value)">
-      <span class="tfb-tip">외곽선 색상</span>
-    </button>
-  </div>
-</div>
-
 <div class="tfb-popover" id="tfb-para-pop">
   <div class="tfb-pop-label">정렬</div>
   <div class="tfb-pop-row">
@@ -1400,12 +1363,51 @@
   </div>
 </div>
 
-<!-- 색상 초기화 팝업 — floating-bar 밖에 위치 (transform 영향 차단) -->
-<div id="tfb-color-popup">
-  <div id="tfb-popup-reset" class="tfb-popup-reset-tile" onclick="tfbResetColor()">
-    <span id="tfb-popup-reset-label">없음</span>
+<!-- 전역 공용 컬러피커 (gmOpenColorPicker, color-picker.js) — 텍스트 툴바 3곳 + 전역설정·헤더·
+     배경지·그라디언트·컬러칩·블록배경 등 앱 전체 색상 선택 UI가 공유하는 팝오버 1개.
+     외부 클릭 시 닫힘은 오버레이 div가 아니라 document mousedown 리스너로 처리(color-picker.js)
+     — 캔버스를 덮는 풀스크린 오버레이를 두면 피커가 열린 동안 캔버스 클릭이 막히기 때문. -->
+<div id="gm-cp-pop" onclick="event.stopPropagation()">
+  <div class="gm-cp-header">
+    <span id="gm-cp-mode-label">색상</span>
+    <button id="gm-cp-reset-btn" onclick="gmCpReset()">↩ 재설정</button>
   </div>
-  <button class="tfb-popup-picker-btn" onclick="tfbPickColor()">직접 선택</button>
+  <div id="gm-cp-strength" style="display:none;">
+    <div class="cp-strength-label">외곽선 강도</div>
+    <div class="cp-strength-row">
+      <button class="cp-strength-tile" data-lv="0" onclick="gmSetOutlineLevel(0)"><span style="font-weight:700;">가</span></button>
+      <button class="cp-strength-tile" data-lv="1" onclick="gmSetOutlineLevel(1)"><span style="font-weight:700;text-shadow:-0.9px -0.9px 0 #aaa,0.9px -0.9px 0 #aaa,-0.9px 0.9px 0 #aaa,0.9px 0.9px 0 #aaa;">가</span></button>
+      <button class="cp-strength-tile" data-lv="2" onclick="gmSetOutlineLevel(2)"><span style="font-weight:700;text-shadow:-1.5px -1.5px 0 #555,1.5px -1.5px 0 #555,-1.5px 1.5px 0 #555,1.5px 1.5px 0 #555;">가</span></button>
+    </div>
+    <div class="cp-sep"></div>
+  </div>
+  <!-- 인라인 HSV 피커 — 추가 클릭 없이 드래그로 색 선택 -->
+  <div id="gm-cp-sv" onpointerdown="gmCpSvPointerDown(event)">
+    <div id="gm-cp-sv-white"></div>
+    <div id="gm-cp-sv-black"></div>
+    <div id="gm-cp-sv-cursor"></div>
+  </div>
+  <div id="gm-cp-hue" onpointerdown="gmCpHuePointerDown(event)">
+    <div id="gm-cp-hue-cursor"></div>
+  </div>
+  <div id="gm-cp-hex-row">
+    <div id="gm-cp-hex-prev" style="background:#212121;"></div>
+    <span style="font-size:11px;color:#9E9E9E;font-family:'JetBrains Mono',monospace;">#</span>
+    <input id="gm-cp-hex-input" maxlength="6" value="212121" oninput="gmCpHexInputChanged(this.value)">
+  </div>
+  <div class="cp-sep"></div>
+  <div class="cp-section-lbl">표준 색상</div>
+  <div class="cp-std-row">
+    <button class="cp-dot" data-c="#212121" style="background:#212121" onclick="gmCpPickColor(this.dataset.c)"></button>
+    <button class="cp-dot" data-c="#434343" style="background:#434343" onclick="gmCpPickColor(this.dataset.c)"></button>
+    <button class="cp-dot" data-c="#666666" style="background:#666666" onclick="gmCpPickColor(this.dataset.c)"></button>
+    <button class="cp-dot" data-c="#9E9E9E" style="background:#9E9E9E" onclick="gmCpPickColor(this.dataset.c)"></button>
+    <button class="cp-dot" data-c="#CCCCCC" style="background:#CCCCCC" onclick="gmCpPickColor(this.dataset.c)"></button>
+    <button class="cp-dot white" data-c="#FFFFFF" style="background:#FFFFFF" onclick="gmCpPickColor(this.dataset.c)"></button>
+  </div>
+  <div class="cp-sep"></div>
+  <div class="cp-section-lbl">맞춤 색상</div>
+  <div class="cp-std-row" id="gm-cp-custom-row"></div>
 </div>
 
 </body>

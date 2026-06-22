@@ -501,19 +501,19 @@ function tfbToggle(type) {
   if (btn2) btn2.classList.toggle('active', document.queryCommandState(cmdMap[type]));
 }
 
-/* 효과▾ · 문단▾ 팝오버 토글 */
+/* 문단▾ 등 팝오버 토글 */
 function _tfbClosePops() {
-  ['tfb-fx-pop','tfb-para-pop','tfb-font-pop','tfb-preset-pop'].forEach(function(id) {
+  ['tfb-para-pop','tfb-font-pop','tfb-preset-pop'].forEach(function(id) {
     var el = document.getElementById(id); if (el) el.classList.remove('open');
   });
-  ['tfb-fx-btn','tfb-para-btn','tfb-font-btn','tfb-preset-btn'].forEach(function(id) {
+  ['tfb-para-btn','tfb-font-btn','tfb-preset-btn'].forEach(function(id) {
     var el = document.getElementById(id); if (el) el.classList.remove('active');
   });
 }
 
 function tfbOpenPop(id) {
-  var popIds = ['tfb-fx-pop','tfb-para-pop','tfb-font-pop','tfb-preset-pop'];
-  var btnIds = { 'tfb-fx-pop':'tfb-fx-btn', 'tfb-para-pop':'tfb-para-btn', 'tfb-font-pop':'tfb-font-btn', 'tfb-preset-pop':'tfb-preset-btn' };
+  var popIds = ['tfb-para-pop','tfb-font-pop','tfb-preset-pop'];
+  var btnIds = { 'tfb-para-pop':'tfb-para-btn', 'tfb-font-pop':'tfb-font-btn', 'tfb-preset-pop':'tfb-preset-btn' };
   var target = document.getElementById(id);
   var isOpen = target && target.classList.contains('open');
   /* 모두 닫기 + 버튼 inactive */
@@ -546,94 +546,45 @@ function tfbOpenPop(id) {
   }, 0);
 }
 
-function tfbOpenColor(kind) {
-  /* Selection 저장 */
-  var sel = window.getSelection();
-  savedTfbRange = (sel && sel.rangeCount > 0) ? sel.getRangeAt(0).cloneRange() : null;
-  _tfbStickyRange = savedTfbRange ? savedTfbRange.cloneRange() : null;
+/* 텍스트 툴바 — 폰트색 · 형광펜 · 외곽선색 트리거 (공용 컬러피커 gmOpenColorPicker 연결, color-picker.js) */
+function tfbOpenFontColorCP(btn) {
+  gmOpenColorPicker(btn, {
+    label: '폰트 색상',
+    getValue: function() {
+      var blk = getSelBlk();
+      return (blk && blk.fontColor) || globalVals.fontColor || '#212121';
+    },
+    onChange: function(hex) { tfbApplyColor('color', hex); },
+    onReset:  function() { tfbApplyColor('color', null); }
+  });
+}
 
-  var popup = document.getElementById('tfb-color-popup');
-  if (!popup) return;
+function tfbOpenHighlightCP(btn) {
+  gmOpenColorPicker(btn, {
+    label: '형광펜 색상',
+    getValue: function() {
+      var blk = getSelBlk();
+      return (blk && blk.spans && blk.spans[0] && blk.spans[0].bg) || '#FFE066';
+    },
+    onChange: function(hex) { tfbApplyColor('bg', hex); },
+    onReset:  function() { tfbApplyColor('bg', null); }
+  });
+}
 
-  /* 이미 같은 팝업이 열려 있으면 닫기 */
-  if (popup.classList.contains('open') && _tfbColorKind === kind) {
-    popup.classList.remove('open');
-    return;
-  }
-
-  _tfbColorKind = kind;
-
-  /* reset tile 업데이트 */
-  var resetTile  = document.getElementById('tfb-popup-reset');
-  var resetLabel = document.getElementById('tfb-popup-reset-label');
-  if (kind === 'color') {
-    var blk = getSelBlk();
-    var fc = (blk && blk.fontColor) || globalVals.fontColor || '#212121';
-    if (resetTile) {
-      resetTile.style.background = fc;
-      resetTile.style.borderColor = fc;
-      resetTile.style.color = _tfbIsLight(fc) ? '#333' : '#fff';
+function tfbOpenOutlineCP(btn) {
+  gmOpenColorPicker(btn, {
+    label: '외곽선 색상',
+    getValue: function() {
+      var blk = getSelBlk();
+      return (blk && blk.tstrokeColor) || '#888888';
+    },
+    onChange: function(hex) { syncTstrokeColor(hex); },
+    onReset:  function() { syncTstroke(0); syncTstrokeColor('#888888'); },
+    outlineLevel: {
+      get: function() { var blk = getSelBlk(); return (blk && blk.tstroke) || 0; },
+      onChange: function(lv) { syncTstroke(lv); }
     }
-    if (resetLabel) resetLabel.textContent = '기본색';
-  } else {
-    if (resetTile) {
-      resetTile.style.background = '';
-      resetTile.style.borderColor = '#D0D0D0';
-      resetTile.style.color = '#555';
-    }
-    if (resetLabel) resetLabel.textContent = '없음';
-  }
-
-  /* position: fixed 좌표 계산 — overflow:hidden 영향 우회 */
-  var group = document.getElementById('tfb-color-group');
-  if (group) {
-    var rect = group.getBoundingClientRect();
-    popup.style.top  = (rect.bottom + 4) + 'px';
-    popup.style.left = rect.left + 'px';
-  }
-
-  popup.classList.add('open');
-
-  /* 팝업 외부 클릭 시 닫기 — 이전 핸들러 제거 후 재등록 (중복 방지) */
-  if (_tfbClosePopupHandler) {
-    document.removeEventListener('click', _tfbClosePopupHandler);
-    _tfbClosePopupHandler = null;
-  }
-  setTimeout(function() {
-    _tfbClosePopupHandler = function(e) {
-      var pp = document.getElementById('tfb-color-popup');
-      var pg = document.getElementById('tfb-color-group');
-      var inside = (pp && pp.contains(e.target)) || (pg && pg.contains(e.target));
-      if (!inside) { if (pp) pp.classList.remove('open'); }
-      document.removeEventListener('click', _tfbClosePopupHandler);
-      _tfbClosePopupHandler = null;
-    };
-    document.addEventListener('click', _tfbClosePopupHandler);
-  }, 0);
-}
-
-/* 색상 팝업 — 직접 선택(color picker 열기) */
-function tfbPickColor() {
-  var popup = document.getElementById('tfb-color-popup');
-  if (popup) popup.classList.remove('open');
-  var inputId = _tfbColorKind === 'color' ? 'tfb-color-input' : 'tfb-bg-input';
-  var inp = document.getElementById(inputId);
-  if (inp) inp.click();
-}
-
-/* 색상 팝업 — 초기화 타일 클릭 */
-function tfbResetColor() {
-  var popup = document.getElementById('tfb-color-popup');
-  if (popup) popup.classList.remove('open');
-  tfbApplyColor(_tfbColorKind, null);
-}
-
-/* 밝은 색 판별 헬퍼 */
-function _tfbIsLight(hex) {
-  var c = (hex || '#ffffff').replace('#', '');
-  if (c.length === 3) c = c[0]+c[0]+c[1]+c[1]+c[2]+c[2];
-  var r = parseInt(c.substr(0,2),16), g = parseInt(c.substr(2,2),16), b = parseInt(c.substr(4,2),16);
-  return (r*299 + g*587 + b*114) / 1000 > 128;
+  });
 }
 
 function tfbApplyColor(kind, val) {
@@ -664,10 +615,8 @@ function tfbApplyColor(kind, val) {
       var ulC = document.getElementById('tfb-color-underline');
       if (ulC) ulC.style.background = val === null ? (globalVals.fontColor || '#212121') : val;
     } else {
-      var bgUlC = document.getElementById('tfb-bg-swatch');
-      if (bgUlC) bgUlC.style.background = val === null ? '#E0E0E0' : val;
-      var bgHxC = document.getElementById('tfb-bg-hexedit');
-      if (bgHxC) bgHxC.value = val === null ? '' : val;
+      var hlUlC = document.getElementById('tfb-hl-underline');
+      if (hlUlC) hlUlC.style.background = val === null ? '#E0E0E0' : val;
     }
     return;
   }
@@ -710,10 +659,8 @@ function tfbApplyColor(kind, val) {
     var ul = document.getElementById('tfb-color-underline');
     if (ul) ul.style.background = val === null ? (globalVals.fontColor || '#212121') : val;
   } else {
-    var bgUl = document.getElementById('tfb-bg-swatch');
-    if (bgUl) bgUl.style.background = val === null ? '#E0E0E0' : val;
-    var bgHx = document.getElementById('tfb-bg-hexedit');
-    if (bgHx) bgHx.value = val === null ? '' : val;
+    var hlUl = document.getElementById('tfb-hl-underline');
+    if (hlUl) hlUl.style.background = val === null ? '#E0E0E0' : val;
   }
 }
 

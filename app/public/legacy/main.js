@@ -1137,12 +1137,6 @@ function applyAllStrokeAdv(val) {
 
 function syncTstroke(val) {
   val = Math.min(2, Math.max(0, parseInt(val) || 0));
-  ['tfb-ts-0','tfb-ts-1','tfb-ts-2'].forEach(function(id, i) {
-    var btn = document.getElementById(id);
-    if (btn) btn.classList.toggle('on', i === val);
-  });
-  var colorBtn = document.getElementById('tfb-ts-color-btn');
-  if (colorBtn) colorBtn.style.display = val > 0 ? '' : 'none';
   if (!selKey) return;
   var blk = getSelBlk();
   if (!blk) return;
@@ -1158,8 +1152,6 @@ function syncTstroke(val) {
 function syncTstrokeColor(val) {
   var ul = document.getElementById('tfb-ts-color-underline');
   if (ul) ul.style.background = val;
-  var pk = document.getElementById('tfb-ts-color-input');
-  if (pk) pk.value = val;
   if (!selKey) return;
   var blk = getSelBlk();
   if (!blk) return;
@@ -1893,7 +1885,7 @@ document.addEventListener('mousedown', function(e) {
   if (isEditing) {
     if (editingKey === 'header') { commitTextEdit(); render(); return; }
     /* 텍스트 서식 툴바 · 색상 팝업 클릭은 편집 종료하지 않음 */
-    if (e.target.closest('#txt-format-bar') || e.target.closest('#tfb-color-popup') || e.target.closest('.tfb-popover')) return;
+    if (e.target.closest('#txt-format-bar') || e.target.closest('#gm-cp-pop') || e.target.closest('.tfb-popover')) return;
     var blkEl2 = editingKey ? document.querySelector('.blk[data-key="' + editingKey + '"]') : null;
     /* BUG-34: item 블록 편집 중 — commitTextEdit 대신 blur로 저장 처리
        .blk-text-area가 없으므로 activeArea=null 경로를 타면 데이터 미저장 + saveHistory 중복 발생 */
