@@ -3509,7 +3509,7 @@ select.row-input {
 #sticker-layer.editing .sticker-item { pointer-events: all; }
 .sticker-item:active { cursor: grabbing; }
 .sticker-item.selected {
-  outline: 1.6px solid var(--accent);
+  outline: 2.0px solid var(--accent);
   outline-offset: 3px;
 }
 .sticker-item.selected.sk-locked {
@@ -3531,44 +3531,49 @@ select.row-input {
   box-shadow: 0 2px 8px rgba(20,28,50,0.18);
 }
 
-/* 스티커 조작 핸들 — 8-dot PIKU (시안 기준) */
+/* 스티커 조작 핸들 — 8-dot PIKU (시안 기준, Phase 6 (4): margin 보정 → transform 중앙정렬로 교체,
+   드래그 인터랙션 로직(stickers.js의 bind* 함수들)은 미수정 — CSS·마크업만 변경 */
 .sticker-handle {
   position: absolute;
   width: 11px; height: 11px;
   border-radius: 50%;
   background: #fff;
-  border: 1.7px solid var(--accent);
+  border: 2.2px solid var(--accent);
+  box-shadow: 0 1px 4px rgba(20,28,50,.28);
+  transform: translate(-50%, -50%);
+  box-sizing: border-box;
   pointer-events: none;
   z-index: 20;
-  box-shadow: 0 1px 3px rgba(20,28,50,0.22);
 }
 #sticker-layer.editing .sticker-handle { pointer-events: all; }
-/* 8방향 resize handles — margin으로 중앙 정렬 */
-.sticker-handle.nw { top: 0;   left: 0;   margin: -5.5px 0 0 -5.5px; cursor: nwse-resize; }
-.sticker-handle.n  { top: 0;   left: 50%; margin: -5.5px 0 0 -5.5px; cursor: ns-resize; }
-.sticker-handle.ne { top: 0;   left: 100%;margin: -5.5px 0 0 -5.5px; cursor: nesw-resize; }
-.sticker-handle.e  { top: 50%; left: 100%;margin: -5.5px 0 0 -5.5px; cursor: ew-resize; }
-.sticker-handle.se { top: 100%;left: 100%;margin: -5.5px 0 0 -5.5px; cursor: nwse-resize; }
-.sticker-handle.s  { top: 100%;left: 50%; margin: -5.5px 0 0 -5.5px; cursor: ns-resize; }
-.sticker-handle.sw { top: 100%;left: 0;   margin: -5.5px 0 0 -5.5px; cursor: nesw-resize; }
-.sticker-handle.w  { top: 50%; left: 0;   margin: -5.5px 0 0 -5.5px; cursor: ew-resize; }
-/* 회전 핸들 — 상단 중앙 (stalk은 ::before로 아래로 연장) */
+/* 8방향 resize handles — outline 링(offset 3px) 위에 정확히 정렬 */
+.sticker-handle.nw { top: -4px;             left: -4px;             cursor: nwse-resize; }
+.sticker-handle.n  { top: -4px;             left: 50%;              cursor: ns-resize; }
+.sticker-handle.ne { top: -4px;             left: calc(100% + 4px); cursor: nesw-resize; }
+.sticker-handle.e  { top: 50%;              left: calc(100% + 4px); cursor: ew-resize; }
+.sticker-handle.se { top: calc(100% + 4px); left: calc(100% + 4px); cursor: nwse-resize; }
+.sticker-handle.s  { top: calc(100% + 4px); left: 50%;              cursor: ns-resize; }
+.sticker-handle.sw { top: calc(100% + 4px); left: -4px;             cursor: nesw-resize; }
+.sticker-handle.w  { top: 50%;              left: -4px;             cursor: ew-resize; }
+/* 회전 핸들 — outline 링에서 -24px 띄움. 연결선은 ::before 대신 별도 형제 div(.sh-rotate-line,
+   stickers.js에서 생성)로 분리해 'n' 핸들과의 겹침을 해결 */
 .sticker-handle.rotate {
-  width: 16px; height: 16px;
-  top: -22px; left: 50%;
-  margin: -8px 0 0 -8px;
+  width: 18px; height: 18px;
+  top: -4px; left: 50%;
+  transform: translate(-50%, calc(-100% - 24px));
   cursor: grab;
   display: flex; align-items: center; justify-content: center;
   color: var(--accent);
 }
-.sticker-handle.rotate::before {
-  content: '';
+.sh-rotate-line {
   position: absolute;
-  top: 100%;
-  left: calc(50% - 0.8px);
-  width: 1.6px;
-  height: 22px;
+  top: -28px; left: 50%;
+  width: 2.2px; height: 24px;
   background: var(--accent);
+  opacity: .7;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 19;
 }
 
 /* sk-corner — 우상단 외곽 세로 미니바 */

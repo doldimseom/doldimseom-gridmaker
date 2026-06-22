@@ -160,7 +160,7 @@ function renderSticker(sticker) {
 }
 
 function updateStickerHandles(el, sticker) {
-  el.querySelectorAll('.sticker-handle, .sk-corner, .sk-unlock, .sk-lock-badge').forEach(function(h){ h.remove(); });
+  el.querySelectorAll('.sticker-handle, .sh-rotate-line, .sk-corner, .sk-unlock, .sk-lock-badge').forEach(function(h){ h.remove(); });
   var isSelected = selectedStickerIds.indexOf(sticker.id) !== -1;
   var isMulti = selectedStickerIds.length > 1;
 
@@ -206,7 +206,8 @@ function updateStickerHandles(el, sticker) {
     el.appendChild(h);
   });
 
-  /* 회전 핸들 */
+  /* 회전 핸들 — 연결선은 ::before 대신 별도 형제 div(.sh-rotate-line)로 분리(Phase 6 (4),
+     'n' 핸들과의 겹침 해결). 위치는 CSS가 담당, 여기선 마크업 생성만 */
   var rotH = document.createElement('div');
   rotH.className = 'sticker-handle rotate';
   rotH.innerHTML = ROT_SVG;
@@ -214,6 +215,10 @@ function updateStickerHandles(el, sticker) {
   if (isMulti) bindRotateHandleMulti(rotH, sticker);
   else bindRotateHandle(rotH, sticker);
   el.appendChild(rotH);
+
+  var rotLine = document.createElement('div');
+  rotLine.className = 'sh-rotate-line';
+  el.appendChild(rotLine);
 
   /* sk-corner (단일 선택 시 — 잠금 + 삭제 세로 미니바) */
   if (!isMulti) {
