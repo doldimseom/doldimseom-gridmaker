@@ -195,7 +195,7 @@
                 <button class="tile" onclick="applyAllStroke(2)"><div class="tile-ico"><div class="prev st2"></div></div><span class="tile-lbl">강</span></button>
               </div>
             </div>
-            <div class="cpC-chip" onclick="if(event.target.tagName!=='INPUT')document.getElementById('global-bg-picker').click()">
+            <div class="cpC-chip" onclick="if(event.target.tagName!=='INPUT')gmOpenColorPicker(this,{pickerId:'global-bg-picker',defaultHex:'#ffffff',label:'전체 블록 배경색'})">
               <span class="cw" id="global-bg-swatch" style="background:#fff">
                 <input type="color" id="global-bg-picker" value="#ffffff"
                   oninput="updateGlobal('bgColor',this.value); this.closest('.cw').style.background=this.value; var h=document.getElementById('global-bg-hex'); if(h)h.value=this.value.toUpperCase()">
@@ -215,7 +215,7 @@
                 <option value="Cinzel">Cinzel</option>
               </select>
             </div>
-            <div class="cpC-chip" onclick="if(event.target.tagName!=='INPUT')document.getElementById('global-font-color-picker').click()">
+            <div class="cpC-chip" onclick="if(event.target.tagName!=='INPUT')gmOpenColorPicker(this,{pickerId:'global-font-color-picker',defaultHex:'#212121',label:'전체 폰트 색상'})">
               <span class="cw" id="global-font-color-cw" style="background:#212121">
                 <input type="color" id="global-font-color-picker" value="#212121"
                   oninput="updateGlobal('fontColor',this.value); this.closest('.cw').style.background=this.value; var h=document.getElementById('global-font-color-hex'); if(h)h.value=this.value.toUpperCase()">
@@ -286,7 +286,7 @@
               <span class="png-toggle-label">여백 포함</span>
               <button class="png-sw on" id="png-margin-sw" onclick="togglePngMargin()" title="여백 포함 on/off"></button>
             </div>
-            <div class="cpC-chip" id="png-bg-row" onclick="if(event.target.tagName!=='INPUT')document.getElementById('png-bg-picker').click()">
+            <div class="cpC-chip" id="png-bg-row" onclick="if(event.target.tagName!=='INPUT')gmOpenColorPicker(this,{pickerId:'png-bg-picker',defaultHex:'#f2f2f2',label:'PNG 여백 배경색'})">
               <span class="cw" id="png-bg-swatch" style="background:#f2f2f2">
                 <input type="color" id="png-bg-picker" value="#f2f2f2"
                   oninput="updatePngBg(this.value)">
@@ -384,7 +384,7 @@
                 <span class="row-lbl">텍스트</span>
                 <input class="row-input" type="text" id="bp-nav-text" value="← BACK" oninput="syncHeaderProp('navText',this.value)">
               </div>
-              <div class="cpC-chip" style="margin-bottom:8px;" onclick="if(event.target.tagName!=='INPUT')document.getElementById('bp-nav-bg-color').click()">
+              <div class="cpC-chip" style="margin-bottom:8px;" onclick="if(event.target.tagName!=='INPUT')gmOpenColorPicker(this,{pickerId:'bp-nav-bg-color',defaultHex:'#ffffff',label:'네비바 배경색'})">
                 <span class="cw" id="bp-nav-bg-swatch" style="background:#ffffff">
                   <input type="color" id="bp-nav-bg-color" value="#ffffff"
                     oninput="syncHeaderProp('navBgColor',this.value); this.closest('.cw').style.background=this.value; var h=document.getElementById('bp-nav-bg-label'); if(h)h.value=this.value.toUpperCase()">
@@ -395,7 +395,7 @@
                     oninput="var v=this.value.trim(); if(/^#[0-9a-fA-F]{6}$/.test(v)){var p=document.getElementById('bp-nav-bg-color'); if(p){p.value=v; document.getElementById('bp-nav-bg-swatch').style.background=v; syncHeaderProp('navBgColor',v);}}">
                 </span>
               </div>
-              <div class="cpC-chip" style="margin-bottom:14px;" onclick="if(event.target.tagName!=='INPUT')document.getElementById('bp-nav-font-color').click()">
+              <div class="cpC-chip" style="margin-bottom:14px;" onclick="if(event.target.tagName!=='INPUT')gmOpenColorPicker(this,{pickerId:'bp-nav-font-color',defaultHex:'#212121',label:'네비바 텍스트색'})">
                 <span class="cw" id="bp-nav-font-swatch" style="background:#212121">
                   <input type="color" id="bp-nav-font-color" value="#212121"
                     oninput="syncHeaderProp('navFontColor',this.value); this.closest('.cw').style.background=this.value; var h=document.getElementById('bp-nav-font-label'); if(h)h.value=this.value.toUpperCase()">
@@ -434,7 +434,7 @@
         <section class="grp">
           <div class="grp-head">배경</div>
           <div class="grp-body">
-            <div class="cpC-chip" onclick="if(event.target.tagName!=='INPUT')document.getElementById('bp-banner-bg-color').click()">
+            <div class="cpC-chip" onclick="if(event.target.tagName!=='INPUT')gmOpenColorPicker(this,{pickerId:'bp-banner-bg-color',defaultHex:'#5B7CE6',label:'배너 배경색'})">
               <span class="cw" id="bp-banner-bg-swatch" style="background:#5B7CE6">
                 <input type="color" id="bp-banner-bg-color" value="#5B7CE6"
                   oninput="syncHeaderProp('bannerBgColor',this.value); var h=document.getElementById('bp-banner-bg-label'); if(h)h.value=this.value.toUpperCase()">
@@ -482,7 +482,7 @@
         <section class="grp">
           <div class="grp-head">배경색</div>
           <div class="grp-body">
-            <div class="cpC-chip" id="bgl-color-chip" onclick="if(event.target.tagName!=='INPUT'&&!event.target.closest('#bgl-color-clear'))document.getElementById('bgl-color-picker').click()">
+            <div class="cpC-chip" id="bgl-color-chip" onclick="if(event.target.tagName!=='INPUT'&&!event.target.closest('#bgl-color-clear'))gmOpenColorPicker(this,{pickerId:'bgl-color-picker',defaultHex:'#F4F4F5',label:'배경지 배경색'})">
               <span class="cw" id="bgl-color-cw" style="background:transparent;background-image:linear-gradient(45deg,#ccc 25%,transparent 25%,transparent 75%,#ccc 75%),linear-gradient(45deg,#ccc 25%,transparent 25%,transparent 75%,#ccc 75%);background-size:8px 8px;background-position:0 0,4px 4px;">
                 <input type="color" id="bgl-color-picker" value="#F4F4F5" oninput="updateBgLayerColor(this.value)">
               </span>
@@ -556,7 +556,7 @@
                   <button class="tile"    id="bgl-ga-45" onclick="setBgLayerGridAngle(45)"><span class="tile-lbl">45°</span></button>
                 </div>
               </div>
-              <div class="cpC-chip" onclick="if(event.target.tagName!=='INPUT')document.getElementById('bgl-grid-color-picker').click()">
+              <div class="cpC-chip" onclick="if(event.target.tagName!=='INPUT')gmOpenColorPicker(this,{pickerId:'bgl-grid-color-picker',defaultHex:'#D4D4D8',label:'모눈종이 선 색상'})">
                 <span class="cw" id="bgl-grid-color-swatch" style="background:#D4D4D8;">
                   <input type="color" id="bgl-grid-color-picker" value="#D4D4D8" oninput="setBgLayerGridColor(this.value)">
                 </span>
@@ -631,7 +631,7 @@
               <div class="psg-hint">↔ 마커를 드래그해 위치를 조정하세요</div>
               <!-- 색·불투명도 에디터 -->
               <div class="psg-editor">
-                <div class="cpC-chip" style="margin-bottom:9px;">
+                <div class="cpC-chip" style="margin-bottom:9px;" onclick="if(event.target.tagName!=='INPUT')gmOpenColorPicker(this,{pickerId:'bp-gstop-hex',label:'그라디언트 색상'})">
                   <span class="cw" id="bp-gstop-sw" style="background:rgba(0,0,0,0);"><input type="color" id="bp-gstop-hex" value="#000000" oninput="_onGradStopColorInput(this.value)"></span>
                   <span class="meta"><span class="nm">색상</span><input class="hexedit" id="bp-gstop-hexedit" value="#000000" spellcheck="false" onchange="_onGradStopHexEdit(this.value)"></span>
                 </div>
@@ -788,7 +788,7 @@
           <section class="grp">
             <div class="grp-head">포인트색</div>
             <div class="grp-body">
-              <div class="cpC-chip">
+              <div class="cpC-chip" onclick="if(event.target.tagName!=='INPUT')gmOpenColorPicker(this,{pickerId:'bp-item-pt-color',defaultHex:'#5B7CE6',label:'포인트색'})">
                 <span class="cw" id="bp-item-pt-swatch" style="background:#5B7CE6"><input type="color" id="bp-item-pt-color" value="#5B7CE6" oninput="syncItemPtColor(this.value)"></span>
                 <span class="meta"><span class="nm">포인트색</span><input class="hexedit" id="bp-item-pt-hexedit" value="#5B7CE6" spellcheck="false" oninput="var v=this.value.trim().replace(/^([^#])/,'#$1');if(/^#[0-9a-fA-F]{6}$/.test(v))syncItemPtColor(v)"></span>
               </div>
@@ -904,7 +904,7 @@
             </div>
 
             <div class="field">
-              <div class="cpC-chip">
+              <div class="cpC-chip" onclick="if(event.target.tagName!=='INPUT')gmOpenColorPicker(this,{pickerId:'bp-bg-color',defaultHex:'#ffffff',label:'배경색'})">
                 <span class="cw" id="bp-color-swatch" style="background:#ffffff"><input type="color" id="bp-bg-color" value="#ffffff" oninput="syncBgColor(this.value)"></span>
                 <span class="meta"><span class="nm">배경색</span><input class="hexedit" id="bp-color-hexedit" value="#FFFFFF" spellcheck="false" oninput="var v=this.value.trim().replace(/^([^#])/,'#$1');if(/^#[0-9a-fA-F]{6}$/.test(v))syncBgColor(v)"></span>
               </div>
