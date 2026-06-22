@@ -106,6 +106,29 @@ function gmOpenColorPicker(triggerEl, opts) {
   _gmCpRenderCustomRow();
 
   pop.classList.add('open');
+
+  /* 뷰포트 밖으로 나가지 않게 위치 보정 — 팝오버가 열려서 실제 크기(외곽선 강도 행·맞춤색상
+     줄 수에 따라 가변)가 확정된 뒤에 측정해야 정확함 */
+  _gmCpClampToViewport(pop, rect);
+}
+
+function _gmCpClampToViewport(pop, triggerRect) {
+  var margin = 8;
+  var pw = pop.offsetWidth, ph = pop.offsetHeight;
+  var vw = window.innerWidth, vh = window.innerHeight;
+
+  var left = triggerRect.left;
+  if (left + pw > vw - margin) left = vw - pw - margin;
+  if (left < margin) left = margin;
+
+  var top = triggerRect.bottom + margin;
+  if (top + ph > vh - margin) {
+    var topAbove = triggerRect.top - ph - margin;
+    top = topAbove >= margin ? topAbove : Math.max(margin, vh - ph - margin);
+  }
+
+  pop.style.left = left + 'px';
+  pop.style.top = top + 'px';
 }
 
 function gmCloseColorPicker() {
