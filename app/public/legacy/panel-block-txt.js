@@ -1,4 +1,20 @@
 /* panel-block-txt.js — 리팩토링 2단계 7번째 조각: 텍스트 서식 플로팅 툴바 + 텍스트 편집 커밋 (두 군데로 나뉜 블록을 합침, app/public/legacy/main.js에서 추출, 로직 변경 없음) */
+
+/* 정렬·목록 split버튼 아이콘부에 현재 상태를 보여주기 위한 SVG path (Phase 6 (3)) */
+var TFB_ALIGN_SVG = {
+  left:   '<path d="M15 12H3"/><path d="M17 18H3"/><path d="M21 6H3"/>',
+  center: '<path d="M17 12H7"/><path d="M19 18H5"/><path d="M21 6H3"/>',
+  right:  '<path d="M21 12H9"/><path d="M21 18H7"/><path d="M21 6H3"/>'
+};
+var TFB_LIST_SVG = {
+  'none':           '<line x1="2" y1="6" x2="20" y2="6" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="13" x2="16" y2="13" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/>',
+  'bullet-circle':  '<circle cx="3" cy="6.5" r="2.2" fill="#3A3A3A"/><line x1="7.5" y1="6.5" x2="20" y2="6.5" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/><circle cx="3" cy="13" r="2.2" fill="#3A3A3A"/><line x1="7.5" y1="13" x2="16" y2="13" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/>',
+  'bullet-check':   '<polyline points="1,7 3.5,9.5 7.5,3.5" stroke="#3A3A3A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><line x1="9.5" y1="6.5" x2="20" y2="6.5" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/><polyline points="1,14 3.5,16.5 7.5,10.5" stroke="#3A3A3A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><line x1="9.5" y1="13" x2="16" y2="13" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/>',
+  'bullet-tri':     '<polygon points="1,4 6.5,6.5 1,9" fill="#3A3A3A"/><line x1="8.5" y1="6.5" x2="20" y2="6.5" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/><polygon points="1,11 6.5,13.5 1,16" fill="#3A3A3A"/><line x1="8.5" y1="13" x2="16" y2="13" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/>',
+  'bullet-arrow':   '<path d="M1 6.5 H6 M4.5 4.5 L6.5 6.5 L4.5 8.5" stroke="#3A3A3A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><line x1="8.5" y1="6.5" x2="20" y2="6.5" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/><path d="M1 13.5 H6 M4.5 11.5 L6.5 13.5 L4.5 15.5" stroke="#3A3A3A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><line x1="8.5" y1="13" x2="16" y2="13" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/>',
+  'bullet-diamond': '<polygon points="3.5,4 6.5,6.5 3.5,9 0.5,6.5" fill="#3A3A3A"/><line x1="8.5" y1="6.5" x2="20" y2="6.5" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/><polygon points="3.5,11 6.5,13.5 3.5,16 0.5,13.5" fill="#3A3A3A"/><line x1="8.5" y1="13" x2="16" y2="13" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/>',
+  'numbered':       '<text x="0" y="8.5" font-size="7" font-weight="700" fill="#3A3A3A" font-family="sans-serif">1.</text><line x1="8.5" y1="6.5" x2="20" y2="6.5" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/><text x="0" y="15.5" font-size="7" font-weight="700" fill="#3A3A3A" font-family="sans-serif">2.</text><line x1="8.5" y1="13" x2="16" y2="13" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/>'
+};
 /* ══════════════════════════════════════════
    텍스트 서식 플로팅 툴바 제어
 ══════════════════════════════════════════ */
@@ -33,22 +49,27 @@ function showTxtFormatBar(blk) {
   if (sv) sv.textContent = curSz;
   _tfbUpdatePresetName(curSz);
   _tfbInitScrub();
-  /* 정렬 active */
+  /* 정렬 active + split버튼 아이콘부 동기화 */
+  var alignVal = blk.textAlign || 'left';
   ['left','center','right'].forEach(function(a) {
     var btn = document.getElementById('tfb-align-' + a);
-    if (btn) btn.classList.toggle('active', (blk.textAlign || 'left') === a);
+    if (btn) btn.classList.toggle('on', alignVal === a);
   });
+  var alignCurSvg = document.getElementById('tfb-align-cur-svg');
+  if (alignCurSvg) alignCurSvg.innerHTML = TFB_ALIGN_SVG[alignVal];
   /* B/I/U — 블록 기본값 표시 (인라인 서식은 선택 범위 기반이므로 항상 off) */
   ['bold','italic','underline'].forEach(function(k) {
     var btn = document.getElementById('tfb-' + k);
     if (btn) btn.classList.remove('active');
   });
-  /* 목록 타일 active (문단▾ 팝오버) */
+  /* 목록 타일 active + split버튼 아이콘부 동기화 */
   var lm = blk.listMode || 'none';
   ['none','bullet-circle','bullet-check','bullet-tri','bullet-arrow','bullet-diamond','numbered'].forEach(function(m) {
     var tbtn = document.getElementById('tfb-lm-' + m);
     if (tbtn) tbtn.classList.toggle('on', m === lm);
   });
+  var listCurSvg = document.getElementById('tfb-list-cur-svg');
+  if (listCurSvg) listCurSvg.innerHTML = TFB_LIST_SVG[lm];
   /* 색상 언더라인 */
   var colUl = document.getElementById('tfb-color-underline');
   if (colUl) colUl.style.background = blk.fontColor || '#212121';
@@ -431,6 +452,10 @@ function tfbApply(prop, val) {
   /* 툴바 UI 갱신 */
   var blk = getSelBlk();
   if (blk) showTxtFormatBar(blk);
+  /* 정렬·목록 팝오버 내 타일 클릭으로 적용한 경우 팝오버 닫기 (시안 ③ "타일 클릭 시 직접
+     적용 + 팝오버 닫음") — 아이콘부 순환 클릭(tfbCycleAlign/tfbCycleList)은 팝오버를 연
+     적 없으므로 영향 없음 */
+  if (prop === 'align' || prop === 'listMode') _tfbClosePops();
 }
 
 function tfbApplyPreset(val) {
@@ -501,19 +526,19 @@ function tfbToggle(type) {
   if (btn2) btn2.classList.toggle('active', document.queryCommandState(cmdMap[type]));
 }
 
-/* 문단▾ 등 팝오버 토글 */
+/* 정렬·목록 split버튼 캐럿 · 글꼴▾ · 텍스트종류▾ 등 팝오버 토글 */
 function _tfbClosePops() {
-  ['tfb-para-pop','tfb-font-pop','tfb-preset-pop'].forEach(function(id) {
+  ['tfb-align-pop','tfb-list-pop','tfb-font-pop','tfb-preset-pop'].forEach(function(id) {
     var el = document.getElementById(id); if (el) el.classList.remove('open');
   });
-  ['tfb-para-btn','tfb-font-btn','tfb-preset-btn'].forEach(function(id) {
+  ['tfb-align-caret','tfb-list-caret','tfb-font-btn','tfb-preset-btn'].forEach(function(id) {
     var el = document.getElementById(id); if (el) el.classList.remove('active');
   });
 }
 
 function tfbOpenPop(id) {
-  var popIds = ['tfb-para-pop','tfb-font-pop','tfb-preset-pop'];
-  var btnIds = { 'tfb-para-pop':'tfb-para-btn', 'tfb-font-pop':'tfb-font-btn', 'tfb-preset-pop':'tfb-preset-btn' };
+  var popIds = ['tfb-align-pop','tfb-list-pop','tfb-font-pop','tfb-preset-pop'];
+  var btnIds = { 'tfb-align-pop':'tfb-align-caret', 'tfb-list-pop':'tfb-list-caret', 'tfb-font-pop':'tfb-font-btn', 'tfb-preset-pop':'tfb-preset-btn' };
   var target = document.getElementById(id);
   var isOpen = target && target.classList.contains('open');
   /* 모두 닫기 + 버튼 inactive */
@@ -673,6 +698,17 @@ function tfbCycleList() {
   var cur = blk.listMode || 'none';
   var next = modes[(modes.indexOf(cur) + 1) % modes.length];
   tfbApply('listMode', next);
+}
+
+/* 정렬 순환 (왼쪽 → 가운데 → 오른쪽 → 왼쪽) */
+function tfbCycleAlign() {
+  if (!selKey) return;
+  var blk = getSelBlk();
+  if (!blk) return;
+  var modes = ['left','center','right'];
+  var cur = blk.textAlign || 'left';
+  var next = modes[(modes.indexOf(cur) + 1) % modes.length];
+  tfbApply('align', next);
 }
 
 /* 블록 서식 초기화 */

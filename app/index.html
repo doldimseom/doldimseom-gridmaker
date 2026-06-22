@@ -1091,11 +1091,34 @@
 
       <div class="tfb-sep"></div>
 
-      <!-- 문단▾ (정렬 + 목록) -->
-      <div class="tfb-group tfb-pop-wrap">
-        <button class="tfb-pop-btn" id="tfb-para-btn" onclick="tfbOpenPop('tfb-para-pop')">
-          문단<span class="tfb-caret">▾</span>
-          <span class="tfb-tip">정렬 · 목록</span>
+      <!-- 정렬 split버튼 (아이콘=순환, 캐럿=목록) -->
+      <div class="tfb-group tfb-pop-wrap align-wrap">
+        <button class="tfb-btn align-cycle" onclick="tfbCycleAlign()">
+          <svg id="tfb-align-cur-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3A3A3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 12H3"/><path d="M17 18H3"/><path d="M21 6H3"/></svg>
+          <span class="tfb-tip">정렬 (클릭으로 순환)</span>
+        </button>
+        <button class="align-caret" id="tfb-align-caret" onclick="tfbOpenPop('tfb-align-pop')">
+          <span class="tfb-caret">▾</span>
+          <span class="tfb-tip">정렬 목록</span>
+        </button>
+      </div>
+
+      <div class="tfb-sep"></div>
+
+      <!-- 목록 split버튼 (아이콘=순환, 캐럿=목록) -->
+      <div class="tfb-group tfb-pop-wrap align-wrap">
+        <button class="tfb-btn list-cycle" onclick="tfbCycleList()">
+          <svg id="tfb-list-cur-svg" width="16" height="13" viewBox="0 0 22 18" fill="none">
+            <circle cx="3" cy="6.5" r="2.2" fill="#3A3A3A"/>
+            <line x1="7.5" y1="6.5" x2="20" y2="6.5" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="3" cy="13" r="2.2" fill="#3A3A3A"/>
+            <line x1="7.5" y1="13" x2="16" y2="13" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <span class="tfb-tip">목록 (클릭으로 순환)</span>
+        </button>
+        <button class="align-caret" id="tfb-list-caret" onclick="tfbOpenPop('tfb-list-pop')">
+          <span class="tfb-caret">▾</span>
+          <span class="tfb-tip">목록 종류</span>
         </button>
       </div>
 
@@ -1334,32 +1357,48 @@
   <button class="tfb-preset-item" data-sz="10" onclick="tfbApplyPreset('10')"><span>캡션</span><span class="tfb-sz-badge">10px</span><span class="tfb-fi-check">✓</span></button>
 </div>
 
-<div class="tfb-popover" id="tfb-para-pop">
+<div class="tfb-popover" id="tfb-align-pop" style="min-width:auto;">
   <div class="tfb-pop-label">정렬</div>
   <div class="tfb-pop-row">
-    <button class="tfb-btn" id="tfb-align-left" onclick="tfbApply('align','left')">
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><line x1="2" y1="4" x2="14" y2="4" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="8" x2="10" y2="8" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="12" x2="12" y2="12" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/></svg>
+    <button class="tfb-btn align-tile" id="tfb-align-left" onclick="tfbApply('align','left')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3A3A3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 12H3"/><path d="M17 18H3"/><path d="M21 6H3"/></svg>
       <span class="tfb-tip">왼쪽 정렬</span>
     </button>
-    <button class="tfb-btn" id="tfb-align-center" onclick="tfbApply('align','center')">
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><line x1="2" y1="4" x2="14" y2="4" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/><line x1="4" y1="8" x2="12" y2="8" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/><line x1="3" y1="12" x2="13" y2="12" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/></svg>
+    <button class="tfb-btn align-tile" id="tfb-align-center" onclick="tfbApply('align','center')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3A3A3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 12H7"/><path d="M19 18H5"/><path d="M21 6H3"/></svg>
       <span class="tfb-tip">가운데 정렬</span>
     </button>
-    <button class="tfb-btn" id="tfb-align-right" onclick="tfbApply('align','right')">
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><line x1="2" y1="4" x2="14" y2="4" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/><line x1="6" y1="8" x2="14" y2="8" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/><line x1="4" y1="12" x2="14" y2="12" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/></svg>
+    <button class="tfb-btn align-tile" id="tfb-align-right" onclick="tfbApply('align','right')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3A3A3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12H9"/><path d="M21 18H7"/><path d="M21 6H3"/></svg>
       <span class="tfb-tip">오른쪽 정렬</span>
     </button>
   </div>
-  <div class="tfb-pop-sep"></div>
-  <div class="tfb-pop-label">목록</div>
+</div>
+
+<div class="tfb-popover" id="tfb-list-pop" style="min-width:196px;">
+  <div class="tfb-pop-label">목록 종류</div>
   <div class="tfb-pop-tiles">
-    <button class="tfb-tile" id="tfb-lm-none"           onclick="tfbApply('listMode','none')"><span class="tfb-tile-lbl">없음</span></button>
-    <button class="tfb-tile" id="tfb-lm-bullet-circle"  onclick="tfbApply('listMode','bullet-circle')"><span class="tfb-tile-lbl">• 원</span></button>
-    <button class="tfb-tile" id="tfb-lm-bullet-check"   onclick="tfbApply('listMode','bullet-check')"><span class="tfb-tile-lbl">✔ 체크</span></button>
-    <button class="tfb-tile" id="tfb-lm-bullet-tri"     onclick="tfbApply('listMode','bullet-tri')"><span class="tfb-tile-lbl">‣ 삼각</span></button>
-    <button class="tfb-tile" id="tfb-lm-bullet-arrow"   onclick="tfbApply('listMode','bullet-arrow')"><span class="tfb-tile-lbl">➤ 화살표</span></button>
-    <button class="tfb-tile" id="tfb-lm-bullet-diamond" onclick="tfbApply('listMode','bullet-diamond')"><span class="tfb-tile-lbl">❖ 다이아</span></button>
-    <button class="tfb-tile" id="tfb-lm-numbered"       onclick="tfbApply('listMode','numbered')"><span class="tfb-tile-lbl">1. 번호</span></button>
+    <button class="tfb-tile" id="tfb-lm-none" onclick="tfbApply('listMode','none')">
+      <svg width="22" height="18" viewBox="0 0 22 18" fill="none"><line x1="2" y1="6" x2="20" y2="6" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="13" x2="16" y2="13" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+    <button class="tfb-tile" id="tfb-lm-bullet-circle" onclick="tfbApply('listMode','bullet-circle')">
+      <svg width="22" height="18" viewBox="0 0 22 18" fill="none"><circle cx="3" cy="6.5" r="2.2" fill="#3A3A3A"/><line x1="7.5" y1="6.5" x2="20" y2="6.5" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/><circle cx="3" cy="13" r="2.2" fill="#3A3A3A"/><line x1="7.5" y1="13" x2="16" y2="13" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+    <button class="tfb-tile" id="tfb-lm-bullet-check" onclick="tfbApply('listMode','bullet-check')">
+      <svg width="22" height="18" viewBox="0 0 22 18" fill="none"><polyline points="1,7 3.5,9.5 7.5,3.5" stroke="#3A3A3A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><line x1="9.5" y1="6.5" x2="20" y2="6.5" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/><polyline points="1,14 3.5,16.5 7.5,10.5" stroke="#3A3A3A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><line x1="9.5" y1="13" x2="16" y2="13" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+    <button class="tfb-tile" id="tfb-lm-bullet-tri" onclick="tfbApply('listMode','bullet-tri')">
+      <svg width="22" height="18" viewBox="0 0 22 18" fill="none"><polygon points="1,4 6.5,6.5 1,9" fill="#3A3A3A"/><line x1="8.5" y1="6.5" x2="20" y2="6.5" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/><polygon points="1,11 6.5,13.5 1,16" fill="#3A3A3A"/><line x1="8.5" y1="13" x2="16" y2="13" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+    <button class="tfb-tile" id="tfb-lm-bullet-arrow" onclick="tfbApply('listMode','bullet-arrow')">
+      <svg width="22" height="18" viewBox="0 0 22 18" fill="none"><path d="M1 6.5 H6 M4.5 4.5 L6.5 6.5 L4.5 8.5" stroke="#3A3A3A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><line x1="8.5" y1="6.5" x2="20" y2="6.5" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/><path d="M1 13.5 H6 M4.5 11.5 L6.5 13.5 L4.5 15.5" stroke="#3A3A3A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><line x1="8.5" y1="13" x2="16" y2="13" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+    <button class="tfb-tile" id="tfb-lm-bullet-diamond" onclick="tfbApply('listMode','bullet-diamond')">
+      <svg width="22" height="18" viewBox="0 0 22 18" fill="none"><polygon points="3.5,4 6.5,6.5 3.5,9 0.5,6.5" fill="#3A3A3A"/><line x1="8.5" y1="6.5" x2="20" y2="6.5" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/><polygon points="3.5,11 6.5,13.5 3.5,16 0.5,13.5" fill="#3A3A3A"/><line x1="8.5" y1="13" x2="16" y2="13" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+    <button class="tfb-tile" id="tfb-lm-numbered" onclick="tfbApply('listMode','numbered')">
+      <svg width="22" height="18" viewBox="0 0 22 18"><text x="0" y="8.5" font-size="7" font-weight="700" fill="#3A3A3A" font-family="sans-serif">1.</text><line x1="8.5" y1="6.5" x2="20" y2="6.5" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/><text x="0" y="15.5" font-size="7" font-weight="700" fill="#3A3A3A" font-family="sans-serif">2.</text><line x1="8.5" y1="13" x2="16" y2="13" stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
   </div>
 </div>
 
