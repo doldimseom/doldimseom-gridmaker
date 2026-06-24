@@ -1195,6 +1195,31 @@ function syncBlkVAlign(v) {
   render();
 }
 
+function syncBlkAlign9(h, v) {
+  if (!selKey) return;
+  var blk = getSelBlk(); if (!blk) return;
+  if (!_pendingHistorySave) { saveHistory(); _pendingHistorySave = true; }
+  if (blk.type === 'txt')            blk.textAlign = h;
+  else if (blk.type === 'colorchip') blk.ccAlign   = h;
+  else if (blk.type === 'item')      blk.itemAlign  = h;
+  blk.vAlign = v;
+  render();
+  _refreshBpAlign9(blk);
+}
+
+function _refreshBpAlign9(blk) {
+  if (!blk) return;
+  var h = blk.type === 'txt'       ? (blk.textAlign  || 'left')
+        : blk.type === 'colorchip' ? (blk.ccAlign    || 'left')
+        :                             (blk.itemAlign  || 'left');
+  var v = blk.vAlign || 'center';
+  var grid = document.getElementById('bp-' + blk.type + '-align9');
+  if (!grid) return;
+  grid.querySelectorAll('.align9-btn').forEach(function(btn) {
+    btn.classList.toggle('on', btn.dataset.h === h && btn.dataset.v === v);
+  });
+}
+
 function toggleBgRemove() {
   if (!selKey) return;
   var blk = getSelBlk(); if (!blk) return;
@@ -1267,6 +1292,7 @@ function _refreshBpTiles(blk) {
   var cBtn = document.getElementById('bp-halign-center');
   if (lBtn) lBtn.classList.toggle('on', ha === 'left');
   if (cBtn) cBtn.classList.toggle('on', ha === 'center');
+  _refreshBpAlign9(blk);
 }
 
 function applyAllStroke(val) {
@@ -1513,6 +1539,7 @@ function syncTextStyle(prop, val) {
     var cB = document.getElementById('bp-halign-center');
     if (lB) lB.classList.toggle('on', val === 'left');
     if (cB) cB.classList.toggle('on', val === 'center');
+    _refreshBpAlign9(blk);
   } else if (prop === 'fontFamily') {
     blk.fontFamily = val;
   } else if (prop === 'fontColor') {

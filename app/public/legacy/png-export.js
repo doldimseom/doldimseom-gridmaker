@@ -801,11 +801,14 @@ function saveAsPNG() {
 
       var textStartY = by + pad;
 
+      var _tVA = blk.vAlign || 'center';
+
       if (hasSpanFormat) {
-        /* span 단위 렌더링 — 항상 수직 중앙정렬 */
         var totalTextH = wrapSpans(blk.spans, textX, 0, maxTextW, lineH, true);
         var innerH = bh - pad * 2;
-        var offset = Math.max(0, (innerH - totalTextH) / 2);
+        var offset = _tVA === 'top'    ? 0
+                   : _tVA === 'bottom' ? Math.max(0, innerH - totalTextH)
+                   :                     Math.max(0, (innerH - totalTextH) / 2);
         textStartY = by + pad + offset;
         wrapSpans(blk.spans, textX, textStartY, maxTextW, lineH, false);
       } else {
@@ -827,10 +830,11 @@ function saveAsPNG() {
             return line;
           }).join('\n');
         }
-        /* 단색 렌더링 — 항상 수직 중앙정렬 */
         var totalTextH = wrapText(renderText, textX, 0, maxTextW, lineH, true);
         var innerH = bh - pad * 2;
-        var offset = Math.max(0, (innerH - totalTextH) / 2);
+        var offset = _tVA === 'top'    ? 0
+                   : _tVA === 'bottom' ? Math.max(0, innerH - totalTextH)
+                   :                     Math.max(0, (innerH - totalTextH) / 2);
         textStartY = by + pad + offset;
         wrapText(renderText, textX, textStartY, maxTextW, lineH, false, pTsh);
       }
@@ -854,9 +858,21 @@ function saveAsPNG() {
       var ccFSize    = Math.round(11 * ccSizeScale * ccFontScale);
       var showSwatch = blk.showSwatch !== false;
       var showText   = blk.showText === true;
-      var ccAlignCenter = blk.ccAlign === 'center';
+      var ccHAlign   = blk.ccAlign || 'left';
+      var ccVAlign   = blk.vAlign  || 'center';
       var ccDescGap  = 8;
       var ccAvailW   = bw - ccPad * 2;
+      var _ccRowX = function(rowW) {
+        return ccHAlign === 'center' ? bx + ccPad + (ccAvailW - rowW) / 2
+             : ccHAlign === 'right'  ? bx + ccPad + (ccAvailW - rowW)
+             :                         bx + ccPad;
+      };
+      var _ccStartY = function(totalH) {
+        var avail = bh - ccPad * 2;
+        return by + ccPad + (ccVAlign === 'top'    ? 0
+                           : ccVAlign === 'bottom' ? Math.max(0, avail - totalH)
+                           :                         Math.max(0, (avail - totalH) / 2));
+      };
 
       ctx.font         = '600 ' + ccFSize + 'px \'' + ccFont + '\', \'Pretendard\', sans-serif';
       ctx.textBaseline = 'middle';
@@ -883,11 +899,11 @@ function saveAsPNG() {
           ccRowWidths2[ri] = ccRowWidths2[ri] > 0 ? ccRowWidths2[ri] + ccGap + rowW : rowW;
         });
         var ccTotalH2 = ccRows2.length * ccChipH + Math.max(0, ccRows2.length - 1) * ccGap;
-        var ccStartY2 = by + ccPad + Math.max(0, (bh - ccPad * 2 - ccTotalH2) / 2);
+        var ccStartY2 = _ccStartY(ccTotalH2);
         ccRows2.forEach(function(row, ri) {
           var rowY = ccStartY2 + ri * (ccChipH + ccGap);
           if (rowY + ccChipH > by + bh) return;
-          var curX = ccAlignCenter ? bx + ccPad + (ccAvailW - ccRowWidths2[ri]) / 2 : bx + ccPad;
+          var curX = _ccRowX(ccRowWidths2[ri]);
           row.forEach(function(item) {
             var chipRadPx = Math.round(ccChipH / 2 * ccRad / 50);
             if (showSwatch) {
@@ -933,11 +949,11 @@ function saveAsPNG() {
           ccRowWidths[ri] = ccRowWidths[ri] > 0 ? ccRowWidths[ri] + ccGap + ccw : ccw;
         });
         var ccTotalH = ccRows.length * ccChipH + Math.max(0, ccRows.length - 1) * ccGap;
-        var ccStartY = by + ccPad + Math.max(0, (bh - ccPad * 2 - ccTotalH) / 2);
+        var ccStartY = _ccStartY(ccTotalH);
         ccRows.forEach(function(row, ri) {
           var rowY = ccStartY + ri * (ccChipH + ccGap);
           if (rowY + ccChipH > by + bh) return;
-          var curX = ccAlignCenter ? bx + ccPad + (ccAvailW - ccRowWidths[ri]) / 2 : bx + ccPad;
+          var curX = _ccRowX(ccRowWidths[ri]);
           row.forEach(function(item) {
             var chipRadPx = Math.round(ccChipH / 2 * ccRad / 50);
             if (showSwatch) {
@@ -990,6 +1006,13 @@ function saveAsPNG() {
       var _iX  = bx + _iP;
       var _iY  = by + _iP;
       var _iW  = bw - _iP * 2;
+      var _iVA = blk.vAlign || 'center';
+      var _iVOffset = function(totalH) {
+        var avail = bh - _iP * 2;
+        return _iVA === 'top'    ? 0
+             : _iVA === 'bottom' ? Math.max(0, avail - totalH)
+             :                     Math.max(0, (avail - totalH) / 2);
+      };
 
       ctx.save();
       roundRectPath(bx, by, bw, bh, r);
@@ -1066,8 +1089,7 @@ function saveAsPNG() {
           return lastBottom - startY;
         };
         var _chipTotalH = _runPmChip(_iY, false);
-        var _chipOffset = Math.max(0, (bh - _iP * 2 - _chipTotalH) / 2);
-        _runPmChip(_iY + _chipOffset, true);
+        _runPmChip(_iY + _iVOffset(_chipTotalH), true);
 
       /* ── pm-hair ── */
       } else if (_iPre === 'pm-hair') {
@@ -1126,8 +1148,7 @@ function saveAsPNG() {
           return curY - startY;
         };
         var _hairTotalH = _runPmHair(_iY, false);
-        var _hairOffset = Math.max(0, (bh - _iP * 2 - _hairTotalH) / 2);
-        _runPmHair(_iY + _hairOffset, true);
+        _runPmHair(_iY + _iVOffset(_hairTotalH), true);
 
       /* ── pm-cap ── */
       } else if (_iPre === 'pm-cap') {
@@ -1187,8 +1208,7 @@ function saveAsPNG() {
           return lastBottom - startY;
         };
         var _capTotalH = _runPmCap(_iY, false);
-        var _capOffset = Math.max(0, (bh - _iP * 2 - _capTotalH) / 2);
-        _runPmCap(_iY + _capOffset, true);
+        _runPmCap(_iY + _iVOffset(_capTotalH), true);
 
       /* ── pm-grid (2열 카드) ── */
       } else if (_iPre === 'pm-grid') {
@@ -1240,8 +1260,7 @@ function saveAsPNG() {
            구해(DOM에서 .pm 전체가 .blk-item 안에서 중앙정렬되는 것과 동일하게) 오프셋 계산 */
         var _gTotalH = _gRowH.reduce(function(s, h) { return s + h; }, 0) + Math.max(0, _gRowH.length - 1) * _gGap;
         var _gWholeH = _gPadT + _gTotalH;
-        var _gInnerH = bh - _iP * 2;
-        var _gCurY = _iY + _gPadT + Math.max(0, (_gInnerH - _gWholeH) / 2);
+        var _gCurY = _iY + _gPadT + _iVOffset(_gWholeH);
         _iItms.forEach(function(it, gi) {
           var _col  = gi % 2;
           var _row2 = Math.floor(gi / 2);

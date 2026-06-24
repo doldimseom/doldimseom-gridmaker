@@ -38,12 +38,23 @@ function renderItemContent(blk, el) {
   if (preset === 'pm-chip' && chipStyle === 'outline') cls += ' outline';
   cls += ' dir-' + direction;
   cls += divider ? ' div-line' : ' div-none';
-  cls += blk.itemAlign === 'center' ? ' align-center' : '';
+
+  /* 가로 정렬 (세 값 지원) */
+  var iHA = blk.itemAlign || 'left';
+  var _iAlignStyle = iHA === 'center' ? 'width:fit-content;margin-left:auto;margin-right:auto;'
+                   : iHA === 'right'  ? 'width:fit-content;margin-left:auto;margin-right:0;'
+                   :                    'width:100%;';
+  if (iHA === 'center') cls += ' align-center';
 
   var wrap = document.createElement('div');
   wrap.className = cls;
-  var _wStyle = ptVars(ptColor) + (blk.itemAlign === 'center' ? 'width:fit-content;margin-left:auto;margin-right:auto;' : 'width:100%;');
-  wrap.setAttribute('style', _wStyle);
+  wrap.setAttribute('style', ptVars(ptColor) + _iAlignStyle);
+
+  /* 세로 정렬 — 부모 컨테이너(.blk-item)의 flex justify-content */
+  if (el) {
+    var iVA = blk.vAlign || 'center';
+    el.style.justifyContent = iVA === 'top' ? 'flex-start' : iVA === 'bottom' ? 'flex-end' : 'center';
+  }
 
   /* F-13 4번: 내용 편집은 패널로 이동 — 캔버스 클릭은 패널 "내용" 탭의 해당 행으로 포커스 이동만.
      setTimeout으로 한 틱 미룸 — 이 클릭이 .blk의 el.onclick(블록 선택, showBlockPanel 재호출)으로
@@ -127,11 +138,8 @@ function showItemPanel(blk) {
   document.querySelectorAll('#bp-item-div-tiles .tile').forEach(function(t) {
     t.classList.toggle('on', t.dataset.v === (divider ? 'line' : 'none'));
   });
-  /* 정렬 tiles */
-  var itemAlign = blk.itemAlign === 'center' ? 'center' : 'left';
-  document.querySelectorAll('#bp-item-align-tiles .tile').forEach(function(t) {
-    t.classList.toggle('on', t.dataset.v === itemAlign);
-  });
+  /* 정렬 */
+  _refreshBpAlign9(blk);
   /* 개별 블록 크기·간격 슬라이더 동기화 */
   var isz = blk.itemSizeScale || 100;
   var igp = blk.itemGapScale  || 100;
@@ -276,10 +284,7 @@ function renderColorchipPanel(blk) {
   document.querySelectorAll('#bp-cc-shape-seg .tile').forEach(function(b) {
     b.classList.toggle('on', b.dataset.ccshape === shape);
   });
-  var ccAlignVal = blk.ccAlign === 'center' ? 'center' : 'left';
-  document.querySelectorAll('#bp-cc-align-seg .tile').forEach(function(b) {
-    b.classList.toggle('on', b.dataset.ccalign === ccAlignVal);
-  });
+  _refreshBpAlign9(blk);
   /* 개별 블록 크기·간격·글자크기 슬라이더 동기화 */
   var csz = blk.ccSizeScale || 100;
   var cgp = blk.ccGapScale  || 100;
@@ -717,10 +722,18 @@ function renderColorchipContent(blk, el, key) {
   var ccPadH = Math.round((blk.chipPadH  !== undefined ? blk.chipPadH  : 8)  * sizeScale);
   var ccFontSize = Math.max(9, Math.round(ccSize * 11 / 30 * fontScale));
 
+  /* 세로 정렬 — 부모 컨테이너(.blk-colorchip)의 flex justify-content */
+  if (el) {
+    var ccVA = blk.vAlign || 'center';
+    el.style.justifyContent = ccVA === 'top' ? 'flex-start' : ccVA === 'bottom' ? 'flex-end' : 'center';
+  }
+
   var wrap = document.createElement('div');
   wrap.className = 'cc-block';
   wrap.style.gap = ccGapV + 'px';
-  wrap.style.justifyContent = blk.ccAlign === 'center' ? 'center' : 'flex-start';
+  wrap.style.justifyContent = blk.ccAlign === 'center' ? 'center'
+                            : blk.ccAlign === 'right'  ? 'flex-end'
+                            :                            'flex-start';
 
   chips.forEach(function(chip, idx) {
     if (!chip.id) chip.id = 'cc' + idx + '_' + Date.now();

@@ -335,6 +335,18 @@ body {
 .tiles.c4 .tile { height: 52px; gap: 4px; }
 .tiles.c4 .tile-ico { width: 22px; height: 22px; }
 
+/* ── 9버튼 정렬 위젯 ── */
+.align9-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; width: fit-content; }
+.align9-btn {
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  background: #fff; border: 1.5px solid var(--panel-border); border-radius: 5px;
+  color: var(--text-dim); cursor: pointer;
+  transition: border-color .12s, background .13s;
+}
+.align9-btn:hover:not(.on) { border-color: var(--label-color); }
+.align9-btn.on { border-color: transparent; background: var(--accent-light); color: var(--accent-ink); }
+
 /* ── 타일 내부 미리보기 도형 ── */
 .prev { width: 17px; height: 13px; border: 1.5px solid var(--text-dim); background: #fff; }
 .tile.on .prev { border-color: var(--accent-ink); }

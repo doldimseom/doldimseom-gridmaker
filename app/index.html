@@ -683,6 +683,20 @@
                        oninput="syncLineHeight(this.value)">
               </div>
             </div>
+            <div class="row" style="align-items:flex-start;padding-top:2px;">
+              <span class="row-lbl">정렬</span>
+              <div id="bp-txt-align9" class="align9-grid">
+                <button class="align9-btn" data-h="left"   data-v="top"    title="왼쪽 위"   onclick="syncBlkAlign9('left','top')">  <svg viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="4.5" cy="4.5" r="1.8" fill="currentColor"/></svg></button>
+                <button class="align9-btn" data-h="center" data-v="top"    title="가운데 위" onclick="syncBlkAlign9('center','top')"> <svg viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="8"   cy="4.5" r="1.8" fill="currentColor"/></svg></button>
+                <button class="align9-btn" data-h="right"  data-v="top"    title="오른쪽 위" onclick="syncBlkAlign9('right','top')">  <svg viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="11.5" cy="4.5" r="1.8" fill="currentColor"/></svg></button>
+                <button class="align9-btn" data-h="left"   data-v="center" title="왼쪽 중앙" onclick="syncBlkAlign9('left','center')"><svg viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="4.5" cy="8"   r="1.8" fill="currentColor"/></svg></button>
+                <button class="align9-btn" data-h="center" data-v="center" title="중앙"      onclick="syncBlkAlign9('center','center')"><svg viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="8"   cy="8"   r="1.8" fill="currentColor"/></svg></button>
+                <button class="align9-btn" data-h="right"  data-v="center" title="오른쪽 중앙" onclick="syncBlkAlign9('right','center')"><svg viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="11.5" cy="8"   r="1.8" fill="currentColor"/></svg></button>
+                <button class="align9-btn" data-h="left"   data-v="bottom" title="왼쪽 아래" onclick="syncBlkAlign9('left','bottom')"><svg viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="4.5" cy="11.5" r="1.8" fill="currentColor"/></svg></button>
+                <button class="align9-btn" data-h="center" data-v="bottom" title="가운데 아래" onclick="syncBlkAlign9('center','bottom')"><svg viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="8"   cy="11.5" r="1.8" fill="currentColor"/></svg></button>
+                <button class="align9-btn" data-h="right"  data-v="bottom" title="오른쪽 아래" onclick="syncBlkAlign9('right','bottom')"><svg viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="11.5" cy="11.5" r="1.8" fill="currentColor"/></svg></button>
+              </div>
+            </div>
           </section>
           <!-- 숨김 참조용 -->
           <input type="hidden" id="bp-font-size" value="14">
@@ -718,9 +732,16 @@
               </div>
               <div class="field">
                 <div class="fieldlbl">정렬</div>
-                <div class="tiles c2" id="bp-cc-align-seg">
-                  <button class="tile" data-ccalign="left" onclick="syncCcAlign('left')"><span class="tile-lbl">왼쪽</span></button>
-                  <button class="tile" data-ccalign="center" onclick="syncCcAlign('center')"><span class="tile-lbl">중앙</span></button>
+                <div id="bp-cc-align9" class="align9-grid">
+                  <button class="align9-btn" data-h="left"   data-v="top"    title="왼쪽 위"   onclick="syncBlkAlign9('left','top')">  <svg viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="4.5" cy="4.5" r="1.8" fill="currentColor"/></svg></button>
+                  <button class="align9-btn" data-h="center" data-v="top"    title="가운데 위" onclick="syncBlkAlign9('center','top')"> <svg viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="8"   cy="4.5" r="1.8" fill="currentColor"/></svg></button>
+                  <button class="align9-btn" data-h="right"  data-v="top"    title="오른쪽 위" onclick="syncBlkAlign9('right','top')">  <svg viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="11.5" cy="4.5" r="1.8" fill="currentColor"/></svg></button>
+                  <button class="align9-btn" data-h="left"   data-v="center" title="왼쪽 중앙" onclick="syncBlkAlign9('left','center')"><svg viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="4.5" cy="8"   r="1.8" fill="currentColor"/></svg></button>
+                  <button class="align9-btn" data-h="center" data-v="center" title="중앙"      onclick="syncBlkAlign9('center','center')"><svg viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="8"   cy="8"   r="1.8" fill="currentColor"/></svg></button>
+                  <button class="align9-btn" data-h="right"  data-v="center" title="오른쪽 중앙" onclick="syncBlkAlign9('right','center')"><svg viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="11.5" cy="8"   r="1.8" fill="currentColor"/></svg></button>
+                  <button class="align9-btn" data-h="left"   data-v="bottom" title="왼쪽 아래" onclick="syncBlkAlign9('left','bottom')"><svg viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="4.5" cy="11.5" r="1.8" fill="currentColor"/></svg></button>
+                  <button class="align9-btn" data-h="center" data-v="bottom" title="가운데 아래" onclick="syncBlkAlign9('center','bottom')"><svg viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="8"   cy="11.5" r="1.8" fill="currentColor"/></svg></button>
+                  <button class="align9-btn" data-h="right"  data-v="bottom" title="오른쪽 아래" onclick="syncBlkAlign9('right','bottom')"><svg viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="11.5" cy="11.5" r="1.8" fill="currentColor"/></svg></button>
                 </div>
               </div>
               <div class="field">
@@ -885,9 +906,16 @@
               </div>
               <div class="field">
                 <div class="fieldlbl">정렬</div>
-                <div class="tiles c2" id="bp-item-align-tiles">
-                  <button class="tile on" data-v="left" onclick="syncItemLayout('itemAlign','left')"><span class="tile-lbl">왼쪽</span></button>
-                  <button class="tile" data-v="center" onclick="syncItemLayout('itemAlign','center')"><span class="tile-lbl">중앙</span></button>
+                <div id="bp-item-align9" class="align9-grid">
+                  <button class="align9-btn" data-h="left"   data-v="top"    title="왼쪽 위"   onclick="syncBlkAlign9('left','top')">  <svg viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="4.5" cy="4.5" r="1.8" fill="currentColor"/></svg></button>
+                  <button class="align9-btn" data-h="center" data-v="top"    title="가운데 위" onclick="syncBlkAlign9('center','top')"> <svg viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="8"   cy="4.5" r="1.8" fill="currentColor"/></svg></button>
+                  <button class="align9-btn" data-h="right"  data-v="top"    title="오른쪽 위" onclick="syncBlkAlign9('right','top')">  <svg viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="11.5" cy="4.5" r="1.8" fill="currentColor"/></svg></button>
+                  <button class="align9-btn" data-h="left"   data-v="center" title="왼쪽 중앙" onclick="syncBlkAlign9('left','center')"><svg viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="4.5" cy="8"   r="1.8" fill="currentColor"/></svg></button>
+                  <button class="align9-btn" data-h="center" data-v="center" title="중앙"      onclick="syncBlkAlign9('center','center')"><svg viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="8"   cy="8"   r="1.8" fill="currentColor"/></svg></button>
+                  <button class="align9-btn" data-h="right"  data-v="center" title="오른쪽 중앙" onclick="syncBlkAlign9('right','center')"><svg viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="11.5" cy="8"   r="1.8" fill="currentColor"/></svg></button>
+                  <button class="align9-btn" data-h="left"   data-v="bottom" title="왼쪽 아래" onclick="syncBlkAlign9('left','bottom')"><svg viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="4.5" cy="11.5" r="1.8" fill="currentColor"/></svg></button>
+                  <button class="align9-btn" data-h="center" data-v="bottom" title="가운데 아래" onclick="syncBlkAlign9('center','bottom')"><svg viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="8"   cy="11.5" r="1.8" fill="currentColor"/></svg></button>
+                  <button class="align9-btn" data-h="right"  data-v="bottom" title="오른쪽 아래" onclick="syncBlkAlign9('right','bottom')"><svg viewBox="0 0 16 16" width="14" height="14" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="11.5" cy="11.5" r="1.8" fill="currentColor"/></svg></button>
                 </div>
               </div>
             </div>

@@ -513,7 +513,10 @@ function applyVAlignAll() {
     var contentH = ta.scrollHeight;
     var blkH  = blkEl.offsetHeight;
     var innerH = blkH - basePad * 2;
-    var offset = Math.max(0, Math.floor((innerH - contentH) / 2));
+    var va = blk.vAlign || 'center';
+    var offset = va === 'top'    ? 0
+               : va === 'bottom' ? Math.max(0, innerH - contentH)
+               :                   Math.max(0, Math.floor((innerH - contentH) / 2));
     clip.style.paddingTop    = (basePad + offset) + 'px';
     clip.style.paddingBottom = basePad + 'px';
   });
