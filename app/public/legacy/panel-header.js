@@ -6,8 +6,6 @@ function showBlkPopup(anchorEl) {
   popupTarget = { anchorEl: anchorEl };
   _openBlkPopup(anchorEl);
 }
-/* 구버전 호환용 — gi/ci/insertIdx 무시하고 캔버스 하단에 추가 */
-function showBlkPopupAt(gi, ci, insertIdx, anchorEl) { showBlkPopup(anchorEl); }
 
 function _openBlkPopup(anchorEl) {
   var pop = document.getElementById('blk-popup');
@@ -35,7 +33,7 @@ function _openBlkPopup(anchorEl) {
       var newX = Math.round((canvasW - newW) / 2);
       var newY = maxY > 0 ? maxY + gaps.pad : gaps.pad;
       var newBlk = { id: _nextBlkId(), x: newX, y: newY, w: newW, h: _side, groupId: null, type: t.type, radius: null, shadow: null, opacity: null, bgColor: null, stroke: globalVals.stroke || 0, tstroke: globalVals.tstroke || 0, tstrokeColor: '#ffffff' };
-      if (t.type === 'txt' || t.type === 'title') {
+      if (t.type === 'txt') {
         newBlk.listMode = 'none';
         newBlk.spans = [{ text: '' }];
       }
@@ -474,8 +472,8 @@ function triggerHeaderImgUpload(kind) {
 }
 
 function showBlockPanel(type, label, blk) {
-  /* 다른 블록 선택 시 스티커 편집 모드 종료 — 스티커 패널과 블록 패널이 동시에 떠 있는 문제 방지 */
-  if (stickerEditMode) toggleStickerEdit();
+  /* 다른 블록 선택 시 이미지(스티커) 선택 해제 — 패널·핸들 동시 노출 방지(상시 활성화 후에도 상호배제는 유지) */
+  if (selectedStickerIds.length) deselectSticker();
   /* 다중 선택 상태이면 캔버스 패널로 복귀 */
   if (selKeys.length > 1) {
     showCanvasPanel();
@@ -491,10 +489,8 @@ function showBlockPanel(type, label, blk) {
     var el = document.getElementById(id); if (el) el.classList.remove('active');
   });
   document.getElementById('panel-block').classList.add('active');
-  var labels  = { img: '이미지 블록', title: '제목 블록', txt: '텍스트 블록', colorchip: '컬러칩 블록', item: '항목 블록', header: '헤더 블록' };
-  var chipMap = { img: 'IMG', title: 'TTL', txt: 'TXT', colorchip: 'CLR', item: 'ITM', header: 'HDR' };
-  var _bpSub = document.getElementById('bp-sub');
-  if (_bpSub) _bpSub.textContent = (label || labels[type] || '블록') + ' 선택됨';
+  var labels  = { img: '이미지 블록', txt: '텍스트 블록', colorchip: '컬러칩 블록', item: '항목 블록', header: '헤더 블록' };
+  var chipMap = { img: 'IMG', txt: 'TXT', colorchip: 'CLR', item: 'ITM', header: 'HDR' };
 
   /* ── ctx.fill 헤더 갱신 ── */
   var ctxThumb = document.getElementById('bp-ctx-thumb');
@@ -502,7 +498,7 @@ function showBlockPanel(type, label, blk) {
   if (ctxThumb) ctxThumb.textContent = chipMap[type] || 'BLK';
   if (ctxName)  ctxName.textContent  = label || labels[type] || '블록';
 
-  var isText      = type === 'txt' || type === 'title';
+  var isText      = type === 'txt';
   var isImg       = type === 'img';
   var isColorchip = type === 'colorchip';
   var isItem      = type === 'item';
@@ -563,6 +559,13 @@ function showBlockPanel(type, label, blk) {
     if (bgSw) bgSw.style.background = bgVal;
     var bgHex2 = document.getElementById('bp-color-hexedit');
     if (bgHex2) bgHex2.value = bgVal.toUpperCase();
+    var strokeColorEl = document.getElementById('bp-stroke-color');
+    var strokeColorVal = blk.strokeColor || '#1C1C20';
+    if (strokeColorEl) strokeColorEl.value = strokeColorVal;
+    var strokeSw = document.getElementById('bp-stroke-color-swatch');
+    if (strokeSw) strokeSw.style.background = strokeColorVal;
+    var strokeHex = document.getElementById('bp-stroke-color-hexedit');
+    if (strokeHex) strokeHex.value = strokeColorVal.toUpperCase();
     /* padV 슬라이더 로드 — null이면 라운딩 연동 자동값 표시, 자동 버튼 숨김 */
     var padVautoRow = document.getElementById('bp-padv-auto-row');
     var padVIsAuto = (blk.padV === null || blk.padV === undefined);
@@ -572,14 +575,14 @@ function showBlockPanel(type, label, blk) {
     ['bp-sl-padv','bp-sn-padv'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=padVDisplay; });
     if (padVautoRow) padVautoRow.style.display = padVIsAuto ? 'none' : '';
     /* 텍스트 스타일 로드 */
-    if (type === 'txt' || type === 'title') {
+    if (type === 'txt') {
       var fsEl  = document.getElementById('bp-font-size');
       var alEl  = document.getElementById('bp-align');
       var ffEl  = document.getElementById('bp-font-family');
       var fcEl  = document.getElementById('bp-font-color');
       var fcSwEl = document.getElementById('bp-font-color-swatch');
       var fcLbEl = document.getElementById('bp-font-color-label');
-      var fs = blk.fontSize   || (blk.type === 'title' ? 15 : 12);
+      var fs = blk.fontSize   || 12;
       var al = blk.textAlign  || 'left';
       var ff = blk.fontFamily || globalVals.font || 'Pretendard';
       var fc = blk.fontColor  || globalVals.fontColor || '#212121';
@@ -597,6 +600,7 @@ function showBlockPanel(type, label, blk) {
         var tbtn = document.getElementById('tfb-lm-' + m);
         if (tbtn) tbtn.classList.toggle('on', m === lm);
       });
+      _updateSliderUI('bp-txt-sl-lh', blk.lineHeight || 1.6);
     }
   }
 }

@@ -24,6 +24,7 @@ function collectData(includeImages) {
     blocks:        blkCopy,
     canvasW:          canvasW,
     canvasH:          canvasH,
+    canvasExtraTop:   canvasExtraTop,
     headerPos:        headerPos,
     headerData:    hdrCopy,
     globalVals:    JSON.parse(JSON.stringify(globalVals)),
@@ -54,7 +55,7 @@ function applyData(data) {
     });
     /* blk.spans 마이그레이션 — blk.text만 있고 blk.spans 없는 구버전 블록 처리 */
     blocks.forEach(function(blk) {
-      if ((blk.type === 'txt' || blk.type === 'title') && !blk.spans) {
+      if (blk.type === 'txt' && !blk.spans) {
         blk.spans = [{ text: blk.text || '' }];
       }
       if (blk.stroke === undefined || blk.stroke === null) blk.stroke = 0;
@@ -87,13 +88,12 @@ function applyData(data) {
     });
   }
 
-  /* canvasW 복원 (canvasH는 gaps 복원 이후 처리 — 구버전 canvasExtraBottom 마이그레이션에 gaps.pad 필요) */
+  /* canvasW 복원 (canvasH는 gaps 복원 이후 처리 — 구버전 canvasExtraBottom 마이그레이션에 gaps.pad 필요)
+     canvas-stage DOM 동기화도 _setStageWidth가 같이 처리(render()는 pad만 업데이트하므로 필요) */
   if (data.canvasW !== undefined) {
-    canvasW = typeof data.canvasW === 'number' ? data.canvasW : parseInt(data.canvasW) || 800;
+    var _restoredCanvasW = typeof data.canvasW === 'number' ? data.canvasW : parseInt(data.canvasW) || 800;
+    _setStageWidth(_restoredCanvasW, 'center');
   }
-  /* canvas-stage DOM 동기화 (render()는 pad만 업데이트하므로 여기서 stage도 반영) */
-  var _stageEl = document.getElementById('canvas-stage');
-  if (_stageEl) { _stageEl.style.width = canvasW + 'px'; _stageEl.style.marginLeft = (-canvasW / 2) + 'px'; }
   _updateSliderUI('sl-canvas-w', canvasW);
   var _snCW = document.getElementById('sn-canvas-w'); if (_snCW) _snCW.value = canvasW;
 
@@ -135,6 +135,9 @@ function applyData(data) {
     (data.blocks || []).forEach(function(b) { var be = b.y + b.h; if (be > _migMaxBottom) _migMaxBottom = be; });
     canvasH = _migMaxBottom + gaps.pad + _migExtraBottom;
   }
+  /* canvasExtraTop 복원 — F-17. 구버전 데이터(필드 없음)는 0 — 과거엔 상단 여백이 블록 y에
+     이미 녹아있어 별도 마이그레이션이 필요 없음(canvasW와 동일 패턴) */
+  canvasExtraTop = typeof data.canvasExtraTop === 'number' ? data.canvasExtraTop : 0;
   if (data.sheetBg) {
     sheetBg = data.sheetBg;
     var sheetEl = document.getElementById('sheet');
@@ -175,7 +178,6 @@ function applyData(data) {
       var oldItems = layer.querySelectorAll('.sticker-item');
       oldItems.forEach(function(el) { el.remove(); });
     }
-    if (stickerEditMode) toggleStickerEdit();
     selectedStickerIds = [];
     stickers       = [];
     stickerLibrary = [];
@@ -595,7 +597,6 @@ function resetAll() {
     { id: _nextBlkId(), x: 284, y: 271, w: 216, h: 241, groupId: 'g_01', type: 'img', imgSrc: null, imgTransform: { scale:1, x:0, y:0 }, radius: null, shadow: null, opacity: null, bgColor: null },
     { id: _nextBlkId(), x: 512, y: 12,  w: 276, h: 500, groupId: 'g_01', type: 'txt', spans: [{ text: '' }], radius: null, shadow: null, opacity: null, bgColor: null }
   ];
-  canvasW = 800;
   headerPos  = null;
   headerData = {
     type: 'basic',
@@ -616,12 +617,12 @@ function resetAll() {
   selKeys = [];
   gaps = { pad: 12 };
   canvasH = 0; /* autoCanvasH()가 다음 render()에서 콘텐츠 기준으로 다시 계산 */
+  canvasExtraTop = 0;
   _updateSliderUI('sl-pad', 12);
   var snPad = document.getElementById('sn-pad');
   if (snPad) snPad.value = 12;
   /* canvas-stage 너비 리셋 */
-  var stage = document.getElementById('canvas-stage');
-  if (stage) { stage.style.width = '800px'; stage.style.marginLeft = '-400px'; }
+  _setStageWidth(800, 'center');
   sheetBg = '#ffffff';
   var sheetEl = document.getElementById('sheet');
   if (sheetEl) sheetEl.style.background = sheetBg;
@@ -644,7 +645,6 @@ function resetAll() {
     var oldItems = layer.querySelectorAll('.sticker-item');
     oldItems.forEach(function(el) { el.remove(); });
   }
-  if (stickerEditMode) toggleStickerEdit();
   stickers            = [];
   stickerLibrary      = [];
   stickerIdCounter    = 0;

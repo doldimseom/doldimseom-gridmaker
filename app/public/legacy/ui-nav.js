@@ -239,11 +239,7 @@ function duplicateGroup(groupId) {
   var reqW = Math.max.apply(null, blocks.map(function(b) { return b.x + b.w; })) + gaps.pad;
   if (reqW > canvasW) {
     reqW = Math.max(400, reqW);
-    canvasW = reqW;
-    var _stEl = document.getElementById('canvas-stage');
-    if (_stEl) { _stEl.style.width = reqW + 'px'; _stEl.style.marginLeft = (-reqW / 2) + 'px'; }
-    var _pdEl = document.getElementById('sheet-pad');
-    if (_pdEl) _pdEl.style.width = reqW + 'px';
+    _setStageWidth(reqW, 'center');
     _updateSliderUI('sl-canvas-w', reqW);
     var _snW = document.getElementById('sn-canvas-w'); if (_snW) _snW.value = reqW;
   }
@@ -269,7 +265,6 @@ function ungroupBlocks(groupId) {
   showToast('그룹이 해제되었습니다');
 }
 
-function alignGroupSymmetry() { /* 스텝7 이후 확장 예정 */ }
 
 /* ══════════════════════════════════════════
    스텝 8 — 정렬 툴바
@@ -367,7 +362,7 @@ function hideAlignToolbar() {
 ══════════════════════════════════════════ */
 function groupFromSelection() {
   var targets = selKeys.length > 1 ? selKeys.slice() : [];
-  if (targets.length < 2) { showToast('블록을 2개 이상 선택하세요 (Ctrl+클릭)'); return; }
+  if (targets.length < 2) { showToast('블록을 2개 이상 선택하세요 (Shift+클릭)'); return; }
   saveHistory();
   var newGid = 'g_' + Date.now();
   targets.forEach(function(key) {
@@ -390,6 +385,28 @@ function showCanvasPanel() {
   switchNav(lastNav);
 }
 
+/* 패널 전환 없이 블록 선택만 정리 — 이미지(스티커) 선택 시 상호배제용 (deselect()는 탭/패널까지 건드려 무거움) */
+function _deselectBlocksOnly() {
+  if (selectedGi !== null) { selectedGi = null; hideGroupToolbar(); }
+  if (!selKey && selKeys.length === 0) return;
+  var prevBlk = getSelBlk();
+  if (prevBlk && prevBlk.type === 'colorchip') prevBlk._activeChipId = null;
+  selKey = null;
+  selKeys = [];
+  document.querySelectorAll('.blk').forEach(function(el) {
+    var bdata = getBlkByKey(el.dataset.key);
+    el.classList.remove('selected');
+    el.style.outline = ''; el.style.outlineOffset = '';
+    if (bdata) el.style.boxShadow = _blkNormalBoxShadow(bdata);
+  });
+  document.querySelectorAll('.cc-chip.active').forEach(function(chipEl) {
+    chipEl.classList.remove('active');
+  });
+  hideAlignToolbar();
+  hideTxtFormatBar();
+  if (activeImgKey) exitImgEditMode();
+}
+
 function deselect() {
   var wasHeader = (selKey === 'header');
   /* 컬러칩 active 칩 초기화 */
@@ -407,6 +424,10 @@ function deselect() {
   document.querySelectorAll('.blk').forEach(function(blkEl) {
     blkEl.style.outline = ''; blkEl.style.outlineOffset = '';
     blkEl.classList.remove('selected');
+  });
+  /* 컬러칩 active 칩 표시 정리 — render()가 가드로 스킵되는 타이밍에도 항상 클린업 */
+  document.querySelectorAll('.cc-chip.active').forEach(function(chipEl) {
+    chipEl.classList.remove('active');
   });
   /* 그룹 선택 표시 정리 */
   document.querySelectorAll('.group-inner').forEach(function(el) {
@@ -560,14 +581,18 @@ function _addBlkOfType(type, snapX, snapY) {
     newY = maxY > 0 ? maxY + gaps.pad : gaps.pad;
   }
   var newBlk = { id: _nextBlkId(), x: newX, y: newY, w: _side, h: _side, groupId: null, type: type, radius: null, shadow: null, opacity: null, bgColor: null, stroke: globalVals.stroke || 0, tstroke: globalVals.tstroke || 0, tstrokeColor: '#ffffff' };
-  if (type === 'txt' || type === 'title') { newBlk.listMode = 'none'; newBlk.spans = [{ text: '' }]; }
+  if (type === 'txt') { newBlk.listMode = 'none'; newBlk.spans = [{ text: '' }]; }
   if (type === 'img') { newBlk.imgSrc = null; newBlk.imgTransform = { scale: 1, x: 0, y: 0 }; }
   if (type === 'colorchip') {
+    /* textColor는 칩마다 박아두지 않음(자동대비 폐지, 2026-06-23) — 블록 단위
+       기본 글자색(ccTextColor)을 따라가도록 미지정 상태로 둠(renderColorchipContent의
+       chip.textColor || blk.ccTextColor 폴백) */
     newBlk.chips = [
-      { id: 'cc0_' + Date.now(), color: '#2F4D9E', label: 'A', textColor: '#ffffff', desc: '' },
-      { id: 'cc1_' + Date.now(), color: '#5B7CE6', label: 'B', textColor: '#ffffff', desc: '' },
-      { id: 'cc2_' + Date.now(), color: '#7E9BEE', label: 'C', textColor: '#212121', desc: '' }
+      { id: 'cc0_' + Date.now(), color: '#2F4D9E', label: 'A', desc: '' },
+      { id: 'cc1_' + Date.now(), color: '#5B7CE6', label: 'B', desc: '' },
+      { id: 'cc2_' + Date.now(), color: '#7E9BEE', label: 'C', desc: '' }
     ];
+    newBlk.ccTextColor = '#ffffff';
     newBlk.chipLayout = 'row'; newBlk.chipRadius = 0;
     newBlk.showSwatch = true; newBlk.showText = false;
     newBlk.opacity = 0; newBlk.shadow = 0;
@@ -601,8 +626,10 @@ function _showCanvasCtxMenu(e) {
   menu.style.left = e.clientX + 'px';
   menu.style.top  = e.clientY + 'px';
 
-  /* 우클릭 위치를 캔버스 좌표로 변환 */
-  var _stageEl = document.getElementById('canvas-stage');
+  /* 우클릭 위치를 캔버스 좌표로 변환 — sheet-pad(position:relative)가 블록의 실제
+     포지셔닝 기준점. 헤더가 있으면 canvas-stage보다 아래로 밀려 있어 canvas-stage
+     기준으로 환산하면 우클릭 위치보다 아래에 블록이 생성됨 */
+  var _stageEl = document.getElementById('sheet-pad');
   var _sr = _stageEl ? _stageEl.getBoundingClientRect() : { left: 0, top: 0 };
   var _snapX = (e.clientX - _sr.left) / _zoomLevel;
   var _snapY = (e.clientY - _sr.top)  / _zoomLevel;
@@ -611,6 +638,9 @@ function _showCanvasCtxMenu(e) {
   var addItem = document.createElement('div');
   addItem.className = 'ctx-menu-item ctx-has-sub';
   addItem.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="1.4"/><rect x="13" y="4" width="7" height="7" rx="1.4"/><rect x="4" y="13" width="7" height="7" rx="1.4"/><rect x="13" y="13" width="7" height="7" rx="1.4"/></svg>블록 추가<span class="ctx-arrow">▸</span>';
+  /* 이 행은 :hover로 서브메뉴를 펼치는 용도일 뿐 — 클릭 시 버블링되어 전역 닫기
+     리스너(mousedown)에 닿아 메뉴 전체가 닫히던 문제 방지 */
+  addItem.addEventListener('mousedown', function(ev) { ev.stopPropagation(); });
 
   var sub = document.createElement('div');
   sub.className = 'ctx-submenu';
@@ -642,7 +672,7 @@ function _showCanvasCtxMenu(e) {
   /* 전체 선택 */
   var selAllItem = document.createElement('div');
   selAllItem.className = 'ctx-menu-item';
-  selAllItem.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4.5h6V7M6 7l1 13h10l1-13"/></svg>전체 선택';
+  selAllItem.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10.656V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8.344"/><path d="m9 11 3 3L22 4"/></svg>전체 선택';
   selAllItem.addEventListener('mousedown', function(ev) {
     ev.stopPropagation();
     _removeCanvasCtxMenu();
@@ -652,11 +682,9 @@ function _showCanvasCtxMenu(e) {
 
   document.body.appendChild(menu);
 
+  /* 외부 mousedown 시 제거 — 메뉴 항목 mousedown은 stopPropagation으로 차단됨 */
   setTimeout(function() {
-    document.addEventListener('click', function _closeCanvasCtx() {
-      _removeCanvasCtxMenu();
-      document.removeEventListener('click', _closeCanvasCtx);
-    });
+    document.addEventListener('mousedown', _removeCanvasCtxMenu, { once: true });
   }, 0);
 }
 
@@ -700,7 +728,9 @@ function showCtxMenu(e, ctxGroupId) {
      mousedown(button!==0) 무시로 selKey가 미설정된 경우를 보완 */
   var _tgtBlkEl = e.target.closest ? e.target.closest('.blk[data-key]') : null;
   var _ctxKeyFromEvt = _tgtBlkEl ? _tgtBlkEl.dataset.key : null;
-  if (_ctxKeyFromEvt && _ctxKeyFromEvt !== selKey) {
+  /* 다중선택 멤버 위에서 우클릭한 경우는 보정 대상이 아님 — selKeys를 그대로 유지해야
+     "새 그룹으로 묶기" 등 다중선택 메뉴가 비활성화되지 않음 */
+  if (_ctxKeyFromEvt && _ctxKeyFromEvt !== selKey && selKeys.indexOf(_ctxKeyFromEvt) === -1) {
     selKey = _ctxKeyFromEvt;
     selKeys = [];
   }
@@ -920,7 +950,7 @@ document.addEventListener('contextmenu', function(e) {
   var _ctxGroupId = _ctxBlkData ? (_ctxBlkData.groupId || null) : null;
 
   /* 콘텐츠 우선: 우클릭도 개별 블록 선택 (그룹 상태는 항상 해제) */
-  if (selectedGi) { selectedGi = null; hideGroupToolbar(); }
+  if (selectedGi && selectedGi !== _ctxGroupId) { selectedGi = null; hideGroupToolbar(); }
   var alreadySelected = key && selKey === key && selKeys.length <= 1;
   var alreadyInMulti  = key && selKeys.indexOf(key) !== -1 && selKeys.length > 1;
   if (key && !alreadySelected && !alreadyInMulti) {
@@ -932,14 +962,15 @@ document.addEventListener('contextmenu', function(e) {
       el.style.outlineOffset = '';
     });
     blkEl.classList.add('selected');
-    blkEl.style.outline = '2.5px solid var(--accent)';
-    blkEl.style.outlineOffset = '-1px';
+    blkEl.style.outline = '2.0px solid var(--accent)';
+    blkEl.style.outlineOffset = '3px';
     blkEl.style.boxShadow = _blkSelBoxShadow(_ctxBlkData);
   }
-  /* 우클릭으로 selKey가 바뀔 때 패널도 동기화 — 이전 블록의 패널이 남는 현상 방지 */
-  if (_ctxBlkData) {
+  /* 우클릭으로 selKey가 바뀔 때 패널도 동기화 — 이전 블록의 패널이 남는 현상 방지
+     다중선택 멤버 위에서 우클릭한 경우엔 패널 전환 생략(switchNav 내 outline 초기화 방지) */
+  if (_ctxBlkData && !alreadyInMulti) {
     showBlockPanel(_ctxBlkData.type, null, _ctxBlkData);
-    if (_ctxBlkData.type === 'txt' || _ctxBlkData.type === 'title') showTxtFormatBar(_ctxBlkData);
+    if (_ctxBlkData.type === 'txt') showTxtFormatBar(_ctxBlkData);
     else hideTxtFormatBar();
   }
 
@@ -949,6 +980,8 @@ document.addEventListener('contextmenu', function(e) {
 function handleCanvasClick(e) {
   /* 팬 동작 직후에는 클릭 이벤트 무시 */
   if (_isPanning) return;
+  /* 마퀴 드래그 직후 뒤따르는 click이 방금 만든 선택을 곧바로 해제하지 않게 1회 무시 */
+  if (_justFinishedMarquee) { _justFinishedMarquee = false; return; }
   var pop = document.getElementById('blk-popup');
   if (pop.classList.contains('show')) { pop.classList.remove('show'); return; }
   var tgt = e.target;
@@ -961,6 +994,8 @@ function handleCanvasClick(e) {
     if (activeHdrImgKind) exitHeaderImgEditMode();
     /* 시트 바깥 클릭 시 항상 캔버스 탭으로 복귀 */
     showCanvasPanel._lastNav = 'canvas';
+    /* 이미지(스티커) 선택도 함께 해제 */
+    if (selectedStickerIds.length) deselectSticker();
     /* 그룹·블록 동시 선택 가능하므로 둘 다 해제 */
     var _hadSel = !!(selKey || selKeys.length);
     if (selectedGi !== null) deselectGroup();
@@ -986,6 +1021,13 @@ function autoCanvasH() {
      축소하지 않음 — canvasW와 대칭되는 모델(0620_2: 핸들 4방향 동작 통일) */
   if (contentH > canvasH) canvasH = contentH;
   pad.style.height = canvasH + 'px';
+  /* F-17: canvasExtraTop은 블록/스티커 데이터를 안 건드리고 컨테이너만 이동시켜 반영
+     (#sheet-pad는 일반 플로우 박스라 margin-top이 정상 동작, #sticker-layer는 inset:0
+     이라 top만 덮어쓰면 나머지 absolute 위치가 따라옴) */
+  pad.style.marginTop = canvasExtraTop + 'px';
+  var stickerLayerEl = document.getElementById('sticker-layer');
+  if (stickerLayerEl) stickerLayerEl.style.top = canvasExtraTop + 'px';
+  _syncBgOverlayBounds();
   updateResizeHandles();
   updateSizeInfo();
 }

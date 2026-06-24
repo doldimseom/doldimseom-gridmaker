@@ -52,7 +52,7 @@ function _drawSnapGuide(g) {
 
   if (g.type === 'spacing') {
     /* 브래킷 바 — 간격 구간에 걸쳐지는 수평 or 수직 바 */
-    var span = (g.orient === 'h') ? (g.to - g.from) : (g.to - g.from);
+    var span = g.to - g.from;
     if (span < 1) return; /* 0px 간격은 표시 안 함 */
     var bar = document.createElement('div');
     if (g.orient === 'h') {
@@ -374,6 +374,65 @@ function _zoomAtPoint(px, py, delta) {
 
 /* ── 팬(이동) 상태 ── */
 
+/* ══════════════════════════════════════════
+   마퀴 셀렉션 — 빈 캔버스 드래그 다중선택
+══════════════════════════════════════════ */
+function _drawMarqueeRect(x1, y1, x2, y2) {
+  var pad = document.getElementById('sheet-pad');
+  if (!pad) return;
+  var rect = document.getElementById('marquee-select');
+  if (!rect) {
+    rect = document.createElement('div');
+    rect.id = 'marquee-select';
+    rect.className = 'marquee-select';
+    pad.appendChild(rect);
+  }
+  rect.style.left   = Math.min(x1, x2) + 'px';
+  rect.style.top    = Math.min(y1, y2) + 'px';
+  rect.style.width  = Math.abs(x2 - x1) + 'px';
+  rect.style.height = Math.abs(y2 - y1) + 'px';
+}
+
+function _removeMarqueeRect() {
+  var rect = document.getElementById('marquee-select');
+  if (rect) rect.remove();
+}
+
+function _rectsOverlap(r1, r2) {
+  return r1.x < r2.x + r2.w && r1.x + r1.w > r2.x &&
+         r1.y < r2.y + r2.h && r1.y + r1.h > r2.y;
+}
+
+function _applyMarqueeSelection(x1, y1, x2, y2) {
+  var rect = { x: Math.min(x1, x2), y: Math.min(y1, y2), w: Math.abs(x2 - x1), h: Math.abs(y2 - y1) };
+  var hits = blocks
+    .filter(function(b) { return _rectsOverlap(rect, { x: b.x, y: b.y, w: b.w, h: b.h }); })
+    .map(function(b) { return b.id; });
+  if (selectedGi !== null) { selectedGi = null; hideGroupToolbar(); }
+  if (hits.length) deselectSticker();
+
+  selKeys = hits;
+  selKey = hits.length ? hits[hits.length - 1] : null;
+  document.querySelectorAll('.blk').forEach(function(el) {
+    var k = el.dataset.key;
+    var bdata = getBlkByKey(k);
+    if (!bdata) return;
+    if (hits.indexOf(k) !== -1) {
+      el.classList.add('selected');
+      el.style.outline = '2.0px solid var(--accent)';
+      el.style.outlineOffset = '3px';
+      el.style.boxShadow = _blkSelBoxShadow(bdata);
+    } else {
+      el.classList.remove('selected');
+      el.style.outline = '';
+      el.style.outlineOffset = '';
+      el.style.boxShadow = _blkNormalBoxShadow(bdata);
+    }
+  });
+  hideTxtFormatBar();
+  if (hits.length >= 2) showAlignToolbar(); else hideAlignToolbar();
+}
+
 /* 줌/팬 이벤트 초기화 — DOMContentLoaded 후 호출 */
 function initZoomPan() {
   var area = document.getElementById('canvas-area');
@@ -425,20 +484,70 @@ function initZoomPan() {
       _panStartOffX = _panX;
       _panStartOffY = _panY;
       area.classList.add('panning');
+      return;
+    }
+    /* 빈 영역 좌클릭 드래그 → 마퀴 셀렉션 시작 */
+    if (e.button === 0 && !isEditing && !activeImgKey &&
+        !e.target.closest('.blk, .sticker-item, .canvas-resize-handle, .sheet-header-block, #txt-format-bar, #sticker-float-bar, #blk-popup')) {
+      /* preventDefault 없으면 드래그가 브라우저 네이티브 텍스트 선택으로 처리돼
+         블록 내부 텍스트(안내문 포함)가 영역과 무관하게 통째로 긁힘 */
+      e.preventDefault();
+      document.body.style.userSelect = 'none';
+      /* sheet-pad(position:relative)가 블록의 실제 포지셔닝 기준점 — 헤더가 있으면
+         canvas-stage보다 아래로 밀려 있으므로 반드시 sheet-pad 기준으로 환산해야 함 */
+      var stageEl0 = document.getElementById('sheet-pad');
+      var sr0 = stageEl0 ? stageEl0.getBoundingClientRect() : { left: 0, top: 0 };
+      _marqueeDrag = {
+        startX: (e.clientX - sr0.left) / _zoomLevel,
+        startY: (e.clientY - sr0.top)  / _zoomLevel,
+        didMove: false
+      };
     }
   });
 
   document.addEventListener('mousemove', function(e) {
-    if (!_isPanning) return;
-    _panX = _panStartOffX + (e.clientX - _panStartX);
-    _panY = _panStartOffY + (e.clientY - _panStartY);
-    _applyStageTransform();
+    if (_isPanning) {
+      _panX = _panStartOffX + (e.clientX - _panStartX);
+      _panY = _panStartOffY + (e.clientY - _panStartY);
+      _applyStageTransform();
+      return;
+    }
+    if (_marqueeDrag) {
+      var stageEl1 = document.getElementById('sheet-pad');
+      var sr1 = stageEl1 ? stageEl1.getBoundingClientRect() : { left: 0, top: 0 };
+      var curX = (e.clientX - sr1.left) / _zoomLevel;
+      var curY = (e.clientY - sr1.top)  / _zoomLevel;
+      if (!_marqueeDrag.didMove &&
+          (Math.abs(curX - _marqueeDrag.startX) > 3 || Math.abs(curY - _marqueeDrag.startY) > 3)) {
+        _marqueeDrag.didMove = true;
+      }
+      if (_marqueeDrag.didMove) {
+        _drawMarqueeRect(_marqueeDrag.startX, _marqueeDrag.startY, curX, curY);
+        /* 드래그 중 실시간으로 겹치는 블록을 선택 표시 — 손을 떼야 표시되던 것을 개선 */
+        _applyMarqueeSelection(_marqueeDrag.startX, _marqueeDrag.startY, curX, curY);
+      }
+    }
   });
 
   document.addEventListener('mouseup', function(e) {
-    if (!_isPanning) return;
-    _isPanning = false;
-    if (!_spaceDown) area.classList.remove('panning');
+    if (_isPanning) {
+      _isPanning = false;
+      if (!_spaceDown) area.classList.remove('panning');
+      return;
+    }
+    if (_marqueeDrag) {
+      if (_marqueeDrag.didMove) {
+        var stageEl2 = document.getElementById('sheet-pad');
+        var sr2 = stageEl2 ? stageEl2.getBoundingClientRect() : { left: 0, top: 0 };
+        var endX = (e.clientX - sr2.left) / _zoomLevel;
+        var endY = (e.clientY - sr2.top)  / _zoomLevel;
+        _applyMarqueeSelection(_marqueeDrag.startX, _marqueeDrag.startY, endX, endY);
+        if (selKeys.length) _justFinishedMarquee = true;
+      }
+      _removeMarqueeRect();
+      _marqueeDrag = null;
+      document.body.style.userSelect = '';
+    }
   });
 
   /* 미들클릭 기본 스크롤 방지 */
@@ -482,36 +591,14 @@ function _initProximity(containerEl, selector, maxScale, radius) {
   });
 }
 
-function togglePillMenu() {
-  var btn = document.getElementById('pill-menu-btn');
-  var dd  = document.getElementById('pill-menu-dropdown');
-  if (!dd) return;
-  var open = dd.style.display === 'none';
-  dd.style.display = open ? 'flex' : 'none';
-  if (btn) btn.classList.toggle('open', open);
-  if (open) {
-    /* 바깥 클릭 시 닫기 */
-    setTimeout(function() {
-      document.addEventListener('click', function _close(e) {
-        if (!document.getElementById('float-pill').contains(e.target) &&
-            !document.getElementById('pill-menu-dropdown').contains(e.target)) {
-          dd.style.display = 'none';
-          if (btn) btn.classList.remove('open');
-          document.removeEventListener('click', _close);
-        }
-      });
-    }, 0);
-  }
-}
-
 /* ══════════════════════════════════════════
    네비 전환
 ══════════════════════════════════════════ */
 function switchNav(tab) {
-  /* 스티커 탭 이탈 시 편집 모드 종료 */
-  if (tab !== 'sticker' && stickerEditMode) toggleStickerEdit();
   /* A안: 탭 클릭 시 블록 선택 해제 */
   if (selKey) {
+    var prevBlk = getSelBlk();
+    if (prevBlk && prevBlk.type === 'colorchip') prevBlk._activeChipId = null;
     selKey = null;
     document.querySelectorAll('.blk').forEach(function(el) {
       el.style.outline = ''; el.style.outlineOffset = '';
@@ -520,11 +607,15 @@ function switchNav(tab) {
     if (activeImgKey) exitImgEditMode();
     hideTxtFormatBar();
   }
+  /* 컬러칩 active 칩 표시 정리 */
+  document.querySelectorAll('.cc-chip.active').forEach(function(chipEl) {
+    chipEl.classList.remove('active');
+  });
   /* panel-block 닫기 */
   var pb = document.getElementById('panel-block');
   if (pb) pb.classList.remove('active');
 
-  var tabs = ['preset','canvas','header','bg','tools','sticker'];
+  var tabs = ['canvas','sticker','bg','header','preset','tools'];
   tabs.forEach(function(t) {
     var btn = document.getElementById('nb-' + t);
     if (btn) btn.classList.toggle('active', t === tab);
@@ -549,8 +640,6 @@ function switchNav(tab) {
   if (tab === 'sticker') {
     var el = document.getElementById('panel-sticker');
     if (el) el.classList.add('active');
-    /* 스티커 탭 진입 시 즉시 편집 모드 → 캔버스 스티커를 바로 이동 가능 */
-    if (!stickerEditMode) toggleStickerEdit();
   }
 }
 
@@ -560,12 +649,7 @@ function switchNav(tab) {
 function updateCanvasWidth(val) {
   if (!_pendingHistorySave) { saveHistory(); _pendingHistorySave = true; }
   val = Math.min(1400, Math.max(400, parseInt(val) || 800));
-  canvasW = val;
-  var stage = document.getElementById('canvas-stage');
-  if (stage) {
-    stage.style.width = val + 'px';
-    stage.style.marginLeft = (-val / 2) + 'px';
-  }
+  _setStageWidth(val, 'center');
   _updateSliderUI('sl-canvas-w', val);
   var snW = document.getElementById('sn-canvas-w');
   if (snW) snW.value = val;
@@ -620,15 +704,44 @@ function updateResizeHandles() {
 }
 
 /* ══════════════════════════════════════════
+   시트 너비(canvasW) + 화면 위치(marginLeft) 통일 적용
+   canvasW를 바꾸는 모든 곳(핸들 드래그/슬라이더/블록 자동확장/그룹복제/슬롯복원/초기화)이
+   이 함수 하나만 거치도록 통일 — 곳곳에 흩어진 "-canvasW/2 재중앙" 중복을 없애 한 경로만
+   고치고 다른 경로가 남아 재발하는 문제(2026-06-22, 좌측 핸들 버그 재발 원인)를 방지.
+
+   anchor:
+     'left'   — 좌측 화면 경계 고정(우측만 늘어남) — 우측 핸들 단독 드래그
+     'right'  — 우측 화면 경계 고정(좌측만 늘어남) — 좌측 핸들 단독 드래그
+     'center' — 항상 자기 중심으로 재배치 — 그 외 전부(대칭 리사이즈, 슬라이더, 블록 자동
+                확장, 그룹복제, 슬롯복원/초기화) — 기존 동작 그대로 보존
+══════════════════════════════════════════ */
+function _setStageWidth(newW, anchor) {
+  var stageEl = document.getElementById('canvas-stage');
+  var padEl   = document.getElementById('sheet-pad');
+  var oldW = canvasW;
+  canvasW = newW;
+  if (stageEl) {
+    stageEl.style.width = newW + 'px';
+    if (anchor === 'right') {
+      var curML = parseFloat(getComputedStyle(stageEl).marginLeft);
+      if (isNaN(curML)) curML = -oldW / 2;
+      stageEl.style.marginLeft = (curML - (newW - oldW)) + 'px';
+    } else if (anchor === 'left') {
+      /* 좌측 경계 고정 — marginLeft는 그대로(이미 좌측 경계 기준으로 맞춰져 있음) */
+    } else {
+      stageEl.style.marginLeft = (-newW / 2) + 'px';
+    }
+  }
+  if (padEl) padEl.style.width = newW + 'px';
+}
+
+/* ══════════════════════════════════════════
    캔버스 확장 공통 처리
    left/right: 늘어날 px (양수=확장, 음수=축소)
-   top: 블록 y 오프셋 이동량
+   top: canvasExtraTop 조정량 (F-17 — 블록·스티커 데이터는 안 건드림)
    bottom: canvasH 조정량
 ══════════════════════════════════════════ */
 function _applyCanvasExpand(left, right, top, bottom) {
-  var stageEl = document.getElementById('canvas-stage');
-  var padEl   = document.getElementById('sheet-pad');
-
   /* ── 좌/우 ── */
   if (left !== 0 || right !== 0) {
     var requestedW = canvasW + left + right;
@@ -674,33 +787,40 @@ function _applyCanvasExpand(left, right, top, bottom) {
           if (sEl) sEl.style.left = s.x + 'px';
         });
       }
-      canvasW = newW;
-      if (stageEl) { stageEl.style.width = newW + 'px'; stageEl.style.marginLeft = (-newW/2) + 'px'; }
-      if (padEl) padEl.style.width = newW + 'px';
+      /* 핸들별로 "잡지 않은 반대쪽 화면 경계"가 고정되도록 — 좌측 단독은 우측 경계 고정,
+         우측 단독은 좌측 경계 고정, Shift·Alt 대칭 리사이즈(actualLeft!==0, 블록 일부 이동)는
+         재중앙(_setStageWidth 공용 헬퍼 — 모든 canvasW 변경 경로가 이 함수 하나만 거치도록
+         통일, 2026-06-22 좌측 핸들 버그 재발 원인 수정) */
+      var _anchor = actualLeft !== 0 ? 'center' : (left !== 0 ? 'right' : 'left');
+      _setStageWidth(newW, _anchor);
     }
   }
 
-  /* ── 상단: 블록·스티커 y 오프셋 이동 ── */
+  /* ── 상단: canvasExtraTop — 블록·스티커 데이터는 건드리지 않고 여백 변수만 조정
+     (좌/우/하단 canvasW/canvasH 모델과 동일, F-17) ── */
   if (top !== 0) {
     var minY = Infinity;
     blocks.forEach(function(b) { if (b.y < minY) minY = b.y; });
     stickers.forEach(function(s) { if (s.y < minY) minY = s.y; });
+    if (minY === Infinity) minY = 0;
     /* 확장(top>0): 헤더 높이만큼 위로 허용 / 축소(top<0): 블록 끝 + gaps.pad까지만 허용
-       (좌/우/하단과 동일한 여백 기준으로 통일 — 0620_2: 핸들마다 정지 패딩이 다르던 문제) */
+       (좌/우/하단과 동일한 여백 기준으로 통일 — 0620_2: 핸들마다 정지 패딩이 다르던 문제.
+       헤더 겹침 허용은 F-17 통일 후에도 그대로 유지).
+       블록이 더 이상 이동하지 않으므로(F-17) minY는 매 호출 고정값 — "유효 상단 여백"은
+       canvasExtraTop + minY로 계산해 그 값이 _yFloor 밑으로 내려가지 않게 막는다 */
     var _yFloor = top > 0 ? -getHeaderH() : gaps.pad;
-    var safeT = Math.max(_yFloor - (minY === Infinity ? 0 : minY), top);
-    if (safeT !== 0) {
-      blocks.forEach(function(b) {
-        b.y += safeT;
-        var el = document.querySelector('.blk[data-key="' + b.id + '"]');
-        if (el) el.style.top = b.y + 'px';
-      });
-      stickers.forEach(function(s) {
-        s.y += safeT;
-        var sEl = document.getElementById('sticker-' + s.id);
-        if (sEl) sEl.style.top = s.y + 'px';
-      });
+    var _newExtraTop = Math.max(canvasExtraTop + top, _yFloor - minY);
+    /* 축소 시 배경지(모눈종이 등)가 헤더 영역을 침범하지 않도록 — pad가 헤더 경계 위로
+       올라가는 걸 막는 별도 바닥값. round 헤더는 디자인상 정해진 만큼(roundOverlap)만
+       겹침 허용, 그 외(basic/sns)는 전혀 겹치지 않게(0) — 블록 위치(minY)와 무관하게
+       항상 적용돼야 하므로 위 블록 기준 바닥과 별개로 한 번 더 클램프 */
+    if (top < 0 && headerPos === 'top') {
+      var _headerOverlapFloor = (headerData.type === 'round')
+        ? -(headerData.roundOverlap !== undefined ? headerData.roundOverlap : 24)
+        : 0;
+      _newExtraTop = Math.max(_newExtraTop, _headerOverlapFloor);
     }
+    canvasExtraTop = _newExtraTop;
   }
 
   /* ── 하단: canvasH — 블록·스티커 하단이 잘리지 않도록 브레이크 (canvasW 모델과 대칭) ── */
@@ -766,10 +886,10 @@ function applyGaps() {
 /* ══════════════════════════════════════════
    일괄 컨트롤러
 ══════════════════════════════════════════ */
-/* radius 변경 시 txt/title 블록 높이를 새 패딩 기준으로 재조정 */
+/* radius 변경 시 txt 블록 높이를 새 패딩 기준으로 재조정 */
 function adjustTextBlkHeights(newRadius) {
   blocks.forEach(function(blk) {
-    if (blk.type !== 'txt' && blk.type !== 'title') return;
+    if (blk.type !== 'txt') return;
     var r = (blk.radius !== null && blk.radius !== undefined) ? blk.radius : newRadius;
     var pad = r >= 999 ? 40 : Math.max(8, Math.round(Math.min(r, 32) * 0.5 + 8));
     var padTotal = pad * 2;
@@ -790,6 +910,20 @@ function adjustTextBlkHeights(newRadius) {
   });
 }
 
+/* radius 변경 직후 — render()로 새 패딩/라운딩이 DOM에 반영된 뒤, 실측(scrollHeight) 기반
+   자동확장(_ccAutoExpand/_itemAutoExpand)으로 한 번 더 보정. adjustTextBlkHeights()의
+   사전 계산(렌더 전 추정치)만으로는 박스 크기 대비 라운딩이 과대한 경우(원형 등) 패딩이
+   커진 만큼 콘텐츠 영역이 줄어드는 걸 못 따라잡을 수 있어 사후 보정 한 단계를 추가 */
+function _autoExpandAfterRadiusChange(targetBlk) {
+  var changed = false;
+  var list = targetBlk ? [targetBlk] : blocks;
+  list.forEach(function(b) {
+    if (b.type === 'colorchip') { if (_ccAutoExpand(b, b.id)) changed = true; }
+    else if (b.type === 'item') { if (_itemAutoExpand(b, b.id)) changed = true; }
+  });
+  if (changed) render();
+}
+
 function updateGlobal(key, val) {
   if (!_pendingHistorySave) { saveHistory(); _pendingHistorySave = true; }
   if (key === 'radius' || key === 'shadow' || key === 'opacity') val = parseInt(val) || 0;
@@ -798,9 +932,10 @@ function updateGlobal(key, val) {
   _updateSliderUI('sl-' + key, val);
   var sn = document.getElementById('sn-' + key);
   if (sn) sn.value = val;
-  /* radius 변경 시 txt/title 블록 높이 재조정 후 render */
+  /* radius 변경 시 txt 블록 높이 재조정 후 render */
   if (key === 'radius') adjustTextBlkHeights(val);
   render();
+  if (key === 'radius') _autoExpandAfterRadiusChange(null);
 }
 
 /* 전체 폰트 크기 배율 슬라이더 */
@@ -812,10 +947,10 @@ function updateCcScale(key, val) {
   if (!_pendingHistorySave) { saveHistory(); _pendingHistorySave = true; }
   val = Math.min(160, Math.max(60, parseInt(val) || 100));
   blk[key] = val;
-  var sliderId = key === 'ccSizeScale' ? 'bp-cc-sl-size' : 'bp-cc-sl-gap';
-  var numId    = key === 'ccSizeScale' ? 'bp-cc-sn-size' : 'bp-cc-sn-gap';
-  _updateSliderUI(sliderId, val);
-  var sn = document.getElementById(numId);
+  var idMap = { ccSizeScale: ['bp-cc-sl-size','bp-cc-sn-size'], ccGapScale: ['bp-cc-sl-gap','bp-cc-sn-gap'], ccFontScale: ['bp-cc-sl-font','bp-cc-sn-font'] };
+  var ids = idMap[key] || idMap.ccSizeScale;
+  _updateSliderUI(ids[0], val);
+  var sn = document.getElementById(ids[1]);
   if (sn) sn.value = val;
   render();
   if (_ccAutoExpand(blk, blk.id)) render();
@@ -920,6 +1055,7 @@ function syncSlider(key, val) {
   /* radius 변경 시 해당 블록 높이 재조정 후 render */
   if (prop === 'radius') adjustTextBlkHeights(globalVals.radius);
   render();
+  if (prop === 'radius') _autoExpandAfterRadiusChange(blk);
 }
 
 /* ── 패널 타일 전용 동기화 함수 ── */
@@ -1051,7 +1187,7 @@ function toggleBgRemove() {
 function togglePadRemove() {
   if (!selKey) return;
   var blk = getSelBlk(); if (!blk) return;
-  var isText = blk.type==='txt'||blk.type==='title'||blk.type==='item'||blk.type==='tag';
+  var isText = blk.type==='txt'||blk.type==='item'||blk.type==='tag';
   if (!isText) return;
   if (blk.padV === 0) {
     /* 여백 복원 */
@@ -1100,7 +1236,7 @@ function _refreshBpTiles(blk) {
   var bgTile = document.getElementById('bp-bg-remove-tile');
   if (bgTile) bgTile.classList.toggle('on', blk.opacity===0);
   var padTile = document.getElementById('bp-pad-remove-tile');
-  var isText = blk.type==='txt'||blk.type==='title'||blk.type==='item'||blk.type==='tag';
+  var isText = blk.type==='txt'||blk.type==='item'||blk.type==='tag';
   if (padTile) {
     padTile.classList.toggle('on', isText && blk.padV === 0);
     padTile.disabled = !isText;
@@ -1125,14 +1261,7 @@ function applyAllStroke(val) {
 }
 
 function applyAllStrokeAdv(val) {
-  val = Math.min(2, Math.max(0, parseInt(val) || 0));
-  _setTileActive('canvas-stroke-tiles', val);
-  _updateSliderUI('sl-stroke-adv', val);
-  var snAdv = document.getElementById('sn-stroke-adv');
-  if (snAdv) snAdv.value = val;
-  globalVals.stroke = val;
-  blocks.forEach(function(b) { b.stroke = val; });
-  render();
+  applyAllStroke(val);
 }
 
 function syncTstroke(val) {
@@ -1141,6 +1270,19 @@ function syncTstroke(val) {
   var blk = getSelBlk();
   if (!blk) return;
   if (!_pendingHistorySave) { saveHistory(); _pendingHistorySave = true; }
+  /* 편집 중 선택 범위 있으면 선택 부분에만 적용 */
+  if (isEditing && _userEnteredEdit) {
+    var _ar = (typeof _tfbStickyRange !== 'undefined' && _tfbStickyRange) ||
+              (typeof savedTfbRange !== 'undefined' && savedTfbRange);
+    if (_ar && !_ar.collapsed) {
+      var _bk = savedTfbRange;
+      savedTfbRange = _ar;
+      applyFormatToRange('tstroke', val);
+      savedTfbRange = _bk;
+      return;
+    }
+  }
+  /* 블록 전체 적용 (기존 동작) */
   blk.tstroke = val;
   /* 편집 중에는 render()가 차단되므로 DOM에 직접 반영 — 실시간 적용 */
   var blkEl = document.querySelector('.blk[data-key="' + selKey + '"]');
@@ -1197,7 +1339,7 @@ function applyAllTstroke(val) {
   val = Math.min(2, Math.max(0, parseInt(val) || 0));
   _setTileActive('canvas-tstroke-tiles', val);
   globalVals.tstroke = val;
-  var textTypes = { txt:1, title:1, item:1, tag:1 };
+  var textTypes = { txt:1, item:1, tag:1 };
   blocks.forEach(function(b) { if (textTypes[b.type]) b.tstroke = val; });
   render();
 }
@@ -1214,6 +1356,19 @@ function syncBgColor(val) {
   if (!blk) return;
   if (!_pendingHistorySave) { saveHistory(); _pendingHistorySave = true; }
   blk.bgColor = val;
+  render();
+}
+
+function syncStrokeColor(val) {
+  var swEl = document.getElementById('bp-stroke-color-swatch');
+  if (swEl) swEl.style.background = val;
+  var hexEl = document.getElementById('bp-stroke-color-hexedit');
+  if (hexEl) hexEl.value = val.toUpperCase();
+  if (!selKey) return;
+  var blk = getSelBlk();
+  if (!blk) return;
+  if (!_pendingHistorySave) { saveHistory(); _pendingHistorySave = true; }
+  blk.strokeColor = val;
   render();
 }
 
@@ -1283,7 +1438,7 @@ function syncPadV(val) {
   if (autoRow) autoRow.style.display = '';
   /* 패딩 변경 시 텍스트 잘림 방지 — minH 재계산 후 확장 */
   var blkEl = document.querySelector('.blk[data-key="' + selKey + '"]');
-  if (blkEl && (blk.type === 'txt' || blk.type === 'title')) {
+  if (blkEl && blk.type === 'txt') {
     blkEl.style.padding = val + 'px';
     blkEl.dataset.pad = val;
     var minH = getTextMinH(blkEl);
@@ -1397,6 +1552,13 @@ function syncTextStyle(prop, val) {
             _blkC.h = minHC;
             blkElC.style.height = _blkC.h + 'px';
           }
+          if (_blkC.type !== 'txt') {
+            var minWC = getTextMinW(blkElC);
+            if (minWC > _blkC.w) {
+              _blkC.w = minWC;
+              blkElC.style.width = _blkC.w + 'px';
+            }
+          }
         }
       });
     }
@@ -1419,6 +1581,13 @@ function syncTextStyle(prop, val) {
               _blk2.h = minHFs2;
               blkElFs2.style.height = _blk2.h + 'px';
             }
+            if (_blk2.type !== 'txt') {
+              var minWFs2 = getTextMinW(blkElFs2);
+              if (minWFs2 > _blk2.w) {
+                _blk2.w = minWFs2;
+                blkElFs2.style.width = _blk2.w + 'px';
+              }
+            }
           }
         });
       }
@@ -1426,15 +1595,30 @@ function syncTextStyle(prop, val) {
   }
 }
 
+function syncLineHeight(val) {
+  if (!selKey) return;
+  var blk = getSelBlk();
+  if (!blk || blk.type !== 'txt') return;
+  blk.lineHeight = Math.round(parseFloat(val) * 10) / 10 || 1.6;
+  var blkEl = document.querySelector('.blk[data-key="' + selKey + '"]');
+  if (blkEl) {
+    var ta = blkEl.querySelector('.blk-text-area');
+    if (ta) ta.style.lineHeight = blk.lineHeight;
+  }
+  _updateSliderUI('bp-txt-sl-lh', blk.lineHeight);
+  var snEl = document.getElementById('bp-txt-sn-lh');
+  if (snEl) snEl.value = blk.lineHeight;
+}
+
 /* 블록 텍스트 스타일을 DOM 요소에 적용 */
 function applyTextStyleToEl(el, blk) {
-  var fontSize   = blk.fontSize   || (blk.type === 'title' ? 15 : 12);
+  var fontSize   = blk.fontSize   || 12;
   var textAlign  = blk.textAlign  || 'left';
   var fontFamily = blk.fontFamily || globalVals.font || 'Pretendard';
   var fontColor  = blk.fontColor  || globalVals.fontColor || '#212121';
   el.style.fontSize = fontSize + 'px';
   el.style.textAlign  = textAlign;
-  el.style.fontFamily = "'" + fontFamily + "', 'Noto Sans KR', sans-serif";
+  el.style.fontFamily = "'" + fontFamily + "', 'Pretendard', sans-serif";
   el.style.color      = fontColor;
   /* vAlign 보정은 render() 후 applyVAlignAll()에서 처리 */
 }
@@ -1471,31 +1655,39 @@ function _isSelected(key) {
   return selKey === key || selKeys.indexOf(key) !== -1;
 }
 
+/* 블록의 stroke 인셋 boxShadow 조각 */
+function _blkStrokeShadow(bdata) {
+  var strk = bdata ? (bdata.stroke || 0) : 0;
+  if (!strk) return '';
+  var c = (bdata && bdata.strokeColor) || '#1C1C20';
+  return strk >= 2 ? 'inset 0 0 0 2px ' + hexWithAlpha(c, 55)
+       : 'inset 0 0 0 1px ' + hexWithAlpha(c, 28);
+}
+
+/* 블록의 드롭섀도 boxShadow 조각 */
+function _blkDropShadow(bdata) {
+  var bsh = (bdata && bdata.shadow !== null && bdata.shadow !== undefined) ? bdata.shadow : globalVals.shadow;
+  if (!(bsh > 0)) return '';
+  return bsh >= 2 ? '0 6px 16px rgba(0,0,0,.18)'
+       : bsh >= 1 ? '0 1px 3px rgba(0,0,0,.12), 0 1px 2px rgba(0,0,0,.06)'
+       : '0 ' + Math.round(bsh*0.8*0.5) + 'px ' + Math.round(bsh*0.8*2) + 'px rgba(0,0,0,' + (0.06+bsh*0.012) + ')';
+}
+
 /* 블록의 비선택 상태 boxShadow (drop shadow + stroke 인셋 모두 포함) */
 function _blkNormalBoxShadow(bdata) {
-  var bsh = (bdata.shadow !== null && bdata.shadow !== undefined) ? bdata.shadow : globalVals.shadow;
-  var strk = bdata.stroke || 0;
-  var strokeShadow = strk >= 2 ? 'inset 0 0 0 2px rgba(28,28,32,.55)'
-                  : strk >= 1 ? 'inset 0 0 0 1px rgba(28,28,32,.28)'
-                  : '';
-  var dropShadow = '';
-  if (bsh > 0) {
-    dropShadow = bsh >= 2 ? '0 6px 16px rgba(0,0,0,.18)'
-               : bsh >= 1 ? '0 1px 3px rgba(0,0,0,.12), 0 1px 2px rgba(0,0,0,.06)'
-               : '0 ' + Math.round(bsh*0.8*0.5) + 'px ' + Math.round(bsh*0.8*2) + 'px rgba(0,0,0,' + (0.06+bsh*0.012) + ')';
-  }
+  var dropShadow = _blkDropShadow(bdata);
+  var strokeShadow = _blkStrokeShadow(bdata);
   if (dropShadow && strokeShadow) return dropShadow + ',' + strokeShadow;
   return dropShadow || strokeShadow || 'none';
 }
 
-/* 블록의 선택 상태 boxShadow (선택 글로우 + stroke 인셋) */
+/* 블록의 선택 상태 boxShadow (선택 글로우 + drop shadow + stroke 인셋) */
 function _blkSelBoxShadow(bdata) {
-  var strk = bdata ? (bdata.stroke || 0) : 0;
-  var strokeShadow = strk >= 2 ? 'inset 0 0 0 2px rgba(28,28,32,.55)'
-                  : strk >= 1 ? 'inset 0 0 0 1px rgba(28,28,32,.28)'
-                  : '';
-  return strokeShadow ? '0 0 0 3px rgba(91,124,230,0.12),' + strokeShadow
-                      : '0 0 0 3px rgba(91,124,230,0.12)';
+  /* 이미지(스티커) 선택 표시와 통일 — 선택 글로우 링 없이 outline만으로 표시(2026-06-23).
+     블록 자체의 드롭섀도/외곽선은 선택 중에도 그대로 유지 */
+  var dropShadow = _blkDropShadow(bdata);
+  var strokeShadow = _blkStrokeShadow(bdata);
+  return [dropShadow, strokeShadow].filter(Boolean).join(',') || 'none';
 }
 
 /* selKey → 블록 객체 반환 */
@@ -1586,6 +1778,23 @@ function getTextMinH(blkEl) {
   return (padV === 0) ? Math.max(1, raw) : Math.max(40, raw);
 }
 
+/* 가장 긴 줄이 줄바꿈 없이 들어갈 최소 너비 측정 — white-space를 잠시 nowrap으로
+   풀어 "줄바꿈 없는 본연의 폭"을 측정 후 즉시 복구 */
+function getTextMinW(blkEl) {
+  if (!blkEl) return 80;
+  var ta = blkEl.querySelector('.blk-text-area');
+  if (!ta) return 80;
+  var padH = parseInt(blkEl.dataset.pad || 8) * 2;
+  var prevWhiteSpace = ta.style.whiteSpace;
+  var prevWidth = ta.style.width;
+  ta.style.whiteSpace = 'nowrap';
+  ta.style.width = 'auto';
+  var contentW = ta.scrollWidth || 0;
+  ta.style.whiteSpace = prevWhiteSpace;
+  ta.style.width = prevWidth;
+  return Math.max(80, contentW + padH);
+}
+
 
 /* 블록 최소 높이 반환 — 텍스트 블록은 현재 scrollHeight 기준, 나머지는 40px */
 function getBlkMinH(gi, ci, bi) {
@@ -1654,9 +1863,19 @@ document.addEventListener('mousemove', function(e) {
         });
       }
 
+      /* 콘텐츠 기반 최소 높이 방지턱 — 드래그 중에도 내용물 잘림 방지 */
+      if (b_r.type === 'txt') {
+        var _txtFloor = document.querySelector('.blk[data-key="' + blkResize.id + '"]');
+        if (_txtFloor) newH = Math.max(newH, getTextMinH(_txtFloor));
+      } else if (b_r.type === 'colorchip') {
+        newH = Math.max(newH, _ccMinH(b_r));
+      } else if (b_r.type === 'item') {
+        newH = Math.max(newH, _itemMinH(b_r));
+      }
       b_r.w = newW; b_r.h = newH;
       var blkEl_r = document.querySelector('.blk[data-key="' + blkResize.id + '"]');
       if (blkEl_r) { blkEl_r.style.width = newW + 'px'; blkEl_r.style.height = newH + 'px'; }
+      if (b_r.type === 'txt') applyVAlignAll();
       autoCanvasH();
     }
     return;
@@ -1715,7 +1934,6 @@ document.addEventListener('mousemove', function(e) {
       var cx5   = (e.clientX - sr5.left) / _zoomLevel;
       var cy5   = (e.clientY - sr5.top)  / _zoomLevel;
       var blk5  = getBlkByKey(blkDrag.id);
-      var padEl5 = document.getElementById('sheet-pad');
       if (blk5) {
         var nx = Math.round(cx5 - blkDrag.offsetX);
         var ny = Math.round(cy5 - blkDrag.offsetY);
@@ -1748,16 +1966,13 @@ document.addEventListener('mousemove', function(e) {
             var bEl = document.querySelector('.blk[data-key="' + b.id + '"]');
             if (bEl) bEl.style.left = b.x + 'px';
           });
-          canvasW += lx;
-          stEl5.style.width = canvasW + 'px';
-          stEl5.style.marginLeft = (-canvasW / 2) + 'px';
-          if (padEl5) padEl5.style.width = canvasW + 'px';
+          /* _setStageWidth 공용 헬퍼로 통일(2026-06-22) — 동작은 기존과 동일(center 재중앙) */
+          _setStageWidth(canvasW + lx, 'center');
         }
 
         /* 우측 자동 확장 — 이동 세트 최우단 기준
            우측 확장 시 stage가 왼쪽으로 이동(marginLeft 감소)하여 cx5가 증가하므로
            offsetX를 확장량/2 만큼 증가시켜 블록이 튀는 현상 방지 */
-        var _oldCanvasW = canvasW;
         var adjustedMaxX = nx + blk5.w;
         if (hasRel) {
           Object.keys(blkDrag.relPositions).forEach(function(gid) {
@@ -1769,21 +1984,14 @@ document.addEventListener('mousemove', function(e) {
         if (adjustedMaxX > canvasW) {
           var rExp = adjustedMaxX - canvasW;
           blkDrag.offsetX += Math.round(rExp / 2);  /* stage 이동량만큼 offsetX 보정 */
-          canvasW = adjustedMaxX;
-          stEl5.style.width = canvasW + 'px';
-          stEl5.style.marginLeft = (-canvasW / 2) + 'px';
-          if (padEl5) padEl5.style.width = canvasW + 'px';
+          /* _setStageWidth 공용 헬퍼로 통일(2026-06-22) — 동작은 기존과 동일(center 재중앙) */
+          _setStageWidth(adjustedMaxX, 'center');
         }
 
         /* 상단 자동 확장 — 헤더 있을 때: 헤더 위는 차단 / 없을 때: gaps.pad 여백 유지 */
-        var _yFloor = headerPos === 'top' ? -getHeaderH() : gaps.pad;
-        /* [v05c DEBUG] 상단 확장 진입 로그 — 매 프레임 출력 */
-        if (blkDrag.groupId) {
-        }
+        var _yFloor = headerPos === 'top' ? -getHeaderH() : 0;
         if (moveMinY < _yFloor) {
           var ty = _yFloor - moveMinY;
-          if (blkDrag.groupId) {
-          }
           blkDrag.offsetY -= ty;
           ny += ty;
           blocks.forEach(function(b) {
@@ -1792,6 +2000,7 @@ document.addEventListener('mousemove', function(e) {
             var bEl = document.querySelector('.blk[data-key="' + b.id + '"]');
             if (bEl) bEl.style.top = b.y + 'px';
           });
+          autoCanvasH();
         }
 
         /* 스냅 적용 (자동확장 후) */
@@ -1851,6 +2060,20 @@ document.addEventListener('mouseup', function() {
   if (blkResize) {
     _clearSnapGuides();
     document.body.style.userSelect = '';
+    /* 콘텐츠가 필요로 하는 최소 크기 밑으로 줄었으면 즉시 복귀 */
+    var _rb = getBlkByKey(blkResize.id);
+    if (_rb && _rb.type === 'txt') {
+      var _rEl = document.querySelector('.blk[data-key="' + blkResize.id + '"]');
+      if (_rEl) {
+        var _minH = getTextMinH(_rEl);
+        if (_minH > _rb.h) _rb.h = _minH;
+        // txt 블록은 수동 폭 조절 허용 — nowrap 기준 폭 강제 적용 안 함
+      }
+    } else if (_rb && _rb.type === 'colorchip') {
+      _ccAutoExpand(_rb, _rb.id);
+    } else if (_rb && _rb.type === 'item') {
+      _itemAutoExpand(_rb, _rb.id);
+    }
     blkResize = null;
     render();
     return;
@@ -1951,6 +2174,9 @@ function showToast(msg) {
 ══════════════════════════════════════════ */
 render();
 updatePngBg(pngBg); /* 에디터 배경색 초기 동기화 */
+
+/* 이미지(스티커)는 탭 진입 여부와 무관하게 캔버스에서 항상 클릭·드래그 가능 */
+if (!stickerEditMode) toggleStickerEdit();
 
 /* 줌/팬 이벤트 초기화 */
 initZoomPan();
@@ -2062,14 +2288,17 @@ function initSliders() {
       var max  = parseFloat(el.dataset.max) || 100;
       var pct  = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
       var raw  = min + pct * (max - min);
-      /* 정수형 슬라이더 */
+      var step = parseFloat(el.dataset.step);
+      if (!isNaN(step) && step > 0 && step < 1) {
+        return Math.round(raw / step) * step;
+      }
       return Math.round(raw);
     }
     function applyVal(clientX) {
       var val = getValFromX(clientX);
       _updateSliderUI(el.id, val);
       /* 연동된 숫자 인풋 갱신 */
-      var snId = el.id.replace(/^sl-/, 'sn-').replace(/^bp-sl-/, 'bp-sn-');
+      var snId = el.id.replace(/^sl-/, 'sn-').replace(/^bp-sl-/, 'bp-sn-').replace(/-sl-/, '-sn-');
       var sn   = document.getElementById(snId);
       if (sn) sn.value = val;
       /* 연결 함수 호출 */

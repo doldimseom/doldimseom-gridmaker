@@ -69,9 +69,29 @@ function makeTileSvgDataUriPx(imgSrc, tileW, tileH, angle, svgW, svgH) {
   return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 }
 
+/* 배경지 오버레이(#bgl-overlay) 위치·크기 동기화.
+   상단 핸들 확장(canvasExtraTop>0)은 pad를 헤더로부터 아래로 밀어내기만 하고 pad 박스
+   자체는 커지지 않아(F-17), pad 안에만 있던 배경지(예전엔 inset:0)가 그 사이 간격을
+   못 덮어 "안 이어지는" 것처럼 보이던 문제(2026-06-22) 수정.
+   #sheet-pad는 overflow:hidden이 아니므로(확인됨) ol을 pad의 자식으로 그대로 두고
+   top을 음수로 줘서 pad 위쪽(간격)까지 그려지게 함 — pad의 자식 위치를 유지해야
+   "pad 자체 배경색보다 위, pad의 블록 자식들보다 아래"라는 기존 쌓임 순서가 보존됨
+   (별도 형제 요소로 빼면 그 순서를 동시에 만족시킬 수 없어 z-order가 깨짐).
+   canvasExtraTop<=0(라운드 헤더 겹침 등)일 때는 기존과 동일하게 pad 박스에만 맞춤 */
+function _syncBgOverlayBounds() {
+  var ol = document.getElementById('bgl-overlay');
+  if (!ol) return;
+  var extend = Math.max(0, canvasExtraTop);
+  ol.style.top    = (-extend) + 'px';
+  ol.style.left   = '0px';
+  ol.style.right  = '0px';
+  ol.style.height = (canvasH + extend) + 'px';
+}
+
 function applySheetBgLayer() {
   var pad = document.getElementById('sheet-pad');
   if (!pad) return;
+  _syncBgOverlayBounds();
 
   /* pad.backgroundColor는 render()가 전적으로 관리 — 여기서 절대 건드리지 않음.
      배경지 on/off에 관계없이 overlay만 업데이트한다. */
@@ -110,10 +130,14 @@ function _applyBgLayerOverlay(imgUrl, opacity) {
   if (!ol) {
     ol = document.createElement('div');
     ol.id = 'bgl-overlay';
-    ol.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:0;border-radius:inherit;';
+    /* inset:0 대신 _syncBgOverlayBounds()가 top/height를 직접 계산해 넣음 — 상단 핸들
+       확장 시 pad 위쪽 간격까지 덮도록 음수 top 허용(pad가 overflow:hidden이 아니므로
+       pad 박스 밖으로 그려도 잘리지 않음) */
+    ol.style.cssText = 'position:absolute;pointer-events:none;z-index:0;border-radius:inherit;';
     pad.style.position = 'relative';
     pad.insertBefore(ol, pad.firstChild);
   }
+  _syncBgOverlayBounds();
 
   /* 색상 레이어 — 투명도 미적용 */
   var cl = ol.querySelector('.bgl-clr');

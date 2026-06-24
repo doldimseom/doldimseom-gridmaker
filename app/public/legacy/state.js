@@ -6,6 +6,9 @@ var _blkStyleClipboard = null; /* 블록 옵션 복사 클립보드 { radius, sh
 var canvasW = 800; /* 캔버스 너비 (px) */
 var canvasH = 0;   /* 캔버스 높이 (px) — autoCanvasH()가 콘텐츠보다 작으면 확장만 함(축소 없음).
                        0은 "아직 계산 안 됨" 상태로, 첫 render() 시 콘텐츠 높이로 채워짐 */
+var canvasExtraTop = 0; /* 블록 위에 추가로 존재하는 여백(px) — 상단 핸들 전용, canvasH와 대칭
+                       (F-17: 블록/스티커 데이터는 건드리지 않고 이 값만 조정 — autoCanvasH()가
+                       #sheet-pad margin-top / #sticker-layer top에 반영) */
 var blocks = [
   { id: _nextBlkId(), x: 12,  y: 12,  w: 260, h: 500, groupId: 'g_01', type: 'img', imgSrc: null, imgTransform: { scale:1, x:0, y:0 }, radius: null, shadow: null, opacity: null, bgColor: null },
   { id: _nextBlkId(), x: 284, y: 12,  w: 216, h: 247, groupId: 'g_01', type: 'img', imgSrc: null, imgTransform: { scale:1, x:0, y:0 }, radius: null, shadow: null, opacity: null, bgColor: null },
@@ -43,7 +46,7 @@ var headerData = {
   roundOverlap: 24              /* 시트 카드 겹침 수치 */
 };
 var selKey    = null;        /* 선택된 블록 key ("gi-ci-bi"), 헤더='header' */
-var selKeys   = [];          /* 다중 선택 키 배열 (Ctrl+클릭으로 추가/제거) */
+var selKeys   = [];          /* 다중 선택 키 배열 (Shift+클릭으로 추가/제거) */
 var sheetBg     = '#ffffff';  /* 시트 배경색 — collectData/applyData 저장 대상 */
 var sheetRadius = 14;         /* 시트 라운딩 — collectData/applyData 저장 대상 */
 var pngMargin = true;       /* PNG 여백 포함 여부 (기본 on) */
@@ -96,6 +99,8 @@ var _panStartY    = 0;
 var _panStartOffX = 0;
 var _panStartOffY = 0;
 var _spaceDown    = false;  /* Space 키 누름 여부 */
+var _marqueeDrag  = null;   /* { startX, startY, didMove } — pad 기준 좌표, 빈 영역 드래그 다중선택 */
+var _justFinishedMarquee = false; /* 마퀴 드래그 직후 뒤따르는 click의 캔버스 배경 선택해제를 1회 무시 */
 var popupTarget = null; /* { anchorEl } — 새 블록의 위치는 캔버스 하단 자동 배치 */
 var _tfbScrubStartX = 0, _tfbScrubStartSize = 0;
 var _ITEM_METRICS = {
@@ -105,6 +110,16 @@ var _ITEM_METRICS = {
   'pm-grid': { h: { rowH: 35.5, rowGap: 7  }, v: { rowH: 51.5, rowGap: 7  } }
 };
 var _CC = { h: 30, padV: 8, gap: 6 };
+/* 라운딩이 박스 크기에 비해 클 때(원형 등) 모서리의 호가 콘텐츠를 깎아먹지 않도록,
+   호에 내접하는 안전 사각형의 여백을 계산. 코너의 호(반지름 effR, 중심이 각 변에서
+   effR만큼 안쪽)가 내접 사각형의 코너(여백 m, m)를 침범하지 않으려면
+   center(effR,effR)에서 corner(m,m)까지의 거리가 effR 이하여야 함:
+   √2 * (effR - m) ≤ effR  →  m ≥ effR * (1 - 1/√2) ≈ effR * 0.2929
+   effR은 브라우저가 실제로 클램프하는 값과 동일하게 min(r, w/2, h/2)로 계산. */
+function _cornerSafeMargin(r, w, h) {
+  var effR = Math.min(r, w / 2, h / 2);
+  return Math.round(effR * 0.2929);
+}
 var _ccDragId = null; /* 드래그 중인 칩 id */
 var STORAGE_KEY = 'gridmaker_slots';
 var _importedSlots = null;

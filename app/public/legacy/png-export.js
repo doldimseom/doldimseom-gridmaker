@@ -31,9 +31,6 @@ function collectLayout() {
         h:   Math.round(hr.height / Z),
         pos: headerPos
       };
-    } else {
-    }
-  } else {
   }
 
   /* sheet-pad 위치 (헤더 유무/라운드 오버랩 반영) */
@@ -47,11 +44,18 @@ function collectLayout() {
 
   /* blocks 배열 직접 순회 — blk.x/y/w/h가 sheet-pad 기준 절대좌표 */
   blocks.forEach(function(blk) {
+    /* txt 블록은 min-height 클램프 등으로 DOM이 blk.h보다 클 수 있음 —
+       PNG 중앙정렬 offset이 DOM과 일치하도록 실제 렌더 높이를 우선 사용 */
+    var h = blk.h;
+    if (blk.type === 'txt') {
+      var domEl = document.querySelector('.blk[data-key="' + blk.id + '"]');
+      if (domEl) h = domEl.offsetHeight;
+    }
     result.blocks.push({
       x:   result.pad.x + blk.x,
       y:   result.pad.y + blk.y,
       w:   blk.w,
-      h:   blk.h,
+      h:   h,
       blk: blk
     });
   });
@@ -107,7 +111,6 @@ function renderHeaderPngBg(ctx, ox, oy, hdr) {
       ctx.scale(t.scale || 1, t.scale || 1);
       ctx.drawImage(img, -iw / 2, -ih / 2, iw, ih);
       ctx.restore();
-    } else {
     }
   }
 
@@ -160,6 +163,13 @@ function renderBgLayerPng(ctx, ox, oy, layout, SHEET_R) {
   var pdW = pad.w;
   var pdH = pad.h;
 
+  /* 상단 핸들 확장(canvasExtraTop>0) 시 헤더~pad 사이에 생기는 간격까지 배경지가
+     덮도록 위로 확장 — DOM의 _syncBgOverlayBounds()(panel-bg.js)와 동일한 보정
+     (2026-06-22, F-17 모델: pad 박스 자체는 안 커지고 위치만 이동하므로 PNG도 동일 보정 필요) */
+  var _bgExtend = Math.max(0, canvasExtraTop);
+  pdY -= _bgExtend;
+  pdH += _bgExtend;
+
   /* round 타입 보정 불필요 —
      round clip이 saveAsPNG에서 배경지보다 먼저 열리므로
      배경지는 round clip 영역 안에서 자연스럽게 잘림.
@@ -192,7 +202,6 @@ function renderBgLayerPng(ctx, ox, oy, layout, SHEET_R) {
     var bgColorRgba = hexWithAlpha(bgLayer.color, bgLayer.opacity);
     ctx.fillStyle = bgColorRgba;
     ctx.fillRect(pdX, pdY, pdW, pdH);
-  } else {
   }
 
   /* ── 2. 이미지 레이어 ── */
@@ -352,7 +361,12 @@ function saveAsPNG() {
   var _saveBtnOrigHTML = _saveBtn ? _saveBtn.innerHTML : '';
   if (_saveBtn) { _saveBtn.disabled = true; _saveBtn.textContent = '저장 중…'; }
 
-  var DPR     = 2;                    /* 고해상도 ×2 */
+  /* 웹폰트가 로드되기 전에 ctx.fillText가 호출되면 canvas는 DOM처럼 폰트 로드 후 자동
+     재렌더되지 않아 시스템 폴백 폰트로 그대로 캡처됨 — "계단현상"처럼 보이거나 글자
+     너비가 달라져 자간이 어긋난 것처럼 보이는 현상의 주된 원인. 그리기 시작 전 대기. */
+  document.fonts.ready.then(function() {
+
+  var DPR     = 3;                    /* 고해상도 ×3 — 포토샵/피그마급 출력 요청에 따라 ×2→×3 상향 */
   var MARGIN  = pngMargin ? 40 : 0;   /* 여백 px (1x 기준) */
 
   var canvW = layout.sheetW + MARGIN * 2;
@@ -466,7 +480,6 @@ function saveAsPNG() {
     ctx.fillStyle = sheetBg;
     ctx.fillRect(pdX_r, pdY_r, pdW_r, pdH_r);
     roundClipOpen = true;
-  } else {
   }
 
   /* 2-d. 배경지 — round clip 안에서 그려야 흰 카드 위, 블록 아래에 보임
@@ -550,7 +563,7 @@ function saveAsPNG() {
       if (hType === 'sns') {
         /* SNS 네비바 텍스트 */
         var navH = headerData.navH || 32;
-        ctx.font         = "600 11px 'Noto Sans KR', sans-serif";
+        ctx.font         = "600 11px 'Pretendard', sans-serif";
         ctx.fillStyle    = headerData.navFontColor || '#212121';
         ctx.textAlign    = 'left';
         ctx.textBaseline = 'middle';
@@ -588,7 +601,7 @@ function saveAsPNG() {
       ctx.save();
       roundRectPath(bx, by, bw, bh, r);
       ctx.clip();
-      ctx.strokeStyle = pStrk >= 2 ? 'rgba(28,28,32,.55)' : 'rgba(28,28,32,.28)';
+      ctx.strokeStyle = hexWithAlpha(blk.strokeColor || '#1C1C20', pStrk >= 2 ? 55 : 28);
       ctx.lineWidth   = pStrk >= 2 ? 4 : 2;
       roundRectPath(bx, by, bw, bh, r);
       ctx.stroke();
@@ -639,21 +652,20 @@ function saveAsPNG() {
       }
       /* 이미지 위에 stroke 표시 */
       _drawStrokePng();
-    /* 4-c. 텍스트/타이틀 블록 */
-    } else if (blk.type === 'txt' || blk.type === 'title') {
+    /* 4-c. 텍스트 블록 */
+    } else if (blk.type === 'txt') {
       var pad     = (blk.padV !== null && blk.padV !== undefined)
         ? blk.padV
-        : (r >= 999 ? 40 : Math.max(8, Math.round(Math.min(r, 32) * 0.5 + 8)));
+        : Math.max(Math.max(8, Math.round(Math.min(r, 32) * 0.5 + 8)), _cornerSafeMargin(r, bw, bh));
       var tFont   = blk.fontFamily || globalVals.font || 'Pretendard';
-      var tSize   = blk.fontSize || (blk.type === 'title' ? 15 : 12);
+      var tSize   = blk.fontSize || 12;
       var tColor  = blk.fontColor  || globalVals.fontColor || '#212121';
       /* 글자 외곽선 opts — wrapText/wrapSpans에 전달 */
       var pTsh = (blk.tstroke || 0) > 0
         ? { color: blk.tstrokeColor || '#ffffff', lw: (blk.tstroke >= 2 ? 3.2 : 1.8) }
         : null;
       var tAlign  = blk.textAlign  || 'left';
-      var tVAlign = blk.vAlign     || 'top';
-      var lineH   = Math.round(tSize * 1.6);
+      var lineH   = Math.round(tSize * (blk.lineHeight || 1.6));
       var textX   = tAlign === 'center' ? bx + bw / 2
                   : tAlign === 'right'  ? bx + bw - pad
                   : bx + pad;
@@ -666,7 +678,7 @@ function saveAsPNG() {
       var hasSpanFormat = tListMode === 'none' && blk.spans && blk.spans.length > 0 &&
         blk.spans.some(function(s) {
           return s.bold || s.italic || s.underline || s.color || s.bg ||
-                 (s.fontSize && s.fontSize !== tSize);
+                 (s.fontSize && s.fontSize !== tSize) || s.tstroke !== undefined;
         });
 
       /* ── 헬퍼: span 단위 줄바꿈 렌더링 ── */
@@ -678,12 +690,14 @@ function saveAsPNG() {
           chars.forEach(function(ch) {
             tokens.push({
               ch: ch,
-              bold:      sp.bold      || false,
-              italic:    sp.italic    || false,
-              underline: sp.underline || false,
-              color:     sp.color     || tColor,
-              bg:        sp.bg        || null,
-              fontSize:  sp.fontSize  || tSize
+              bold:         sp.bold      || false,
+              italic:       sp.italic    || false,
+              underline:    sp.underline || false,
+              color:        sp.color     || tColor,
+              bg:           sp.bg        || null,
+              fontSize:     sp.fontSize  || tSize,
+              tstroke:      sp.tstroke !== undefined ? sp.tstroke : undefined,
+              tstrokeColor: sp.tstrokeColor || null
             });
           });
         });
@@ -696,7 +710,7 @@ function saveAsPNG() {
           if (!tokens.length) return;
           /* 정렬에 따른 시작 X 계산 */
           var totalW = tokens.reduce(function(sum, t) {
-            ctx.font = (t.bold ? '700' : '400') + ' ' + t.fontSize + 'px \'' + tFont + '\', \'Noto Sans KR\', sans-serif';
+            ctx.font = (t.bold ? '700' : '400') + ' ' + t.fontSize + 'px \'' + tFont + '\', \'Pretendard\', sans-serif';
             return sum + ctx.measureText(t.ch).width;
           }, 0);
           /* 좌표를 정수로 고정 — 글자 단위 measureText 폭을 그대로 누적하면
@@ -709,7 +723,7 @@ function saveAsPNG() {
           var positioned = tokens.map(function(t) {
             var fw = t.bold ? '700' : '400';
             var fs = t.italic ? 'italic ' : '';
-            ctx.font = fs + fw + ' ' + t.fontSize + 'px \'' + tFont + '\', \'Noto Sans KR\', sans-serif';
+            ctx.font = fs + fw + ' ' + t.fontSize + 'px \'' + tFont + '\', \'Pretendard\', sans-serif';
             var cw = ctx.measureText(t.ch).width;
             var x = drawX;
             drawX = Math.round(drawX + cw);
@@ -738,8 +752,11 @@ function saveAsPNG() {
             var t = p.t;
             var fw = t.bold ? '700' : '400';
             var fs = t.italic ? 'italic ' : '';
-            ctx.font = fs + fw + ' ' + t.fontSize + 'px \'' + tFont + '\', \'Noto Sans KR\', sans-serif';
-            if (pTsh) { ctx.save(); ctx.strokeStyle=pTsh.color; ctx.lineWidth=pTsh.lw; ctx.lineJoin='round'; ctx.strokeText(t.ch, p.x, y); ctx.restore(); }
+            ctx.font = fs + fw + ' ' + t.fontSize + 'px \'' + tFont + '\', \'Pretendard\', sans-serif';
+            var _tTsh = t.tstroke !== undefined
+              ? (t.tstroke > 0 ? { color: t.tstrokeColor || '#ffffff', lw: (t.tstroke >= 2 ? 3.2 : 1.8) } : null)
+              : pTsh;
+            if (_tTsh) { ctx.save(); ctx.strokeStyle=_tTsh.color; ctx.lineWidth=_tTsh.lw; ctx.lineJoin='round'; ctx.strokeText(t.ch, p.x, y); ctx.restore(); }
             ctx.fillStyle = t.color;
             ctx.fillText(t.ch, p.x, y);
             if (t.underline) {
@@ -760,7 +777,7 @@ function saveAsPNG() {
             i++;
             continue;
           }
-          ctx.font = (t.bold ? '700' : '400') + ' ' + t.fontSize + 'px \'' + tFont + '\', \'Noto Sans KR\', sans-serif';
+          ctx.font = (t.bold ? '700' : '400') + ' ' + t.fontSize + 'px \'' + tFont + '\', \'Pretendard\', sans-serif';
           var cw = ctx.measureText(t.ch).width;
           if (lineW + cw > maxW && lineTokens.length > 0) {
             if (!dryRun) flushLine(lineTokens, curY, false);
@@ -782,17 +799,15 @@ function saveAsPNG() {
       var textStartY = by + pad;
 
       if (hasSpanFormat) {
-        /* span 단위 렌더링 */
-        if (tVAlign === 'center') {
-          var totalTextH = wrapSpans(blk.spans, textX, 0, maxTextW, lineH, true);
-          var innerH = bh - pad * 2;
-          var offset = Math.max(0, (innerH - totalTextH) / 2);
-          textStartY = by + pad + offset;
-        }
+        /* span 단위 렌더링 — 항상 수직 중앙정렬 */
+        var totalTextH = wrapSpans(blk.spans, textX, 0, maxTextW, lineH, true);
+        var innerH = bh - pad * 2;
+        var offset = Math.max(0, (innerH - totalTextH) / 2);
+        textStartY = by + pad + offset;
         wrapSpans(blk.spans, textX, textStartY, maxTextW, lineH, false);
       } else {
         /* 기존 단색 렌더링 (목록형 포함) */
-        ctx.font      = tSize + 'px \'' + tFont + '\', \'Noto Sans KR\', sans-serif';
+        ctx.font      = tSize + 'px \'' + tFont + '\', \'Pretendard\', sans-serif';
         ctx.fillStyle = tColor;
         var rawText   = blk.text || '';
         var renderText = rawText;
@@ -809,12 +824,11 @@ function saveAsPNG() {
             return line;
           }).join('\n');
         }
-        if (tVAlign === 'center') {
-          var totalTextH = wrapText(renderText, textX, 0, maxTextW, lineH, true);
-          var innerH = bh - pad * 2;
-          var offset = Math.max(0, (innerH - totalTextH) / 2);
-          textStartY = by + pad + offset;
-        }
+        /* 단색 렌더링 — 항상 수직 중앙정렬 */
+        var totalTextH = wrapText(renderText, textX, 0, maxTextW, lineH, true);
+        var innerH = bh - pad * 2;
+        var offset = Math.max(0, (innerH - totalTextH) / 2);
+        textStartY = by + pad + offset;
         wrapText(renderText, textX, textStartY, maxTextW, lineH, false, pTsh);
       }
       ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
@@ -823,7 +837,9 @@ function saveAsPNG() {
     } else if (blk.type === 'colorchip') {
       var ccChips    = blk.chips || [];
       var ccRad      = (blk.chipRadius !== null && blk.chipRadius !== undefined) ? blk.chipRadius : 0;
-      var ccPad      = 8;
+      /* 블록 자체 라운딩(r)이 박스 크기 대비 과대한 경우(원형 등) 칩이 모서리 호에 깎이지
+         않도록 추가 여백 확보 — DOM(canvas-render.js makeBlk)과 동일한 공식 */
+      var ccPad      = Math.max(8, _cornerSafeMargin(r, bw, bh));
       /* 개별 블록 크기·간격 배율 */
       var ccSizeScale = (blk.ccSizeScale || 100) / 100;
       var ccGapScale  = (blk.ccGapScale  || 100) / 100;
@@ -831,13 +847,15 @@ function saveAsPNG() {
       var ccChipH    = Math.round((blk.chipSize  !== undefined ? blk.chipSize  : 30) * ccSizeScale);
       var ccChipPadH = Math.round((blk.chipPadH  !== undefined ? blk.chipPadH  : 8)  * ccSizeScale);
       var ccFont     = globalVals.font || 'Pretendard';
-      var ccFSize    = Math.round(11 * ccSizeScale);
+      var ccFontScale = (blk.ccFontScale || 100) / 100;
+      var ccFSize    = Math.round(11 * ccSizeScale * ccFontScale);
       var showSwatch = blk.showSwatch !== false;
       var showText   = blk.showText === true;
+      var ccAlignCenter = blk.ccAlign === 'center';
       var ccDescGap  = 8;
       var ccAvailW   = bw - ccPad * 2;
 
-      ctx.font         = '600 ' + ccFSize + 'px \'' + ccFont + '\', \'Noto Sans KR\', sans-serif';
+      ctx.font         = '600 ' + ccFSize + 'px \'' + ccFont + '\', \'Pretendard\', sans-serif';
       ctx.textBaseline = 'middle';
 
       if (showText) {
@@ -845,10 +863,10 @@ function saveAsPNG() {
         var ccRows2 = [[]];
         var ccRowWidths2 = [0];
         ccChips.forEach(function(chip) {
-          ctx.font = '600 ' + ccFSize + 'px \'' + ccFont + '\', \'Noto Sans KR\', sans-serif';
+          ctx.font = '600 ' + ccFSize + 'px \'' + ccFont + '\', \'Pretendard\', sans-serif';
           var tw    = ctx.measureText(chip.label || '').width;
           var chipW = Math.max(ccChipH, tw + ccChipPadH * 2);
-          ctx.font  = ccFSize + 'px \'' + ccFont + '\', \'Noto Sans KR\', sans-serif';
+          ctx.font  = ccFSize + 'px \'' + ccFont + '\', \'Pretendard\', sans-serif';
           var descW = chip.desc ? ctx.measureText(chip.desc).width : 0;
           var rowW  = chipW + (descW > 0 ? ccDescGap + descW : 0);
           var ri = ccRows2.length - 1;
@@ -861,11 +879,12 @@ function saveAsPNG() {
           ccRows2[ri].push({ chip: chip, chipW: chipW, descW: descW, rowW: rowW });
           ccRowWidths2[ri] = ccRowWidths2[ri] > 0 ? ccRowWidths2[ri] + ccGap + rowW : rowW;
         });
-        var ccStartY2 = by + ccPad;
+        var ccTotalH2 = ccRows2.length * ccChipH + Math.max(0, ccRows2.length - 1) * ccGap;
+        var ccStartY2 = by + ccPad + Math.max(0, (bh - ccPad * 2 - ccTotalH2) / 2);
         ccRows2.forEach(function(row, ri) {
           var rowY = ccStartY2 + ri * (ccChipH + ccGap);
           if (rowY + ccChipH > by + bh) return;
-          var curX = bx + ccPad;
+          var curX = ccAlignCenter ? bx + ccPad + (ccAvailW - ccRowWidths2[ri]) / 2 : bx + ccPad;
           row.forEach(function(item) {
             var chipRadPx = Math.round(ccChipH / 2 * ccRad / 50);
             if (showSwatch) {
@@ -880,13 +899,13 @@ function saveAsPNG() {
               ctx.stroke();
               ctx.restore();
             }
-            ctx.fillStyle = showSwatch ? (item.chip.textColor || '#ffffff') : (item.chip.color || '#888888');
-            ctx.font      = '600 ' + ccFSize + 'px \'' + ccFont + '\', \'Noto Sans KR\', sans-serif';
+            ctx.fillStyle = showSwatch ? (item.chip.textColor || blk.ccTextColor || '#212121') : (item.chip.color || '#888888');
+            ctx.font      = '600 ' + ccFSize + 'px \'' + ccFont + '\', \'Pretendard\', sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText(item.chip.label || '', curX + item.chipW / 2, rowY + ccChipH / 2);
             if (item.chip.desc) {
               ctx.fillStyle = '#212121';
-              ctx.font      = ccFSize + 'px \'' + ccFont + '\', \'Noto Sans KR\', sans-serif';
+              ctx.font      = ccFSize + 'px \'' + ccFont + '\', \'Pretendard\', sans-serif';
               ctx.textAlign = 'left';
               ctx.fillText(item.chip.desc, curX + item.chipW + ccDescGap, rowY + ccChipH / 2);
             }
@@ -910,11 +929,12 @@ function saveAsPNG() {
           ccRows[ri].push({ chip: chip, w: ccw });
           ccRowWidths[ri] = ccRowWidths[ri] > 0 ? ccRowWidths[ri] + ccGap + ccw : ccw;
         });
-        var ccStartY = by + ccPad;
+        var ccTotalH = ccRows.length * ccChipH + Math.max(0, ccRows.length - 1) * ccGap;
+        var ccStartY = by + ccPad + Math.max(0, (bh - ccPad * 2 - ccTotalH) / 2);
         ccRows.forEach(function(row, ri) {
           var rowY = ccStartY + ri * (ccChipH + ccGap);
           if (rowY + ccChipH > by + bh) return;
-          var curX = bx + ccPad;
+          var curX = ccAlignCenter ? bx + ccPad + (ccAvailW - ccRowWidths[ri]) / 2 : bx + ccPad;
           row.forEach(function(item) {
             var chipRadPx = Math.round(ccChipH / 2 * ccRad / 50);
             if (showSwatch) {
@@ -929,7 +949,7 @@ function saveAsPNG() {
               ctx.stroke();
               ctx.restore();
             }
-            ctx.fillStyle = showSwatch ? (item.chip.textColor || '#ffffff') : (item.chip.color || '#888888');
+            ctx.fillStyle = showSwatch ? (item.chip.textColor || blk.ccTextColor || '#212121') : (item.chip.color || '#888888');
             ctx.textAlign = 'center';
             ctx.fillText(item.chip.label || '', curX + item.w / 2, rowY + ccChipH / 2);
             curX += item.w + ccGap;
@@ -947,18 +967,23 @@ function saveAsPNG() {
       var _iPt   = blk.ptColor   || '#5B7CE6';
       var _iItms = blk.items     || [];
       var _iFnt  = globalVals.font || 'Pretendard';
-      var _iFS   = "'" + _iFnt + "', 'Noto Sans KR', sans-serif";
+      var _iFS   = "'" + _iFnt + "', 'Pretendard', sans-serif";
       /* 개별 블록 크기·간격 배율 */
       var _iSizeScale = (blk.itemSizeScale || 100) / 100;
       var _iGapScale  = (blk.itemGapScale  || 100) / 100;
+      /* 버튼식(pm-chip) 전용 — 버튼 텍스트크기·라운딩·폰트색 (항목 전체 크기와 별개) */
+      var _iBtnFontScale = (blk.itemBtnFontScale || 100) / 100;
+      var _iBtnRadius = (blk.itemBtnRadius !== null && blk.itemBtnRadius !== undefined) ? blk.itemBtnRadius : 8;
+      var _iBtnColor = blk.itemBtnColor || null;
 
       /* ptColor 파생색 (ptVars와 동일 로직) */
       var _iRgb = function(h){ var m=(h||'').replace('#',''); return m.length===6?[parseInt(m.substr(0,2),16),parseInt(m.substr(2,2),16),parseInt(m.substr(4,2),16)]:[0,0,0]; };
       var _iMix = function(h1,h2,t){ var a=_iRgb(h1),b=_iRgb(h2); return 'rgb('+Math.round(a[0]+(b[0]-a[0])*t)+','+Math.round(a[1]+(b[1]-a[1])*t)+','+Math.round(a[2]+(b[2]-a[2])*t)+')'; };
       var _iPtInk = _iMix(_iPt,'#000000',0.28);
 
-      /* 블록 내부 여백 (blk-item padding:8px) */
-      var _iP  = 8;
+      /* 블록 내부 여백 (blk-item padding:8px 기본값 + 박스 크기 대비 라운딩이 과대한 경우
+         모서리 호에 깎이지 않도록 추가 여백 — DOM(canvas-render.js makeBlk)과 동일한 공식) */
+      var _iP  = Math.max(8, _cornerSafeMargin(r, bw, bh));
       var _iX  = bx + _iP;
       var _iY  = by + _iP;
       var _iW  = bw - _iP * 2;
@@ -979,53 +1004,67 @@ function saveAsPNG() {
         var _cKVGapH = 10 * _iGapScale;   /* 가로형: 칩-값 간격 */
         var _cKVGapV = 5  * _iGapScale;   /* 세로형: 칩-값 간격 */
         var _cPadR   = 20 * _iGapScale;   /* .pm-chip .ir padding-right:20px */
-        var _cChipR  = 8;
-        var _cKFont = Math.round(10.5 * _iSizeScale);
+        var _cChipR  = _iBtnRadius;
+        var _cKFont = Math.round(10.5 * _iSizeScale * _iBtnFontScale);
         var _cVFont = Math.round(12 * _iSizeScale);
         var _cVLineH = 12 * 1.5 * _iSizeScale;  /* .pm-chip .v line-height:1.5 */
-        var _cCurY = _iY;
-        _iItms.forEach(function(it, idx) {
-          if (_iDiv && idx > 0) {
-            ctx.save(); ctx.strokeStyle = '#ECEAE4'; ctx.lineWidth = 0.5;
-            ctx.beginPath();
-            ctx.moveTo(_iX, _cCurY); ctx.lineTo(_iX + _iW, _cCurY);
-            ctx.stroke(); ctx.restore();
-            _cCurY += 9 * _iGapScale;
-          }
-          ctx.font = '700 ' + _cKFont + 'px ' + _iFS;
-          var _lw = ctx.measureText(it.k || '').width;
-          var _cw2 = Math.max(Math.round(48 * _iSizeScale), _lw + Math.round(20 * _iSizeScale));
-          /* 값 텍스트 줄바꿈 높이 사전 측정(dryRun) — 실제 폭이 좁아 줄바꿈되면 행 높이도 함께 늘림 */
-          var _vMaxW = _iDir === 'h' ? Math.max(20, _iW - _cw2 - _cKVGapH - _cPadR) : _iW;
-          ctx.font = '400 ' + _cVFont + 'px ' + _iFS;
-          var _vH = wrapText(it.v || '', 0, 0, _vMaxW, _cVLineH, true) || _cVLineH;
-          var _rowH = Math.max(_cTokenH, _vH);
-          var _chipY = _iDir === 'h' ? (_cCurY + (_rowH - _cTokenH) / 2) : _cCurY;
-          if (_iCS === 'fill') {
-            ctx.fillStyle = _iPt;
-            roundRectPath(_iX, _chipY, _cw2, _cTokenH, _cChipR);
-            ctx.fill();
-            ctx.fillStyle = '#ffffff';
-          } else {
-            ctx.save(); ctx.strokeStyle = _iPt; ctx.lineWidth = 1.3;
-            roundRectPath(_iX, _chipY, _cw2, _cTokenH, _cChipR);
-            ctx.stroke(); ctx.restore();
-            ctx.fillStyle = _iPtInk;
-          }
-          ctx.font = '700 ' + _cKFont + 'px ' + _iFS;
-          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          ctx.fillText(it.k || '', _iX + _cw2 / 2, _chipY + _cTokenH / 2);
-          ctx.fillStyle = '#212121';
-          ctx.font = '400 ' + _cVFont + 'px ' + _iFS;
-          ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-          if (_iDir === 'h') {
-            wrapText(it.v || '', _iX + _cw2 + _cKVGapH, _cCurY + (_rowH - _vH) / 2, _vMaxW, _cVLineH, false);
-          } else {
-            wrapText(it.v || '', _iX, _chipY + _cTokenH + _cKVGapV, _vMaxW, _cVLineH, false);
-            _rowH = _cTokenH + _cKVGapV + _vH;
-          }
-          _cCurY += _rowH + _cRowGap;
-        });
+        /* draw=false: 높이만 측정(드로잉 생략), draw=true: 실제로 그림 — 항상 수직 중앙정렬을
+           위해 1차 측정 후 오프셋 계산, 2차에서 실제 드로잉 */
+        var _runPmChip = function(startY, draw) {
+          var curY = startY, lastBottom = startY;
+          _iItms.forEach(function(it, idx) {
+            if (_iDiv && idx > 0) {
+              if (draw) {
+                ctx.save(); ctx.strokeStyle = '#ECEAE4'; ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(_iX, curY); ctx.lineTo(_iX + _iW, curY);
+                ctx.stroke(); ctx.restore();
+              }
+              curY += 9 * _iGapScale;
+            }
+            ctx.font = '700 ' + _cKFont + 'px ' + _iFS;
+            var _lw = ctx.measureText(it.k || '').width;
+            var _cw2 = Math.max(Math.round(48 * _iSizeScale), _lw + Math.round(20 * _iSizeScale));
+            /* 값 텍스트 줄바꿈 높이 사전 측정(dryRun) — 실제 폭이 좁아 줄바꿈되면 행 높이도 함께 늘림 */
+            var _vMaxW = _iDir === 'h' ? Math.max(20, _iW - _cw2 - _cKVGapH - _cPadR) : _iW;
+            ctx.font = '400 ' + _cVFont + 'px ' + _iFS;
+            var _vH = wrapText(it.v || '', 0, 0, _vMaxW, _cVLineH, true) || _cVLineH;
+            var _rowH = Math.max(_cTokenH, _vH);
+            var _chipY = _iDir === 'h' ? (curY + (_rowH - _cTokenH) / 2) : curY;
+            if (draw) {
+              if (_iCS === 'fill') {
+                ctx.fillStyle = _iPt;
+                roundRectPath(_iX, _chipY, _cw2, _cTokenH, _cChipR);
+                ctx.fill();
+                ctx.fillStyle = _iBtnColor || '#ffffff';
+              } else {
+                ctx.save(); ctx.strokeStyle = _iPt; ctx.lineWidth = 1.3;
+                roundRectPath(_iX, _chipY, _cw2, _cTokenH, _cChipR);
+                ctx.stroke(); ctx.restore();
+                ctx.fillStyle = _iBtnColor || _iPtInk;
+              }
+              ctx.font = '700 ' + _cKFont + 'px ' + _iFS;
+              ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+              ctx.fillText(it.k || '', _iX + _cw2 / 2, _chipY + _cTokenH / 2);
+              ctx.fillStyle = '#212121';
+              ctx.font = '400 ' + _cVFont + 'px ' + _iFS;
+              ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+            }
+            if (_iDir === 'h') {
+              if (draw) wrapText(it.v || '', _iX + _cw2 + _cKVGapH, curY + (_rowH - _vH) / 2, _vMaxW, _cVLineH, false);
+            } else {
+              if (draw) wrapText(it.v || '', _iX, _chipY + _cTokenH + _cKVGapV, _vMaxW, _cVLineH, false);
+              _rowH = _cTokenH + _cKVGapV + _vH;
+            }
+            curY += _rowH;
+            lastBottom = curY;
+            curY += _cRowGap;
+          });
+          return lastBottom - startY;
+        };
+        var _chipTotalH = _runPmChip(_iY, false);
+        var _chipOffset = Math.max(0, (bh - _iP * 2 - _chipTotalH) / 2);
+        _runPmChip(_iY + _chipOffset, true);
 
       /* ── pm-hair ── */
       } else if (_iPre === 'pm-hair') {
@@ -1036,42 +1075,56 @@ function saveAsPNG() {
         var _hKFont = Math.round(11 * _iSizeScale);
         var _hVFont = Math.round(12 * _iSizeScale);
         var _hVLineH = 12 * 1.45 * _iSizeScale;  /* .pm-hair .v line-height:1.45 */
-        var _hCurY = _iY;
-        _iItms.forEach(function(it, idx) {
-          if (_iDiv && idx > 0) {
-            ctx.save(); ctx.strokeStyle = '#ECEAE4'; ctx.lineWidth = 0.5;
-            ctx.beginPath();
-            ctx.moveTo(_iX, _hCurY); ctx.lineTo(_iX + _iW - _hPadR, _hCurY);
-            ctx.stroke(); ctx.restore();
-            _hCurY += 9 * _iGapScale;
-          }
-          ctx.font = '600 ' + _hKFont + 'px ' + _iFS;
-          var _kw = ctx.measureText(it.k || '').width;  /* .pm-hair .k는 nowrap — 줄바꿈 없음 */
-          if (_iDir === 'h') {
-            var _vMaxW = Math.max(20, _iW - _hPadR - _kw - 8);
-            ctx.font = '400 ' + _hVFont + 'px ' + _iFS;
-            var _vH = wrapText(it.v || '', 0, 0, _vMaxW, _hVLineH, true) || _hVLineH;
-            var _rowH = Math.max(_hKH, _vH) + _hPadTB * 2;
-            ctx.fillStyle = _iPtInk; ctx.font = '600 ' + _hKFont + 'px ' + _iFS;
-            ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-            ctx.fillText(it.k || '', _iX, _hCurY + _rowH / 2);
-            ctx.fillStyle = '#212121'; ctx.font = '400 ' + _hVFont + 'px ' + _iFS;
-            ctx.textAlign = 'right'; ctx.textBaseline = 'top';
-            wrapText(it.v || '', _iX + _iW - _hPadR, _hCurY + (_rowH - _vH) / 2, _vMaxW, _hVLineH, false);
-            _hCurY += _rowH;
-          } else {
-            var _vMaxW2 = _iW;
-            ctx.font = '400 ' + _hVFont + 'px ' + _iFS;
-            var _vH2 = wrapText(it.v || '', 0, 0, _vMaxW2, _hVLineH, true) || _hVLineH;
-            ctx.fillStyle = _iPtInk; ctx.font = '600 ' + _hKFont + 'px ' + _iFS;
-            ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-            ctx.fillText(it.k || '', _iX, _hCurY + _hPadTB);
-            ctx.fillStyle = '#212121'; ctx.font = '400 ' + _hVFont + 'px ' + _iFS;
-            ctx.textAlign = 'left';
-            wrapText(it.v || '', _iX, _hCurY + _hPadTB + _hKH + _hKVGap, _vMaxW2, _hVLineH, false);
-            _hCurY += _hPadTB + _hKH + _hKVGap + _vH2 + _hPadTB;
-          }
-        });
+        /* draw=false: 높이만 측정, draw=true: 실제로 그림 — 항상 수직 중앙정렬을 위해
+           1차 측정 후 오프셋 계산, 2차에서 실제 드로잉 */
+        var _runPmHair = function(startY, draw) {
+          var curY = startY;
+          _iItms.forEach(function(it, idx) {
+            if (_iDiv && idx > 0) {
+              if (draw) {
+                ctx.save(); ctx.strokeStyle = '#ECEAE4'; ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(_iX, curY); ctx.lineTo(_iX + _iW - _hPadR, curY);
+                ctx.stroke(); ctx.restore();
+              }
+              curY += 9 * _iGapScale;
+            }
+            ctx.font = '600 ' + _hKFont + 'px ' + _iFS;
+            var _kw = ctx.measureText(it.k || '').width;  /* .pm-hair .k는 nowrap — 줄바꿈 없음 */
+            if (_iDir === 'h') {
+              var _vMaxW = Math.max(20, _iW - _hPadR - _kw - 8);
+              ctx.font = '400 ' + _hVFont + 'px ' + _iFS;
+              var _vH = wrapText(it.v || '', 0, 0, _vMaxW, _hVLineH, true) || _hVLineH;
+              var _rowH = Math.max(_hKH, _vH) + _hPadTB * 2;
+              if (draw) {
+                ctx.fillStyle = _iPtInk; ctx.font = '600 ' + _hKFont + 'px ' + _iFS;
+                ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+                ctx.fillText(it.k || '', _iX, curY + _rowH / 2);
+                ctx.fillStyle = '#212121'; ctx.font = '400 ' + _hVFont + 'px ' + _iFS;
+                ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+                wrapText(it.v || '', _iX + _iW - _hPadR, curY + (_rowH - _vH) / 2, _vMaxW, _hVLineH, false);
+              }
+              curY += _rowH;
+            } else {
+              var _vMaxW2 = _iW;
+              ctx.font = '400 ' + _hVFont + 'px ' + _iFS;
+              var _vH2 = wrapText(it.v || '', 0, 0, _vMaxW2, _hVLineH, true) || _hVLineH;
+              if (draw) {
+                ctx.fillStyle = _iPtInk; ctx.font = '600 ' + _hKFont + 'px ' + _iFS;
+                ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+                ctx.fillText(it.k || '', _iX, curY + _hPadTB);
+                ctx.fillStyle = '#212121'; ctx.font = '400 ' + _hVFont + 'px ' + _iFS;
+                ctx.textAlign = 'left';
+                wrapText(it.v || '', _iX, curY + _hPadTB + _hKH + _hKVGap, _vMaxW2, _hVLineH, false);
+              }
+              curY += _hPadTB + _hKH + _hKVGap + _vH2 + _hPadTB;
+            }
+          });
+          return curY - startY;
+        };
+        var _hairTotalH = _runPmHair(_iY, false);
+        var _hairOffset = Math.max(0, (bh - _iP * 2 - _hairTotalH) / 2);
+        _runPmHair(_iY + _hairOffset, true);
 
       /* ── pm-cap ── */
       } else if (_iPre === 'pm-cap') {
@@ -1082,41 +1135,57 @@ function saveAsPNG() {
         var _capKFont = Math.round(9 * _iSizeScale);
         var _capVFont = Math.round(12.5 * _iSizeScale);
         var _capVLineH = 12.5 * 1.4 * _iSizeScale;  /* .pm-cap .v line-height:1.4 */
-        var _capCurY = _iY;
-        _iItms.forEach(function(it, idx) {
-          if (_iDiv && idx > 0) {
-            ctx.save(); ctx.strokeStyle = '#ECEAE4'; ctx.lineWidth = 0.5;
-            ctx.beginPath();
-            ctx.moveTo(_iX, _capCurY); ctx.lineTo(_iX + _iW - _capPadR, _capCurY);
-            ctx.stroke(); ctx.restore();
-            _capCurY += 9 * _iGapScale;
-          }
-          if (_iDir === 'h') {
-            ctx.font = '800 ' + _capKFont + 'px ' + _iFS;
-            var _capKw = ctx.measureText((it.k || '').toUpperCase()).width;
-            var _capVMaxW = Math.max(20, _iW - _capPadR - _capKw - 14);
-            ctx.font = '400 ' + _capVFont + 'px ' + _iFS;
-            var _capVH = wrapText(it.v || '', 0, 0, _capVMaxW, _capVLineH, true) || _capVLineH;
-            var _capRowH = Math.max(_capKH, _capVH);
-            ctx.fillStyle = _iPt; ctx.font = '800 ' + _capKFont + 'px ' + _iFS;
-            ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-            ctx.fillText((it.k || '').toUpperCase(), _iX, _capCurY + _capRowH / 2);
-            ctx.fillStyle = '#212121'; ctx.font = '400 ' + _capVFont + 'px ' + _iFS;
-            ctx.textAlign = 'right'; ctx.textBaseline = 'top';
-            wrapText(it.v || '', _iX + _iW - _capPadR, _capCurY + (_capRowH - _capVH) / 2, _capVMaxW, _capVLineH, false);
-            _capCurY += _capRowH + _capGap;
-          } else {
-            ctx.font = '400 ' + _capVFont + 'px ' + _iFS;
-            var _capVH2 = wrapText(it.v || '', 0, 0, _iW, _capVLineH, true) || _capVLineH;
-            ctx.fillStyle = _iPt; ctx.font = '800 ' + _capKFont + 'px ' + _iFS;
-            ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-            ctx.fillText((it.k || '').toUpperCase(), _iX, _capCurY);
-            ctx.fillStyle = '#212121'; ctx.font = '400 ' + _capVFont + 'px ' + _iFS;
-            ctx.textAlign = 'left';
-            wrapText(it.v || '', _iX, _capCurY + _capKH + _capKVGap, _iW, _capVLineH, false);
-            _capCurY += _capKH + _capKVGap + _capVH2 + _capGap;
-          }
-        });
+        /* draw=false: 높이만 측정, draw=true: 실제로 그림 — 항상 수직 중앙정렬을 위해
+           1차 측정 후 오프셋 계산, 2차에서 실제 드로잉 */
+        var _runPmCap = function(startY, draw) {
+          var curY = startY, lastBottom = startY;
+          _iItms.forEach(function(it, idx) {
+            if (_iDiv && idx > 0) {
+              if (draw) {
+                ctx.save(); ctx.strokeStyle = '#ECEAE4'; ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(_iX, curY); ctx.lineTo(_iX + _iW - _capPadR, curY);
+                ctx.stroke(); ctx.restore();
+              }
+              curY += 9 * _iGapScale;
+            }
+            if (_iDir === 'h') {
+              ctx.font = '800 ' + _capKFont + 'px ' + _iFS;
+              var _capKw = ctx.measureText((it.k || '').toUpperCase()).width;
+              var _capVMaxW = Math.max(20, _iW - _capPadR - _capKw - 14);
+              ctx.font = '400 ' + _capVFont + 'px ' + _iFS;
+              var _capVH = wrapText(it.v || '', 0, 0, _capVMaxW, _capVLineH, true) || _capVLineH;
+              var _capRowH = Math.max(_capKH, _capVH);
+              if (draw) {
+                ctx.fillStyle = _iPt; ctx.font = '800 ' + _capKFont + 'px ' + _iFS;
+                ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+                ctx.fillText((it.k || '').toUpperCase(), _iX, curY + _capRowH / 2);
+                ctx.fillStyle = '#212121'; ctx.font = '400 ' + _capVFont + 'px ' + _iFS;
+                ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+                wrapText(it.v || '', _iX + _iW - _capPadR, curY + (_capRowH - _capVH) / 2, _capVMaxW, _capVLineH, false);
+              }
+              curY += _capRowH;
+            } else {
+              ctx.font = '400 ' + _capVFont + 'px ' + _iFS;
+              var _capVH2 = wrapText(it.v || '', 0, 0, _iW, _capVLineH, true) || _capVLineH;
+              if (draw) {
+                ctx.fillStyle = _iPt; ctx.font = '800 ' + _capKFont + 'px ' + _iFS;
+                ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+                ctx.fillText((it.k || '').toUpperCase(), _iX, curY);
+                ctx.fillStyle = '#212121'; ctx.font = '400 ' + _capVFont + 'px ' + _iFS;
+                ctx.textAlign = 'left';
+                wrapText(it.v || '', _iX, curY + _capKH + _capKVGap, _iW, _capVLineH, false);
+              }
+              curY += _capKH + _capKVGap + _capVH2;
+            }
+            lastBottom = curY;
+            curY += _capGap;
+          });
+          return lastBottom - startY;
+        };
+        var _capTotalH = _runPmCap(_iY, false);
+        var _capOffset = Math.max(0, (bh - _iP * 2 - _capTotalH) / 2);
+        _runPmCap(_iY + _capOffset, true);
 
       /* ── pm-grid (2열 카드) ── */
       } else if (_iPre === 'pm-grid') {
@@ -1164,7 +1233,12 @@ function saveAsPNG() {
           if (_gCardData[_gi2 + 1]) _gCardData[_gi2 + 1].rowH = _rh;
         }
 
-        var _gCurY = _iY + _gPadT;
+        /* 항상 수직 중앙정렬 — .pm-grid의 padding-top까지 포함한 전체 콘텐츠 높이를
+           구해(DOM에서 .pm 전체가 .blk-item 안에서 중앙정렬되는 것과 동일하게) 오프셋 계산 */
+        var _gTotalH = _gRowH.reduce(function(s, h) { return s + h; }, 0) + Math.max(0, _gRowH.length - 1) * _gGap;
+        var _gWholeH = _gPadT + _gTotalH;
+        var _gInnerH = bh - _iP * 2;
+        var _gCurY = _iY + _gPadT + Math.max(0, (_gInnerH - _gWholeH) / 2);
         _iItms.forEach(function(it, gi) {
           var _col  = gi % 2;
           var _row2 = Math.floor(gi / 2);
@@ -1218,9 +1292,11 @@ function saveAsPNG() {
       ctx.restore();
     }
 
-    /* 스티커 합성 후 다운로드 */
+    /* 스티커 합성 후 다운로드
+       F-17: #sticker-layer가 canvasExtraTop만큼 아래로 이동해 렌더되므로(라이브 DOM과 동일하게)
+       oy에도 canvasExtraTop을 더해 보정 — renderStickersToCanvas(재작성 금지) 내부는 안 건드림 */
     var stickerPromise = (typeof renderStickersToCanvas === 'function' && stickers.length > 0)
-      ? renderStickersToCanvas(ctx, ox, oy, DPR)
+      ? renderStickersToCanvas(ctx, ox, oy + canvasExtraTop, DPR)
       : Promise.resolve();
 
     return stickerPromise;
@@ -1232,5 +1308,7 @@ function saveAsPNG() {
     if (_saveBtn) { _saveBtn.disabled = false; _saveBtn.innerHTML = _saveBtnOrigHTML; }
     showToast('PNG 저장 완료');
   });
+
+  }); /* /document.fonts.ready */
 }
 

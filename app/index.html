@@ -16,7 +16,10 @@
 <!-- 폰트 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Cinzel:wght@400;600;700&family=Noto+Serif+KR:wght@300;400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Serif+KR:wght@300;400;700&family=Black+Han+Sans&family=Chiron+GoRound+TC:wght@200;900&family=Orbit&family=Mrs+Saint+Delafield&family=Corinthia:wght@400;700&family=Bitcount+Grid+Double&family=Bangers&family=Rubik+Dirt&display=swap" rel="stylesheet">
+<!-- Pretendard — 폴백 체인 전역 기본값으로 코드 곳곳에 하드코딩돼 있었으나 실제 로드되는
+     곳이 없어 시스템에 미설치 시 DOM·PNG 렌더가 서로 다른 폴백으로 어긋나던 문제 수정 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.css">
 
 <link rel="stylesheet" href="/legacy/style.css">
 </head>
@@ -32,25 +35,25 @@
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="14" rx="1.5"/><path d="M3.5 9.5h17M9.5 4.5v14"/></svg>
     <span class="float-tab-label">시트</span>
   </button>
-  <button class="float-tab" id="nb-preset" onclick="switchNav('preset')" title="프리셋">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg>
-    <span class="float-tab-label">프리셋</span>
-  </button>
-  <button class="float-tab" id="nb-header" onclick="switchNav('header')" title="헤더">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="5" rx="1"/><path d="M3.5 13h13M3.5 17h9"/></svg>
-    <span class="float-tab-label">헤더</span>
+  <button class="float-tab" id="nb-sticker" onclick="switchNav('sticker')" title="이미지">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5h-7A3.5 3.5 0 0 0 3.5 7v10A3.5 3.5 0 0 0 7 20.5h7L20.5 14V7A3.5 3.5 0 0 0 17 3.5z"/><path d="M14 20.5V17a3 3 0 0 1 3-3h3.5"/></svg>
+    <span class="float-tab-label">이미지</span>
   </button>
   <button class="float-tab" id="nb-bg" onclick="switchNav('bg')" title="배경지">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="M3.5 9.5h17M3.5 15.5h17M9.5 3.5v17M15.5 3.5v17" stroke-width="1.1"/></svg>
     <span class="float-tab-label">배경지</span>
   </button>
+  <button class="float-tab" id="nb-header" onclick="switchNav('header')" title="헤더">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="5" rx="1"/><path d="M3.5 13h13M3.5 17h9"/></svg>
+    <span class="float-tab-label">헤더</span>
+  </button>
+  <button class="float-tab" id="nb-preset" onclick="switchNav('preset')" title="프리셋">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg>
+    <span class="float-tab-label">프리셋</span>
+  </button>
   <button class="float-tab" id="nb-tools" onclick="switchNav('tools')" title="도구">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 1 1.4 0l1.6 1.6a1 1 0 0 1 0 1.4L9.5 17.5 5.5 18.5l1-4L14.7 6.3z"/><path d="M3.5 20.5h17"/></svg>
     <span class="float-tab-label">도구</span>
-  </button>
-  <button class="float-tab" id="nb-sticker" onclick="switchNav('sticker')" title="스티커">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5h-7A3.5 3.5 0 0 0 3.5 7v10A3.5 3.5 0 0 0 7 20.5h7L20.5 14V7A3.5 3.5 0 0 0 17 3.5z"/><path d="M14 20.5V17a3 3 0 0 1 3-3h3.5"/></svg>
-    <span class="float-tab-label">스티커</span>
   </button>
 </div>
 
@@ -71,7 +74,7 @@
   </button>
   <div class="cpill-sep"></div>
   <button class="cpill-btn cpill-add" id="btn-add-blk" onclick="showBlkPopup(this)" title="블록 추가">
-    <span style="font-size:14px;line-height:1;font-weight:400;">+</span>
+    <span style="font-size:16px;line-height:1;font-weight:600;">+</span>
     블록 추가
   </button>
 </div>
@@ -210,9 +213,16 @@
               <div class="fieldlbl">전체 폰트</div>
               <select class="row-input" id="global-font" onchange="updateGlobal('font',this.value)">
                 <option value="Pretendard">Pretendard</option>
-                <option value="Noto Sans KR">Noto Sans KR</option>
                 <option value="Noto Serif KR">Noto Serif KR</option>
                 <option value="Cinzel">Cinzel</option>
+                <option value="Black Han Sans">Black Han Sans</option>
+                <option value="Chiron GoRound TC">Chiron GoRound TC</option>
+                <option value="Orbit">Orbit</option>
+                <option value="Mrs Saint Delafield">Mrs Saint Delafield</option>
+                <option value="Corinthia">Corinthia</option>
+                <option value="Bitcount Grid Double">Bitcount Grid Double</option>
+                <option value="Bangers">Bangers</option>
+                <option value="Rubik Dirt">Rubik Dirt</option>
               </select>
             </div>
             <div class="cpC-chip" onclick="if(event.target.tagName!=='INPUT')gmOpenColorPicker(this,{pickerId:'global-font-color-picker',defaultHex:'#212121',label:'전체 폰트 색상'})">
@@ -306,6 +316,15 @@
           <div class="grp-body">
             <button class="equalize-btn" onclick="openSlotModal()">저장 / 불러오기</button>
             <button class="equalize-btn" style="color:var(--warn);border-color:var(--warn);" onclick="resetAll()">전체 리셋</button>
+          </div>
+        </section>
+
+        <!-- 바로가기 (우하단 메뉴에서 이동) -->
+        <section class="grp">
+          <div class="grp-head">바로가기</div>
+          <div class="grp-body">
+            <button class="equalize-btn" onclick="window.open('https://doldimseom.tistory.com/','_blank')">🪨 돌딤섬 공방</button>
+            <button class="equalize-btn" onclick="showToast('투어 가이드는 추후 추가됩니다')">사용 가이드</button>
           </div>
         </section>
 
@@ -651,6 +670,18 @@
             <div class="grp-head" id="bp-txt-type-lbl">텍스트</div>
             <div class="grp-body">
               <div class="hint">텍스트 블록을 더블클릭하면 상단 툴바에서 폰트·서식·정렬·목록을 조정할 수 있습니다.</div>
+              <div class="row">
+                <span class="row-lbl">줄간격</span>
+                <div class="row-slider" id="bp-txt-sl-lh"
+                     data-min="1.0" data-max="2.5" data-val="1.6" data-step="0.1"
+                     data-fn="syncLineHeight(this.value)">
+                  <div class="row-slider-fill" style="width:40.0%"></div>
+                  <div class="row-slider-thumb" style="left:40.0%"></div>
+                </div>
+                <input type="number" class="row-num" id="bp-txt-sn-lh"
+                       min="1.0" max="2.5" step="0.1" value="1.6"
+                       oninput="syncLineHeight(this.value)">
+              </div>
             </div>
           </section>
           <!-- 숨김 참조용 -->
@@ -685,6 +716,19 @@
                   <button class="tile" data-ccshape="circle"><span class="tile-lbl">원형</span></button>
                 </div>
               </div>
+              <div class="field">
+                <div class="fieldlbl">정렬</div>
+                <div class="tiles c2" id="bp-cc-align-seg">
+                  <button class="tile" data-ccalign="left" onclick="syncCcAlign('left')"><span class="tile-lbl">왼쪽</span></button>
+                  <button class="tile" data-ccalign="center" onclick="syncCcAlign('center')"><span class="tile-lbl">중앙</span></button>
+                </div>
+              </div>
+              <div class="field">
+                <div class="cpC-chip" onclick="if(event.target.tagName!=='INPUT')gmOpenColorPicker(this,{pickerId:'bp-cc-text-color',defaultHex:'#212121',label:'기본 글자색'})">
+                  <span class="cw" id="bp-cc-text-color-swatch2" style="background:#212121"><input type="color" id="bp-cc-text-color" value="#212121" oninput="syncCcTextColor(this.value)"></span>
+                  <span class="meta"><span class="nm">기본 글자색</span><input class="hexedit" id="bp-cc-text-color-hexedit" value="#212121" spellcheck="false" oninput="var v=this.value.trim().replace(/^([^#])/,'#$1');if(/^#[0-9a-fA-F]{6}$/.test(v))syncCcTextColor(v)"></span>
+                </div>
+              </div>
             </div>
           </section>
 
@@ -701,6 +745,11 @@
                 <span class="row-lbl">컬러칩 간격</span>
                 <div class="row-slider" id="bp-cc-sl-gap" data-min="60" data-max="160" data-val="100" data-fn="updateCcScale('ccGapScale', this.value)"><div class="row-slider-fill" style="width:40.0%"></div><div class="row-slider-thumb" style="left:40.0%"></div></div>
                 <input type="number" class="row-num" id="bp-cc-sn-gap" min="60" max="160" value="100" oninput="updateCcScale('ccGapScale', this.value)">
+              </div>
+              <div class="row">
+                <span class="row-lbl">글자 크기</span>
+                <div class="row-slider" id="bp-cc-sl-font" data-min="60" data-max="160" data-val="100" data-fn="updateCcScale('ccFontScale', this.value)"><div class="row-slider-fill" style="width:40.0%"></div><div class="row-slider-thumb" style="left:40.0%"></div></div>
+                <input type="number" class="row-num" id="bp-cc-sn-font" min="60" max="160" value="100" oninput="updateCcScale('ccFontScale', this.value)">
               </div>
             </div>
           </section>
@@ -784,6 +833,27 @@
             </div>
           </section>
 
+          <!-- 버튼식(pm-chip) 전용 — 버튼 폰트색·텍스트크기·라운딩 -->
+          <section class="grp" id="bp-item-btnstyle-row" style="display:none;">
+            <div class="grp-head">버튼 스타일</div>
+            <div class="grp-body">
+              <div class="cpC-chip" onclick="if(event.target.tagName!=='INPUT')gmOpenColorPicker(this,{pickerId:'bp-item-btn-color',defaultHex:'#FFFFFF',label:'버튼 폰트색'})">
+                <span class="cw" id="bp-item-btn-color-swatch" style="background:#FFFFFF"><input type="color" id="bp-item-btn-color" value="#FFFFFF" oninput="syncItemBtnColor(this.value)"></span>
+                <span class="meta"><span class="nm">버튼 폰트색</span><input class="hexedit" id="bp-item-btn-color-hexedit" value="#FFFFFF" spellcheck="false" oninput="var v=this.value.trim().replace(/^([^#])/,'#$1');if(/^#[0-9a-fA-F]{6}$/.test(v))syncItemBtnColor(v)"></span>
+              </div>
+              <div class="row" style="margin-top:9px;">
+                <span class="row-lbl">버튼 텍스트 크기</span>
+                <div class="row-slider" id="bp-item-sl-btnfont" data-min="50" data-max="100" data-val="100" data-fn="syncItemBtnFontScale(this.value)"><div class="row-slider-fill" style="width:100.0%"></div><div class="row-slider-thumb" style="left:100.0%"></div></div>
+                <input type="number" class="row-num" id="bp-item-sn-btnfont" min="50" max="100" value="100" oninput="syncItemBtnFontScale(this.value)">
+              </div>
+              <div class="row">
+                <span class="row-lbl">버튼 라운딩</span>
+                <div class="row-slider" id="bp-item-sl-btnradius" data-min="0" data-max="20" data-val="8" data-fn="syncItemBtnRadius(this.value)"><div class="row-slider-fill" style="width:40.0%"></div><div class="row-slider-thumb" style="left:40.0%"></div></div>
+                <input type="number" class="row-num" id="bp-item-sn-btnradius" min="0" max="20" value="8" oninput="syncItemBtnRadius(this.value)">
+              </div>
+            </div>
+          </section>
+
           <!-- 포인트색 -->
           <section class="grp">
             <div class="grp-head">포인트색</div>
@@ -811,6 +881,13 @@
                 <div class="tiles c2" id="bp-item-div-tiles">
                   <button class="tile on" data-v="none" onclick="syncItemLayout('divider',false)"><span class="tile-lbl">없음</span></button>
                   <button class="tile" data-v="line" onclick="syncItemLayout('divider',true)"><span class="tile-lbl">선</span></button>
+                </div>
+              </div>
+              <div class="field">
+                <div class="fieldlbl">정렬</div>
+                <div class="tiles c2" id="bp-item-align-tiles">
+                  <button class="tile on" data-v="left" onclick="syncItemLayout('itemAlign','left')"><span class="tile-lbl">왼쪽</span></button>
+                  <button class="tile" data-v="center" onclick="syncItemLayout('itemAlign','center')"><span class="tile-lbl">중앙</span></button>
                 </div>
               </div>
             </div>
@@ -904,6 +981,13 @@
             </div>
 
             <div class="field">
+              <div class="cpC-chip" onclick="if(event.target.tagName!=='INPUT')gmOpenColorPicker(this,{pickerId:'bp-stroke-color',defaultHex:'#1C1C20',label:'외곽선 색상'})">
+                <span class="cw" id="bp-stroke-color-swatch" style="background:#1C1C20"><input type="color" id="bp-stroke-color" value="#1C1C20" oninput="syncStrokeColor(this.value)"></span>
+                <span class="meta"><span class="nm">외곽선 색상</span><input class="hexedit" id="bp-stroke-color-hexedit" value="#1C1C20" spellcheck="false" oninput="var v=this.value.trim().replace(/^([^#])/,'#$1');if(/^#[0-9a-fA-F]{6}$/.test(v))syncStrokeColor(v)"></span>
+              </div>
+            </div>
+
+            <div class="field">
               <div class="cpC-chip" onclick="if(event.target.tagName!=='INPUT')gmOpenColorPicker(this,{pickerId:'bp-bg-color',defaultHex:'#ffffff',label:'배경색'})">
                 <span class="cw" id="bp-color-swatch" style="background:#ffffff"><input type="color" id="bp-bg-color" value="#ffffff" oninput="syncBgColor(this.value)"></span>
                 <span class="meta"><span class="nm">배경색</span><input class="hexedit" id="bp-color-hexedit" value="#FFFFFF" spellcheck="false" oninput="var v=this.value.trim().replace(/^([^#])/,'#$1');if(/^#[0-9a-fA-F]{6}$/.test(v))syncBgColor(v)"></span>
@@ -974,12 +1058,9 @@
     <div class="panel-view" id="panel-sticker">
       <div class="sp-head">
         <div class="sp-head-title">
-          <div class="panel-badge">S</div>
-          스티커
+          <div class="panel-badge">I</div>
+          이미지
         </div>
-        <span class="edit-state" id="sp-edit-state-badge" style="display:none;">
-          <span class="dot"></span>편집 중
-        </span>
       </div>
 
       <div class="panel-body">
@@ -1007,16 +1088,15 @@
           <div class="grp-head">사용 가이드</div>
           <div class="grp-body">
             <ul class="sp-guide">
-              <li>스티커 패널에 들어오면 <b>편집 모드가 자동으로 켜집니다.</b> 다른 패널로 이동하면 자동 종료됩니다.</li>
-              <li>시트의 스티커를 클릭해 위치·크기·회전을 바로 조정합니다.</li>
-              <li>스티커를 선택하면 <b>정렬 툴바</b>가 캔버스에 떠서 나타납니다.</li>
+              <li>시트에 추가된 이미지는 <b>다른 탭에 있어도</b> 캔버스에서 바로 클릭해 위치·크기·회전을 조정합니다.</li>
+              <li>이미지를 선택하면 <b>정렬 툴바</b>가 캔버스에 떠서 나타납니다.</li>
               <li><b>우클릭</b>으로 복제·잠금·순서·삭제를 할 수 있어요.</li>
               <li>이미지 다중 업로드 · 섬네일 드래그로 시트에 추가됩니다.</li>
             </ul>
           </div>
         </section>
 
-        <button class="sp-clear" onclick="clearAllStickers()">✕ 시트 스티커 전체 삭제</button>
+        <button class="sp-clear" onclick="clearAllStickers()">✕ 시트 이미지 전체 삭제</button>
 
       </div><!-- /panel-body -->
     </div><!-- /panel-sticker -->
@@ -1184,24 +1264,6 @@
     <button class="zoom-reset-btn" onclick="resetCamera()" title="원본 크기로">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
     </button>
-    <div class="pill-sep"></div>
-    <!-- ≡ 메뉴 -->
-    <button class="menu-trigger" id="pill-menu-btn" onclick="togglePillMenu()" title="메뉴">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-    </button>
-  </div>
-  <!-- 드롭다운 메뉴 -->
-  <div class="float-menu-dropdown" id="pill-menu-dropdown" style="display:none;">
-    <button class="float-menu-item" onclick="window.open('https://doldimseom.tistory.com/','_blank');togglePillMenu()">
-      <span class="mi-ico">🪨</span>
-      돌딤섬 공방
-    </button>
-    <button class="float-menu-item" onclick="showToast('투어 가이드는 추후 추가됩니다');togglePillMenu()">
-      <span class="mi-ico">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-      </span>
-      사용 가이드
-    </button>
   </div>
 </div>
 
@@ -1345,9 +1407,16 @@
 <div class="tfb-popover tfb-font-popover" id="tfb-font-pop">
   <div class="tfb-pop-label">글꼴</div>
   <button class="tfb-font-item on" data-font="Pretendard" onclick="tfbSelectFont('Pretendard')"><span style="font-family:'Pretendard'">Pretendard</span><span class="tfb-fi-check">✓</span></button>
-  <button class="tfb-font-item" data-font="Noto Sans KR" onclick="tfbSelectFont('Noto Sans KR')"><span style="font-family:'Noto Sans KR'">Noto Sans KR</span><span class="tfb-fi-check">✓</span></button>
   <button class="tfb-font-item" data-font="Noto Serif KR" onclick="tfbSelectFont('Noto Serif KR')"><span style="font-family:'Noto Serif KR'">Noto Serif KR</span><span class="tfb-fi-check">✓</span></button>
   <button class="tfb-font-item" data-font="Cinzel" onclick="tfbSelectFont('Cinzel')"><span style="font-family:'Cinzel'">Cinzel</span><span class="tfb-fi-check">✓</span></button>
+  <button class="tfb-font-item" data-font="Black Han Sans" onclick="tfbSelectFont('Black Han Sans')"><span style="font-family:'Black Han Sans'">Black Han Sans</span><span class="tfb-fi-check">✓</span></button>
+  <button class="tfb-font-item" data-font="Chiron GoRound TC" onclick="tfbSelectFont('Chiron GoRound TC')"><span style="font-family:'Chiron GoRound TC'">Chiron GoRound TC</span><span class="tfb-fi-check">✓</span></button>
+  <button class="tfb-font-item" data-font="Orbit" onclick="tfbSelectFont('Orbit')"><span style="font-family:'Orbit'">Orbit</span><span class="tfb-fi-check">✓</span></button>
+  <button class="tfb-font-item" data-font="Mrs Saint Delafield" onclick="tfbSelectFont('Mrs Saint Delafield')"><span style="font-family:'Mrs Saint Delafield'">Mrs Saint Delafield</span><span class="tfb-fi-check">✓</span></button>
+  <button class="tfb-font-item" data-font="Corinthia" onclick="tfbSelectFont('Corinthia')"><span style="font-family:'Corinthia'">Corinthia</span><span class="tfb-fi-check">✓</span></button>
+  <button class="tfb-font-item" data-font="Bitcount Grid Double" onclick="tfbSelectFont('Bitcount Grid Double')"><span style="font-family:'Bitcount Grid Double'">Bitcount Grid Double</span><span class="tfb-fi-check">✓</span></button>
+  <button class="tfb-font-item" data-font="Bangers" onclick="tfbSelectFont('Bangers')"><span style="font-family:'Bangers'">Bangers</span><span class="tfb-fi-check">✓</span></button>
+  <button class="tfb-font-item" data-font="Rubik Dirt" onclick="tfbSelectFont('Rubik Dirt')"><span style="font-family:'Rubik Dirt'">Rubik Dirt</span><span class="tfb-fi-check">✓</span></button>
 </div>
 
 <div class="tfb-popover tfb-preset-popover" id="tfb-preset-pop">

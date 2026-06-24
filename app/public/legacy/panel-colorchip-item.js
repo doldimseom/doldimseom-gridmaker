@@ -38,10 +38,12 @@ function renderItemContent(blk, el) {
   if (preset === 'pm-chip' && chipStyle === 'outline') cls += ' outline';
   cls += ' dir-' + direction;
   cls += divider ? ' div-line' : ' div-none';
+  cls += blk.itemAlign === 'center' ? ' align-center' : '';
 
   var wrap = document.createElement('div');
   wrap.className = cls;
-  wrap.setAttribute('style', ptVars(ptColor) + 'width:100%;');
+  var _wStyle = ptVars(ptColor) + (blk.itemAlign === 'center' ? 'width:fit-content;margin-left:auto;margin-right:auto;' : 'width:100%;');
+  wrap.setAttribute('style', _wStyle);
 
   /* F-13 4번: 내용 편집은 패널로 이동 — 캔버스 클릭은 패널 "내용" 탭의 해당 행으로 포커스 이동만.
      setTimeout으로 한 틱 미룸 — 이 클릭이 .blk의 el.onclick(블록 선택, showBlockPanel 재호출)으로
@@ -125,6 +127,11 @@ function showItemPanel(blk) {
   document.querySelectorAll('#bp-item-div-tiles .tile').forEach(function(t) {
     t.classList.toggle('on', t.dataset.v === (divider ? 'line' : 'none'));
   });
+  /* 정렬 tiles */
+  var itemAlign = blk.itemAlign === 'center' ? 'center' : 'left';
+  document.querySelectorAll('#bp-item-align-tiles .tile').forEach(function(t) {
+    t.classList.toggle('on', t.dataset.v === itemAlign);
+  });
   /* 개별 블록 크기·간격 슬라이더 동기화 */
   var isz = blk.itemSizeScale || 100;
   var igp = blk.itemGapScale  || 100;
@@ -132,6 +139,22 @@ function showItemPanel(blk) {
   var snIS = document.getElementById('bp-item-sn-size'); if (snIS) snIS.value = isz;
   _updateSliderUI('bp-item-sl-gap', igp);
   var snIG = document.getElementById('bp-item-sn-gap'); if (snIG) snIG.value = igp;
+  /* 버튼식(pm-chip) 전용 — 버튼 폰트색·텍스트크기·라운딩 */
+  var btnRow = document.getElementById('bp-item-btnstyle-row');
+  if (btnRow) btnRow.style.display = preset === 'pm-chip' ? '' : 'none';
+  var btnColor = blk.itemBtnColor || '#FFFFFF';
+  var btnSw  = document.getElementById('bp-item-btn-color-swatch');
+  var btnInp = document.getElementById('bp-item-btn-color');
+  var btnHex = document.getElementById('bp-item-btn-color-hexedit');
+  if (btnSw)  btnSw.style.background = btnColor;
+  if (btnInp) btnInp.value = btnColor;
+  if (btnHex) btnHex.value = btnColor.toUpperCase();
+  var ibf = blk.itemBtnFontScale || 100;
+  var ibr = (blk.itemBtnRadius !== null && blk.itemBtnRadius !== undefined) ? blk.itemBtnRadius : 8;
+  _updateSliderUI('bp-item-sl-btnfont', ibf);
+  var snBF = document.getElementById('bp-item-sn-btnfont'); if (snBF) snBF.value = ibf;
+  _updateSliderUI('bp-item-sl-btnradius', ibr);
+  var snBR = document.getElementById('bp-item-sn-btnradius'); if (snBR) snBR.value = ibr;
   renderItemListEdit(blk);
 }
 
@@ -213,20 +236,92 @@ function syncItemChipStyle(style) {
   showItemPanel(blk);
 }
 
+/* 버튼식(pm-chip) 전용 — 버튼 폰트색 (항목 크기 슬라이더와 무관, .k 라벨에만 적용) */
+function syncItemBtnColor(hex) {
+  var blk = getSelBlk(); if (!blk || blk.type !== 'item') return;
+  if (!_pendingHistorySave) { saveHistory(); _pendingHistorySave = true; }
+  blk.itemBtnColor = hex;
+  var sw  = document.getElementById('bp-item-btn-color-swatch');
+  var hexEl = document.getElementById('bp-item-btn-color-hexedit');
+  if (sw)    sw.style.background = hex;
+  if (hexEl) hexEl.value = hex.toUpperCase();
+  render();
+}
+
+/* 버튼식(pm-chip) 전용 — 버튼 텍스트 크기 (항목 크기 슬라이더 itemSizeScale과 별개 배율) */
+function syncItemBtnFontScale(val) {
+  var blk = getSelBlk(); if (!blk || blk.type !== 'item') return;
+  if (!_pendingHistorySave) { saveHistory(); _pendingHistorySave = true; }
+  val = Math.min(100, Math.max(50, parseInt(val) || 100));
+  blk.itemBtnFontScale = val;
+  _updateSliderUI('bp-item-sl-btnfont', val);
+  var sn = document.getElementById('bp-item-sn-btnfont'); if (sn) sn.value = val;
+  render();
+}
+
+/* 버튼식(pm-chip) 전용 — 버튼 라운딩 */
+function syncItemBtnRadius(val) {
+  var blk = getSelBlk(); if (!blk || blk.type !== 'item') return;
+  if (!_pendingHistorySave) { saveHistory(); _pendingHistorySave = true; }
+  val = Math.min(20, Math.max(0, parseInt(val) || 0));
+  blk.itemBtnRadius = val;
+  _updateSliderUI('bp-item-sl-btnradius', val);
+  var sn = document.getElementById('bp-item-sn-btnradius'); if (sn) sn.value = val;
+  render();
+}
+
 function renderColorchipPanel(blk) {
   var rad = (blk.chipRadius !== null && blk.chipRadius !== undefined) ? blk.chipRadius : 0;
   var shape = rad === 0 ? 'square' : (rad >= 50 ? 'circle' : 'round');
   document.querySelectorAll('#bp-cc-shape-seg .tile').forEach(function(b) {
     b.classList.toggle('on', b.dataset.ccshape === shape);
   });
-  /* 개별 블록 크기·간격 슬라이더 동기화 */
+  var ccAlignVal = blk.ccAlign === 'center' ? 'center' : 'left';
+  document.querySelectorAll('#bp-cc-align-seg .tile').forEach(function(b) {
+    b.classList.toggle('on', b.dataset.ccalign === ccAlignVal);
+  });
+  /* 개별 블록 크기·간격·글자크기 슬라이더 동기화 */
   var csz = blk.ccSizeScale || 100;
   var cgp = blk.ccGapScale  || 100;
+  var cfs = blk.ccFontScale || 100;
   _updateSliderUI('bp-cc-sl-size', csz);
   var snCS = document.getElementById('bp-cc-sn-size'); if (snCS) snCS.value = csz;
   _updateSliderUI('bp-cc-sl-gap', cgp);
   var snCG = document.getElementById('bp-cc-sn-gap'); if (snCG) snCG.value = cgp;
+  _updateSliderUI('bp-cc-sl-font', cfs);
+  var snCF = document.getElementById('bp-cc-sn-font'); if (snCF) snCF.value = cfs;
+  /* 기본 글자색 컬러피커 동기화 */
+  var ccTextColorVal = blk.ccTextColor || '#212121';
+  var ccTextEl = document.getElementById('bp-cc-text-color');
+  if (ccTextEl) ccTextEl.value = ccTextColorVal;
+  var ccTextSw = document.getElementById('bp-cc-text-color-swatch2');
+  if (ccTextSw) ccTextSw.style.background = ccTextColorVal;
+  var ccTextHex = document.getElementById('bp-cc-text-color-hexedit');
+  if (ccTextHex) ccTextHex.value = ccTextColorVal.toUpperCase();
   renderCcListEdit(blk);
+}
+
+function syncCcAlign(val) {
+  var blk = getSelBlk();
+  if (!blk || blk.type !== 'colorchip') return;
+  if (!_pendingHistorySave) { saveHistory(); _pendingHistorySave = true; }
+  blk.ccAlign = val;
+  document.querySelectorAll('#bp-cc-align-seg .tile').forEach(function(b) {
+    b.classList.toggle('on', b.dataset.ccalign === val);
+  });
+  render();
+}
+
+function syncCcTextColor(val) {
+  var blk = getSelBlk();
+  if (!blk || blk.type !== 'colorchip') return;
+  if (!_pendingHistorySave) { saveHistory(); _pendingHistorySave = true; }
+  blk.ccTextColor = val;
+  var sw = document.getElementById('bp-cc-text-color-swatch2');
+  if (sw) sw.style.background = val;
+  var hex = document.getElementById('bp-cc-text-color-hexedit');
+  if (hex) hex.value = val.toUpperCase();
+  render();
 }
 
 /* ══════════════════════════════════════════
@@ -303,12 +398,11 @@ function renderCcListEdit(blk) {
     picker.addEventListener('input', function(e) {
       if (!_pendingHistorySave) { saveHistory(); _pendingHistorySave = true; }
       chip.color = e.target.value;
-      chip.textColor = _ccAutoText(chip.color);
       sw.style.background = chip.color;
       render();
     });
     var labelInput = row.querySelector('.le-label');
-    labelInput.addEventListener('input', function(e) { chip.label = e.target.value.slice(0, 12); render(); });
+    labelInput.addEventListener('input', function(e) { chip.label = e.target.value.slice(0, 12); render(); if (_ccAutoExpand(blk, selKey)) render(); });
     labelInput.addEventListener('blur', function() { _pendingHistorySave = false; });
     _leSelectAllOnFocus(labelInput);
     row.querySelector('.le-del').addEventListener('click', function() {
@@ -332,7 +426,8 @@ function renderCcListEdit(blk) {
       var palette = ['#5B7CE6','#E2574C','#3E8E6E','#E0A23B','#4A7FB5'];
       var color = palette[blk.chips.length % palette.length];
       var letter = String.fromCharCode(65 + blk.chips.length);
-      blk.chips.push({ id: 'cc' + Date.now(), color: color, label: letter, textColor: _ccAutoText(color), desc: '' });
+      /* textColor 미지정 — 블록 기본 글자색(ccTextColor)을 동적으로 따라가게 함(자동대비 폐지) */
+      blk.chips.push({ id: 'cc' + Date.now(), color: color, label: letter, desc: '' });
       render();
       if (_ccAutoExpand(blk, selKey)) render();
       renderCcListEdit(blk);
@@ -356,8 +451,8 @@ function renderItemListEdit(blk) {
       '<button class="le-del" type="button" title="삭제" aria-label="삭제">×</button>';
     var keyInput = row.querySelector('.le-key');
     var valInput = row.querySelector('.le-val');
-    keyInput.addEventListener('input', function(e) { item.k = e.target.value; render(); });
-    valInput.addEventListener('input', function(e) { item.v = e.target.value; render(); });
+    keyInput.addEventListener('input', function(e) { item.k = e.target.value; render(); if (_itemAutoExpand(blk, blk.id)) render(); });
+    valInput.addEventListener('input', function(e) { item.v = e.target.value; render(); if (_itemAutoExpand(blk, blk.id)) render(); });
     keyInput.addEventListener('blur', function() { _pendingHistorySave = false; });
     valInput.addEventListener('blur', function() { _pendingHistorySave = false; });
     [keyInput, valInput].forEach(function(inp) {
@@ -383,6 +478,7 @@ function renderItemListEdit(blk) {
       saveHistory();
       blk.items.push({ k: '항목', v: '' });
       render();
+      if (_itemAutoExpand(blk, blk.id)) render();
       renderItemListEdit(blk);
     };
   }
@@ -477,16 +573,47 @@ function _ccMinH(blk) {
   return Math.round(h * scale) + _CC.padV * 2;
 }
 
-/* DOM 렌더 후 칩 오버플로우 감지 → blk.h 자동 확장, 확장 시 true 반환 */
+/* 가장 긴 단일 칩(+showText 시 desc 포함)이 잘리지 않을 최소 블록 너비 —
+   renderColorchipContent()와 동일한 공식으로 칩 폭을 재계산(canvas measureText) */
+function _ccMinW(blk) {
+  var chips = blk.chips || [];
+  if (!chips.length) return 80;
+  var sizeScale = (blk.ccSizeScale || 100) / 100;
+  var fontScale = (blk.ccFontScale || 100) / 100;
+  var ccSize = Math.round((blk.chipSize !== undefined ? blk.chipSize : 30) * sizeScale);
+  var ccPadH = Math.round((blk.chipPadH !== undefined ? blk.chipPadH : 8) * sizeScale);
+  var ccFontSize = Math.max(9, Math.round(ccSize * 11 / 30 * fontScale));
+  var canvas = document.createElement('canvas');
+  var ctx = canvas.getContext('2d');
+  ctx.font = '600 ' + ccFontSize + 'px Pretendard, sans-serif';
+  var maxW = 0;
+  chips.forEach(function(chip) {
+    var chipW = Math.max(ccSize, Math.round(ctx.measureText(chip.label || '').width) + ccPadH * 2);
+    if (blk.showText === true) {
+      var descW = Math.round(ctx.measureText(chip.desc || '').width);
+      chipW += 8 + descW; /* .cc-chip-row gap(8px) + desc 폭 */
+    }
+    maxW = Math.max(maxW, chipW);
+  });
+  return Math.max(80, maxW + 16); /* .cc-block padding(8px*2) */
+}
+
+/* DOM 렌더 후 칩 오버플로우(높이/너비) 감지 → blk.h/blk.w 자동 확장, 확장 시 true 반환 */
 function _ccAutoExpand(blk, key) {
   var blkEl = document.querySelector('.blk[data-key="' + key + '"]');
   var ccWrap = blkEl && blkEl.querySelector('.cc-block');
   if (!ccWrap) return false;
+  var changed = false;
   if (ccWrap.scrollHeight > ccWrap.clientHeight) {
     blk.h = ccWrap.scrollHeight;
-    return true;
+    changed = true;
   }
-  return false;
+  var minW = _ccMinW(blk);
+  if (minW > blk.w) {
+    blk.w = minW;
+    changed = true;
+  }
+  return changed;
 }
 
 /* 프리셋·방향별 1행 기준 높이(px, 100% 배율) — _applyItemSize()와 동일 상수 재사용
@@ -501,29 +628,46 @@ function _itemMinH(blk) {
   return Math.round(rowH * scale) + 16;
 }
 
-/* DOM 렌더 후 항목 오버플로우 감지 → blk.h 자동 확장, 확장 시 true 반환
+/* 키(.k) 라벨이 잘리지 않을 최소 블록 너비 — 값(.v)은 의도적으로 줄바꿈되는
+   필드라 측정 대상에서 제외(긴 값 때문에 블록이 과도하게 넓어지는 것을 방지).
+   .k에 white-space:nowrap을 일시 적용해 줄바꿈 없는 본연의 폭을 측정 후 즉시 복구.
+   pm-grid는 2열 고정 레이아웃이라 가변 너비 개념이 약해 자동조정 대상에서 제외 */
+function _itemMinW(blk, key) {
+  if ((blk.preset || 'pm-chip') === 'pm-grid') return 220;
+  var blkEl = document.querySelector('.blk[data-key="' + key + '"]');
+  var pmWrap = blkEl && blkEl.querySelector('.pm');
+  if (!pmWrap) return 160;
+  var keys = pmWrap.querySelectorAll('.k');
+  if (!keys.length) return 160;
+  var maxKW = 0;
+  keys.forEach(function(kEl) {
+    var prevWs = kEl.style.whiteSpace;
+    kEl.style.whiteSpace = 'nowrap';
+    maxKW = Math.max(maxKW, kEl.scrollWidth);
+    kEl.style.whiteSpace = prevWs;
+  });
+  return Math.max(160, Math.round(maxKW) + 80); /* 키 폭 + 값 최소공간·간격·패딩 여유 */
+}
+
+/* DOM 렌더 후 항목 오버플로우(높이/너비) 감지 → blk.h/blk.w 자동 확장, 확장 시 true 반환
    .pm은 colorchip의 .cc-block과 달리 자체 padding이 없고 .blk-item(부모)이 padding:8px 보유 */
 function _itemAutoExpand(blk, key) {
   var blkEl = document.querySelector('.blk[data-key="' + key + '"]');
   var pmWrap = blkEl && blkEl.querySelector('.pm');
   if (!pmWrap) return false;
+  var changed = false;
   var neededH = pmWrap.scrollHeight + 16;
   if (neededH > blkEl.clientHeight) {
     blk.h = neededH;
-    return true;
+    changed = true;
   }
-  return false;
+  var minW = _itemMinW(blk, key);
+  if (minW > blk.w) {
+    blk.w = minW;
+    changed = true;
+  }
+  return changed;
 }
-
-function _ccAutoText(hex) {
-  /* 명도 기반 자동 대비 — 칩 추가 시 textColor 초기값 */
-  var c = (hex || '#888888').replace('#', '');
-  var r = parseInt(c.substr(0,2),16)||0;
-  var g = parseInt(c.substr(2,2),16)||0;
-  var b = parseInt(c.substr(4,2),16)||0;
-  return (0.299*r + 0.587*g + 0.114*b) < 150 ? '#ffffff' : '#212121';
-}
-
 
 function _ccWireDrag(chipEl, chip, blk, axis, key) {
   chipEl.setAttribute('draggable', 'true');
@@ -567,18 +711,21 @@ function renderColorchipContent(blk, el, key) {
   var showText = blk.showText === true;
   var sizeScale = (blk.ccSizeScale || 100) / 100;
   var gapScale  = (blk.ccGapScale  || 100) / 100;
+  var fontScale = (blk.ccFontScale || 100) / 100;
   var ccSize = Math.round((blk.chipSize  !== undefined ? blk.chipSize  : 30) * sizeScale);
   var ccGapV = Math.round((blk.chipGap   !== undefined ? blk.chipGap   : 6)  * gapScale);
   var ccPadH = Math.round((blk.chipPadH  !== undefined ? blk.chipPadH  : 8)  * sizeScale);
+  var ccFontSize = Math.max(9, Math.round(ccSize * 11 / 30 * fontScale));
 
   var wrap = document.createElement('div');
   wrap.className = 'cc-block';
   wrap.style.gap = ccGapV + 'px';
+  wrap.style.justifyContent = blk.ccAlign === 'center' ? 'center' : 'flex-start';
 
   chips.forEach(function(chip, idx) {
     if (!chip.id) chip.id = 'cc' + idx + '_' + Date.now();
 
-    var ink = chip.textColor || _ccAutoText(chip.color || '#888888');
+    var ink = chip.textColor || blk.ccTextColor || '#212121';
     var isActive = blk._activeChipId === chip.id;
 
     var chipEl = document.createElement('div');
@@ -597,7 +744,7 @@ function renderColorchipContent(blk, el, key) {
     lbl.className   = 'cc-chip-label';
     lbl.textContent = chip.label || '';
     lbl.style.color    = ink;
-    lbl.style.fontSize = Math.max(9, Math.round(ccSize * 11 / 30)) + 'px';
+    lbl.style.fontSize = ccFontSize + 'px';
     lbl.style.pointerEvents = 'none';
     chipEl.appendChild(lbl);
 
@@ -623,7 +770,7 @@ function renderColorchipContent(blk, el, key) {
       var descEl = document.createElement('span');
       descEl.className   = 'cc-chip-desc';
       descEl.textContent = chip.desc || '';
-      descEl.style.fontSize = Math.max(9, Math.round(ccSize * 11 / 30)) + 'px';
+      descEl.style.fontSize = ccFontSize + 'px';
       rowEl.appendChild(descEl);
       wrap.appendChild(rowEl);
     } else {

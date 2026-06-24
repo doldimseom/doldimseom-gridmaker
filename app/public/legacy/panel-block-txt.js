@@ -43,7 +43,7 @@ function showTxtFormatBar(blk) {
     b.classList.toggle('on', b.dataset.font === fontVal);
   });
   /* 크기 — 스크럽 위젯 동기화 */
-  var defSz = blk.type === 'title' ? 15 : 12;
+  var defSz = 12;
   var curSz = blk.fontSize || defSz;
   var sv = document.getElementById('tfb-scrub-val');
   if (sv) sv.textContent = curSz;
@@ -98,13 +98,15 @@ function _parseSpansFromEl(texEl) {
         if (fmt.c)  sp.color     = fmt.c;
         if (fmt.g)  sp.bg        = fmt.g;
         if (fmt.fs) sp.fontSize  = fmt.fs;
+        if (fmt.tk !== null && fmt.tk !== undefined) sp.tstroke = fmt.tk;
+        if (fmt.tc) sp.tstrokeColor = fmt.tc;
         spans.push(sp);
       }
       return;
     }
     if (node.nodeType !== 1) return;
     var tag = node.tagName.toUpperCase();
-    var f2  = { b: fmt.b, i: fmt.i, u: fmt.u, c: fmt.c, g: fmt.g, fs: fmt.fs };
+    var f2  = { b: fmt.b, i: fmt.i, u: fmt.u, c: fmt.c, g: fmt.g, fs: fmt.fs, tk: fmt.tk, tc: fmt.tc };
     if (tag === 'B' || tag === 'STRONG') f2.b = true;
     if (tag === 'I' || tag === 'EM')     f2.i = true;
     if (tag === 'U')                     f2.u = true;
@@ -126,13 +128,19 @@ function _parseSpansFromEl(texEl) {
         if (fsVal) f2.fs = fsVal;
       }
     }
+    /* data-tstroke 속성으로 per-span 외곽선 정보 복원 */
+    if (node.dataset && node.dataset.tstroke !== undefined) {
+      var _tkVal = parseInt(node.dataset.tstroke);
+      f2.tk = isNaN(_tkVal) ? 0 : _tkVal;
+      f2.tc = node.dataset.tstrokeColor || null;
+    }
     if (tag === 'BR') { spans.push({ text: '\n' }); return; }
     if ((tag === 'DIV' || tag === 'P') && spans.length) {
       var _last = spans[spans.length - 1];
       if (!_last || _last.text[_last.text.length - 1] !== '\n') spans.push({ text: '\n' });
     }
     for (var ci = 0; ci < node.childNodes.length; ci++) walk(node.childNodes[ci], f2);
-  })(texEl, { b:false, i:false, u:false, c:null, g:null, fs:null });
+  })(texEl, { b:false, i:false, u:false, c:null, g:null, fs:null, tk:null, tc:null });
 
   /* 빈 span 제거 + 인접 동일 서식 병합 */
   spans = spans.filter(function(s){ return s.text !== ''; });
@@ -140,7 +148,8 @@ function _parseSpansFromEl(texEl) {
   spans.forEach(function(s) {
     var p = merged[merged.length - 1];
     if (p && p.bold===s.bold && p.italic===s.italic && p.underline===s.underline &&
-        p.color===s.color && p.bg===s.bg && p.fontSize===s.fontSize) {
+        p.color===s.color && p.bg===s.bg && p.fontSize===s.fontSize &&
+        p.tstroke===s.tstroke && p.tstrokeColor===s.tstrokeColor) {
       p.text += s.text;
     } else {
       var ns = { text: s.text };
@@ -150,6 +159,8 @@ function _parseSpansFromEl(texEl) {
       if (s.color)     ns.color     = s.color;
       if (s.bg)        ns.bg        = s.bg;
       if (s.fontSize)  ns.fontSize  = s.fontSize;
+      if (s.tstroke !== undefined && s.tstroke !== null) ns.tstroke = s.tstroke;
+      if (s.tstrokeColor) ns.tstrokeColor = s.tstrokeColor;
       merged.push(ns);
     }
   });
@@ -267,6 +278,10 @@ function applyFormatToRange(prop, val) {
       if (val === null) { delete midSpan.color; } else { midSpan.color = val; }
     } else if (prop === 'bg') {
       if (val === null) { delete midSpan.bg; } else { midSpan.bg = val; }
+    } else if (prop === 'tstroke') {
+      if (!val) { delete midSpan.tstroke; } else { midSpan.tstroke = val; }
+    } else if (prop === 'tstrokeColor') {
+      if (val === null) { delete midSpan.tstrokeColor; } else { midSpan.tstrokeColor = val; }
     }
     newSpans.push(midSpan);
 
@@ -282,7 +297,8 @@ function applyFormatToRange(prop, val) {
     var p = merged[merged.length - 1];
     if (p && p.bold === s.bold && p.italic === s.italic &&
         p.underline === s.underline && p.color === s.color &&
-        p.bg === s.bg && p.fontSize === s.fontSize) {
+        p.bg === s.bg && p.fontSize === s.fontSize &&
+        p.tstroke === s.tstroke && p.tstrokeColor === s.tstrokeColor) {
       p.text += s.text;
     } else {
       merged.push(s);
@@ -293,12 +309,12 @@ function applyFormatToRange(prop, val) {
 
   /* spans[] → innerHTML 재구성 */
   var hasFmt = blk.spans.some(function(s){
-    return s.bold || s.italic || s.underline || s.color || s.bg || s.fontSize;
+    return s.bold || s.italic || s.underline || s.color || s.bg || s.fontSize || s.tstroke;
   });
   if (hasFmt) {
     texEl.innerHTML = blk.spans.map(function(s) {
       var t = s.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
-      if (!s.bold && !s.italic && !s.underline && !s.color && !s.bg && !s.fontSize) return t;
+      if (!s.bold && !s.italic && !s.underline && !s.color && !s.bg && !s.fontSize && !s.tstroke) return t;
       var style = '';
       if (s.bold)      style += 'font-weight:700;';
       if (s.italic)    style += 'font-style:italic;';
@@ -306,7 +322,12 @@ function applyFormatToRange(prop, val) {
       if (s.color)     style += 'color:' + s.color + ';';
       if (s.bg)        style += 'background:' + s.bg + ';';
       if (s.fontSize)  style += 'font-size:' + s.fontSize + 'px;';
-      return '<span style="' + style + '">' + t + '</span>';
+      var tshAttr = '';
+      if (s.tstroke > 0) {
+        style += 'text-shadow:' + _textShadowCSS(s.tstroke, s.tstrokeColor || blk.tstrokeColor) + ';';
+        tshAttr = ' data-tstroke="' + s.tstroke + '"' + (s.tstrokeColor ? ' data-tstroke-color="' + s.tstrokeColor + '"' : '');
+      }
+      return '<span style="' + style + '"' + tshAttr + '>' + t + '</span>';
     }).join('');
   } else {
     texEl.textContent = blk.text;
@@ -372,6 +393,8 @@ function _cloneSpan(sp, text) {
   if (sp.color)     ns.color     = sp.color;
   if (sp.bg)        ns.bg        = sp.bg;
   if (sp.fontSize)  ns.fontSize  = sp.fontSize;
+  if (sp.tstroke !== undefined && sp.tstroke !== null) ns.tstroke = sp.tstroke;
+  if (sp.tstrokeColor) ns.tstrokeColor = sp.tstrokeColor;
   return ns;
 }
 
@@ -573,6 +596,7 @@ function tfbOpenPop(id) {
 
 /* 텍스트 툴바 — 폰트색 · 형광펜 · 외곽선색 트리거 (공용 컬러피커 gmOpenColorPicker 연결, color-picker.js) */
 function tfbOpenFontColorCP(btn) {
+  tfbSaveStickyRange();
   gmOpenColorPicker(btn, {
     label: '폰트 색상',
     getValue: function() {
@@ -585,6 +609,7 @@ function tfbOpenFontColorCP(btn) {
 }
 
 function tfbOpenHighlightCP(btn) {
+  tfbSaveStickyRange();
   gmOpenColorPicker(btn, {
     label: '형광펜 색상',
     getValue: function() {
@@ -597,6 +622,7 @@ function tfbOpenHighlightCP(btn) {
 }
 
 function tfbOpenOutlineCP(btn) {
+  tfbSaveStickyRange();
   gmOpenColorPicker(btn, {
     label: '외곽선 색상',
     getValue: function() {
@@ -654,10 +680,8 @@ function tfbApplyColor(kind, val) {
     var prop = kind === 'color' ? 'color' : 'bg';
     applyFormatToRange(prop, val);
     savedTfbRange = _savedBackup;
-    if (kind === 'color' && val !== null) {
-      var blkCR = getSelBlk();
-      if (blkCR) blkCR.fontColor = val;
-    }
+    /* blk.fontColor는 여기서 업데이트하지 않음 — 부분 선택 시 fontColor를 바꾸면
+       뷰 모드에서 el.style.color(= fontColor)가 전체 텍스트에 상속돼 전체 색상이 바뀌는 버그 발생 */
   } else {
     /* 선택 범위 없음(커서만 있음) — 기존 텍스트는 그대로 두고, 이후 입력될 글자에만
        적용되도록 execCommand 사용(bold/italic/underline의 tfbToggle과 동일 패턴).
@@ -716,7 +740,7 @@ function tfbReset() {
   if (!selKey) return;
   var blk = getSelBlk();
   if (!blk) return;
-  blk.fontSize   = blk.type === 'title' ? 15 : 12;
+  blk.fontSize   = 12;
   blk.textAlign  = 'left';
   blk.fontFamily = globalVals.font || 'Pretendard';
   blk.fontColor  = globalVals.fontColor || '#212121';
@@ -753,7 +777,7 @@ function commitTextEdit() {
     texEl.setAttribute('contenteditable', 'false');
 
     /* ── 보기 모드 복원: spans → HTML ── */
-    var hasFormat = blk.spans.some(function(s){ return s.bold||s.italic||s.underline||s.color||s.bg||s.fontSize; });
+    var hasFormat = blk.spans.some(function(s){ return s.bold||s.italic||s.underline||s.color||s.bg||s.fontSize||s.tstroke!==undefined; });
     if (lm !== 'none') {
       /* 목록형: textContent로 기호 포함 표시 */
       var lines = blk.text.split('\n');
@@ -764,7 +788,7 @@ function commitTextEdit() {
       /* 서식 있음: span 태그 HTML */
       texEl.innerHTML = blk.spans.map(function(s) {
         var t = s.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
-        if (!s.bold && !s.italic && !s.underline && !s.color && !s.bg && !s.fontSize) return t;
+        if (!s.bold && !s.italic && !s.underline && !s.color && !s.bg && !s.fontSize && s.tstroke === undefined) return t;
         var style = '';
         if (s.bold)      style += 'font-weight:700;';
         if (s.italic)    style += 'font-style:italic;';
@@ -772,6 +796,7 @@ function commitTextEdit() {
         if (s.color)     style += 'color:' + s.color + ';';
         if (s.bg)        style += 'background:' + s.bg + ';';
         if (s.fontSize)  style += 'font-size:' + s.fontSize + 'px;';
+        if (s.tstroke > 0) style += 'text-shadow:' + _textShadowCSS(s.tstroke, s.tstrokeColor || blk.tstrokeColor) + ';';
         return '<span style="' + style + '">' + t + '</span>';
       }).join('');
     }

@@ -38,13 +38,10 @@ function updateSpAccCount() {
 
 function toggleStickerEdit() {
   stickerEditMode = !stickerEditMode;
-  var badge = document.getElementById('sp-edit-state-badge');
   var layer = stickerLayer();
   if (stickerEditMode) {
-    if (badge) badge.style.display = 'inline-flex';
     layer.classList.add('editing');
   } else {
-    if (badge) badge.style.display = 'none';
     layer.classList.remove('editing');
     deselectSticker();
   }
@@ -318,33 +315,6 @@ function bindStickerEvents(el, sticker) {
   document.addEventListener('keydown', _stickerDeleteKeyHandler);
 }
 
-function bindResizeHandle(handle, sticker) {
-  handle.addEventListener('mousedown', function(e) {
-    e.stopPropagation(); e.preventDefault();
-    if (sticker.locked) return;
-    var el = document.getElementById('sticker-' + sticker.id);
-    var startX = e.clientX, startSize = sticker.size;
-    function onMove(e2) {
-      var dx = e2.clientX - startX;
-      sticker.size = Math.max(20, startSize + dx);
-      if (sticker.type === 'text') {
-        var span = el.querySelector('.sticker-text-span');
-        if (span) span.style.fontSize = sticker.size + 'px';
-      } else {
-        var img = el.querySelector('img');
-        if (img) img.style.width = sticker.size + 'px';
-      }
-    }
-    function onUp() {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
-      renderSticker(sticker);
-    }
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
-  });
-}
-
 /* 방향별 리사이즈 — dxSign/dySign: -1(왼/위), 0(무시), 1(오른/아래) */
 function bindResizeHandleDir(handle, sticker, dxSign, dySign) {
   handle.addEventListener('mousedown', function(e) {
@@ -425,39 +395,6 @@ function bindRotateHandle(handle, sticker) {
   });
 }
 
-function bindResizeHandleMulti(handle, triggerSticker) {
-  handle.addEventListener('mousedown', function(e) {
-    e.stopPropagation(); e.preventDefault();
-    var startX = e.clientX;
-    var initSizes = {};
-    selectedStickerIds.forEach(function(id) {
-      var s = stickers.find(function(s){ return s.id === id; });
-      if (s) initSizes[id] = s.size;
-    });
-    function onMove(e2) {
-      var dx = e2.clientX - startX;
-      selectedStickerIds.forEach(function(id) {
-        var s = stickers.find(function(s){ return s.id === id; });
-        var el = document.getElementById('sticker-' + id);
-        if (!s || !el || s.locked) return;
-        s.size = Math.max(20, initSizes[id] + dx);
-        if (s.type === 'text') { var sp = el.querySelector('.sticker-text-span'); if (sp) sp.style.fontSize = s.size + 'px'; }
-        else { var img = el.querySelector('img'); if (img) img.style.width = s.size + 'px'; }
-      });
-    }
-    function onUp() {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
-      selectedStickerIds.forEach(function(id) {
-        var s = stickers.find(function(s){ return s.id === id; });
-        if (s) renderSticker(s);
-      });
-    }
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
-  });
-}
-
 function bindRotateHandleMulti(handle, triggerSticker) {
   handle.addEventListener('mousedown', function(e) {
     e.stopPropagation(); e.preventDefault();
@@ -491,10 +428,12 @@ function bindRotateHandleMulti(handle, triggerSticker) {
 }
 
 function selectSticker(id) {
+  _deselectBlocksOnly();
   selectedStickerIds = [id];
   _refreshStickerSelection();
 }
 function toggleStickerSelection(id) {
+  _deselectBlocksOnly();
   var idx = selectedStickerIds.indexOf(id);
   if (idx !== -1) selectedStickerIds.splice(idx, 1);
   else selectedStickerIds.push(id);
@@ -593,8 +532,8 @@ function removeSticker(id) {
 }
 
 function clearAllStickers() {
-  if (stickers.length === 0) { showToast('삭제할 스티커가 없어요.'); return; }
-  if (!confirm('스티커를 모두 삭제할까요?')) return;
+  if (stickers.length === 0) { showToast('삭제할 이미지가 없어요.'); return; }
+  if (!confirm('이미지를 모두 삭제할까요?')) return;
   saveHistory();
   stickers.forEach(function(s) {
     var el = document.getElementById('sticker-' + s.id);
@@ -602,7 +541,6 @@ function clearAllStickers() {
   });
   stickers = [];
   selectedStickerIds = [];
-  if (stickerEditMode) toggleStickerEdit();
 }
 
 /* ── 스티커 드래그앤드롭 (라이브러리 → 시트) ── */
@@ -650,9 +588,8 @@ function clearAllStickers() {
       if (e.target === layer) deselectSticker();
     });
   }
-  /* 캔버스 밖 클릭 시 선택 해제만 (편집 모드는 유지) */
+  /* 캔버스 밖 클릭 시 선택 해제만 (이미지는 상시 활성 상태이므로 모드 체크 불필요) */
   document.addEventListener('mousedown', function(e) {
-    if (!stickerEditMode) return;
     var inSticker = e.target.closest('.sticker-item') ||
                     e.target.closest('#panel-sticker') ||
                     e.target.closest('.float-tab') ||

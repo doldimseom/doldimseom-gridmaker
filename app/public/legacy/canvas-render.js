@@ -353,10 +353,6 @@ function render() {
                     groupId: gid,
                     relPositions: relPos,
                     didMove: false };
-        /* [v05c DEBUG] plate mousedown 시 blkDrag 초기값 */
-        var _relSummary = Object.keys(relPos).map(function(k) {
-          return k + ':dy=' + relPos[k].dy;
-        }).join(', ');
       });
       plate.addEventListener('click', function(e) {
         if (e.button !== 0) return;
@@ -463,8 +459,8 @@ function render() {
         var blkEl = document.querySelector('.blk[data-key="' + k + '"]');
         if (blkEl) {
           blkEl.classList.add('selected');
-          blkEl.style.outline = '2.5px solid var(--accent)';
-          blkEl.style.outlineOffset = '-1px';
+          blkEl.style.outline = '2.0px solid var(--accent)';
+          blkEl.style.outlineOffset = '3px';
           var _bd = getBlkByKey(k);
           blkEl.style.boxShadow = _blkSelBoxShadow(_bd);
           validKeys.push(k);
@@ -481,8 +477,8 @@ function render() {
       var _soEl = document.querySelector('.blk[data-key="' + selKey + '"]');
       if (_soEl) {
         _soEl.classList.add('selected');
-        _soEl.style.outline = '2.5px solid var(--accent)';
-        _soEl.style.outlineOffset = '-1px';
+        _soEl.style.outline = '2.0px solid var(--accent)';
+        _soEl.style.outlineOffset = '3px';
         _soEl.style.boxShadow = _blkSelBoxShadow(getBlkByKey(selKey));
       }
     }
@@ -498,34 +494,28 @@ function render() {
   }
 }
 
-/* txt/title 블록 중 vAlign=center인 블록의 padding-top을 보정
+/* txt 블록 콘텐츠를 항상 수직 중앙에 위치시키기 위해 padding-top/bottom을 보정
    contenteditable div의 scrollHeight로 실제 콘텐츠 높이 측정 */
 function applyVAlignAll() {
-  document.querySelectorAll('.blk-txt, .blk-title').forEach(function(blkEl) {
+  document.querySelectorAll('.blk-txt').forEach(function(blkEl) {
     var key = blkEl.dataset.key;
     if (!key) return;
+    var clip = blkEl.querySelector('.blk-content-clip');
+    if (!clip) return;
     var blk = getBlkByKey(key);
-    var r0 = (blk && blk.radius !== null && blk.radius !== undefined) ? blk.radius : globalVals.radius;
-    var basePad = (blk && blk.padV !== null && blk.padV !== undefined)
-      ? blk.padV
-      : (r0 >= 999 ? 40 : Math.max(8, Math.round(Math.min(r0, 32) * 0.5 + 8)));
-    if (!blk || blk.vAlign !== 'center') {
-      blkEl.style.paddingTop    = basePad + 'px';
-      blkEl.style.paddingBottom = basePad + 'px';
-      return;
-    }
+    if (!blk) return;
     var ta = blkEl.querySelector('.blk-text-area');
     if (!ta) return;
-    var contentH = ta.scrollHeight;
     var r = (blk.radius !== null && blk.radius !== undefined) ? blk.radius : globalVals.radius;
-    var basePad2 = (blk.padV !== null && blk.padV !== undefined)
+    var basePad = (blk.padV !== null && blk.padV !== undefined)
       ? blk.padV
-      : (r >= 999 ? 40 : Math.max(8, Math.round(Math.min(r, 32) * 0.5 + 8)));
+      : Math.max(Math.max(8, Math.round(Math.min(r, 32) * 0.5 + 8)), _cornerSafeMargin(r, blkEl.offsetWidth, blkEl.offsetHeight));
+    var contentH = ta.scrollHeight;
     var blkH  = blkEl.offsetHeight;
-    var innerH = blkH - basePad2 * 2;
+    var innerH = blkH - basePad * 2;
     var offset = Math.max(0, Math.floor((innerH - contentH) / 2));
-    blkEl.style.paddingTop    = (basePad2 + offset) + 'px';
-    blkEl.style.paddingBottom = basePad2 + 'px';
+    clip.style.paddingTop    = (basePad + offset) + 'px';
+    clip.style.paddingBottom = basePad + 'px';
   });
 }
 
@@ -534,7 +524,7 @@ function makeBlk(blk) {
   /* gi, ci, bi 파라미터 제거 — 하위 클로저에서 blk.id 직접 사용 */
   var el = document.createElement('div');
   var isSel = _isSelected(key);
-  var typeMap = { img: 'blk-img', title: 'blk-title', txt: 'blk-txt', colorchip: 'blk-colorchip', item: 'blk-item' };
+  var typeMap = { img: 'blk-img', txt: 'blk-txt', colorchip: 'blk-colorchip', item: 'blk-item' };
   el.className = 'blk ' + (typeMap[blk.type] || 'blk-txt') + (isSel ? ' selected' : '');
   el.dataset.key = key;  /* getBlkMinH에서 DOM 조회용 */
   var _minH = blk.type === 'colorchip' ? _ccMinH(blk) : blk.type === 'item' ? _itemMinH(blk) : null;
@@ -548,9 +538,7 @@ function makeBlk(blk) {
   el.style.borderRadius = r + 'px';
   el.style.background = hexWithAlpha(bg, op);
   var strk = blk.stroke || 0;
-  var strokeShadow = strk >= 2 ? 'inset 0 0 0 2px rgba(28,28,32,.55)'
-                  : strk >= 1 ? 'inset 0 0 0 1px rgba(28,28,32,.28)'
-                  : '';
+  var strokeShadow = _blkStrokeShadow(blk);
   /* 이미지 블록은 imgWrap이 stroke를 덮으므로 el boxShadow에는 drop shadow만 적용 (stroke는 overlay로 처리) */
   var elStrokeShadow = blk.type === 'img' ? '' : strokeShadow;
   if (sh > 0) {
@@ -563,14 +551,21 @@ function makeBlk(blk) {
   } else {
     el.style.boxShadow = elStrokeShadow || 'none';
   }
-  /* txt/title — 패딩: blk.padV가 수동값이면 사용, null이면 라운딩 연동 자동 계산
-     radius 999(원형)는 40px 고정, 나머지는 32 캡 기반 계산 */
-  if (blk.type === 'txt' || blk.type === 'title') {
+  /* txt — 패딩: blk.padV가 수동값이면 사용, null이면 라운딩 연동 자동 계산.
+     32 캡 기반 기본값에, 박스 크기 대비 라운딩이 과대한 경우(원형 등) 모서리 호가
+     콘텐츠를 깎지 않도록 _cornerSafeMargin()로 계산한 여백을 추가로 보장(둘 중 큰 값) */
+  var _txtClip = null;
+  if (blk.type === 'txt') {
     var pad = (blk.padV !== null && blk.padV !== undefined)
       ? blk.padV
-      : (r >= 999 ? 40 : Math.max(8, Math.round(Math.min(r, 32) * 0.5 + 8)));
-    el.style.padding = pad + 'px';
+      : Math.max(Math.max(8, Math.round(Math.min(r, 32) * 0.5 + 8)), _cornerSafeMargin(r, blk.w, blk.h));
     el.dataset.pad = pad;  /* 높이 계산에서 패딩 보정용 */
+    /* 원형(고라운딩) 시 내용 노출 방지 — el 자체는 overflow:visible 유지(리사이즈 핸들
+       보존), 내용은 el과 동일한 박스를 덮는 클리핑 래퍼 안에 넣고 패딩도 여기로 이동 */
+    _txtClip = document.createElement('div');
+    _txtClip.className = 'blk-content-clip';
+    _txtClip.style.padding = pad + 'px';
+    el.appendChild(_txtClip);
     /* vAlign padding-top 보정은 render() 후 applyVAlignAll()에서 처리 */
   }
   /* 내부 콘텐츠 */
@@ -622,20 +617,21 @@ function makeBlk(blk) {
       if (!b.imgSrc) triggerImgUpload(k);
       else enterImgEditMode(k);
     };})(key, blk);
-  } else if (blk.type === 'title' || blk.type === 'txt') {
+  } else if (blk.type === 'txt') {
     /* contenteditable div — 인라인 서식 지원 */
     var textArea = document.createElement('div');
-    textArea.className = 'blk-text-area' + (blk.type === 'title' ? ' blk-text-title' : ' blk-text-body');
+    textArea.className = 'blk-text-area blk-text-body';
     textArea.setAttribute('contenteditable', 'false');
-    textArea.setAttribute('data-placeholder', blk.type === 'title' ? '제목을 입력하세요' : '텍스트를 입력하세요');
+    textArea.setAttribute('data-placeholder', '텍스트를 입력하세요');
     textArea.setAttribute('spellcheck', 'false');
     textArea.style.textShadow = _textShadowCSS(blk.tstroke, blk.tstrokeColor);
+    textArea.style.lineHeight = blk.lineHeight || 1.6;
 
     /* 보기 모드 초기 텍스트 표시 — spans 서식 반영 */
     (function(b, el2) {
       var lm = b.listMode || 'none';
       var hasFormat = b.spans && b.spans.some(function(s) {
-        return s.bold || s.italic || s.underline || s.color || s.bg || s.fontSize;
+        return s.bold || s.italic || s.underline || s.color || s.bg || s.fontSize || s.tstroke !== undefined;
       });
       if (lm !== 'none') {
         /* 목록형: 기호 포함 순수 텍스트 표시 */
@@ -646,7 +642,7 @@ function makeBlk(blk) {
       } else if (hasFormat) {
         /* 서식 있음: spans → innerHTML
            모든 span에 font-size 명시 — blk.fontSize 변경 시 자식 span이 컨테이너를 무시하는 문제 방지 */
-        var bFs = b.fontSize || (b.type === 'title' ? 15 : 12);
+        var bFs = b.fontSize || 12;
         el2.innerHTML = b.spans.map(function(s) {
           var t = s.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
           var style = 'font-size:' + (s.fontSize || bFs) + 'px;';
@@ -655,7 +651,16 @@ function makeBlk(blk) {
           if (s.underline) style += 'text-decoration:underline;';
           if (s.color)     style += 'color:' + s.color + ';';
           if (s.bg)        style += 'background:' + s.bg + ';';
-          return '<span style="' + style + '">' + t + '</span>';
+          var vTshAttr = '';
+          if (s.tstroke !== undefined) {
+            if (s.tstroke > 0) {
+              style += 'text-shadow:' + _textShadowCSS(s.tstroke, s.tstrokeColor || b.tstrokeColor) + ';';
+              vTshAttr = ' data-tstroke="' + s.tstroke + '"' + (s.tstrokeColor ? ' data-tstroke-color="' + s.tstrokeColor + '"' : '');
+            } else {
+              style += 'text-shadow:none;';
+            }
+          }
+          return '<span style="' + style + '"' + vTshAttr + '>' + t + '</span>';
         }).join('');
       } else {
         el2.textContent = b.text || '';
@@ -719,6 +724,14 @@ function makeBlk(blk) {
       if (contentH > b.h) {
         b.h = contentH;
         parentEl.style.height = contentH + 'px';
+      }
+      /* 너비 자동 늘어남 — txt는 줄바꿈으로 대응하므로 제외 */
+      if (b.type !== 'txt') {
+        var minW = getTextMinW(parentEl);
+        if (minW > b.w) {
+          b.w = minW;
+          parentEl.style.width = minW + 'px';
+        }
       }
     };})(blk, textArea, el));
 
@@ -855,7 +868,7 @@ function makeBlk(blk) {
       }
     };})(blk, textArea));
 
-    el.appendChild(textArea);
+    _txtClip.appendChild(textArea);
     applyTextStyleToEl(textArea, blk);
   } else if (blk.type === 'colorchip') {
     renderColorchipContent(blk, el, key);
@@ -863,7 +876,31 @@ function makeBlk(blk) {
     /* 개별 블록에 CSS 변수 설정 (전역 시트 변수 대신 per-blk 방식) */
     el.style.setProperty('--item-size-scale', (blk.itemSizeScale || 100) / 100);
     el.style.setProperty('--item-gap-scale',  (blk.itemGapScale  || 100) / 100);
+    /* 버튼식(pm-chip) 전용 — 버튼 텍스트크기·라운딩·폰트색 (항목 전체 크기와 별개) */
+    el.style.setProperty('--item-btn-font-scale', (blk.itemBtnFontScale || 100) / 100);
+    el.style.setProperty('--item-btn-radius', ((blk.itemBtnRadius !== null && blk.itemBtnRadius !== undefined) ? blk.itemBtnRadius : 8) + 'px');
+    if (blk.itemBtnColor) el.style.setProperty('--item-btn-color', blk.itemBtnColor);
+    else el.style.removeProperty('--item-btn-color');
     renderItemContent(blk, el);
+  }
+  /* .cc-block/.pm 콘텐츠(칩 라벨 등)는 자기 박스 가장자리에 바로 붙어있어서, .pm/.cc-block
+     자신에게 조금이라도 양수의 border-radius를 주면 그 라운딩이 콘텐츠를 깎아먹는다(라운딩
+     보정값을 "부모radius-padding"으로 줄여도 마찬가지 — 줄어든 값도 여전히 양수면 같은
+     문제가 재발). 올바른 해법은 .pm/.cc-block 자신은 항상 radius:0(사각형)로 두고, 부모
+     padding을 _cornerSafeMargin()으로 충분히 키워 그 사각형 박스 전체가 부모의 둥근/원형
+     윤곽 안에 통째로 내접하도록 만드는 것 — 이러면 콘텐츠가 깎이지도, 윤곽 밖으로 튀어나오지도
+     않는다(내접 사각형이면 그 사각형의 모든 점이 곡선 안쪽에 있다는 게 기하학적으로 보장됨).
+     overflow:hidden은 안전망으로 유지(패딩이 부족한 예외 상황 대비). */
+  if (blk.type === 'colorchip' || blk.type === 'item') {
+    var _boxH = _minH !== null ? Math.max(blk.h, _minH) : blk.h;
+    var _ccItemPad = Math.max(8, _cornerSafeMargin(r, blk.w, _boxH));
+    var _innerClip = el.querySelector(blk.type === 'colorchip' ? '.cc-block' : '.pm');
+    if (blk.type === 'colorchip') {
+      if (_innerClip) _innerClip.style.padding = _ccItemPad + 'px';
+    } else {
+      el.style.padding = _ccItemPad + 'px';
+    }
+    if (_innerClip) _innerClip.style.borderRadius = '0px';
   }
 
 
@@ -947,8 +984,9 @@ function makeBlk(blk) {
     /* 이미지 편집 모드 중 다른 블록 클릭 → 편집 모드 종료 */
     if (activeImgKey && activeImgKey !== k) exitImgEditMode();
 
-    /* ── Ctrl+클릭: 다중 선택 토글 ── */
-    if (e.ctrlKey || e.metaKey) {
+    /* ── Shift+클릭: 다중 선택 토글 ── */
+    if (e.shiftKey) {
+      if (selectedStickerIds.length) deselectSticker();
       var idx = selKeys.indexOf(k);
       if (idx !== -1) {
         /* 이미 선택된 블록 → 제거 */
@@ -970,8 +1008,8 @@ function makeBlk(blk) {
         }
         selKeys.push(k);
         selKey = k;
-        curEl.style.outline = '2.5px solid var(--accent)';
-        curEl.style.outlineOffset = '-1px';
+        curEl.style.outline = '2.0px solid var(--accent)';
+        curEl.style.outlineOffset = '3px';
         curEl.style.boxShadow = _blkSelBoxShadow(b);
         curEl.classList.add('selected');
         /* 플로팅 툴바는 다중 선택 시 미표시 */
@@ -986,21 +1024,10 @@ function makeBlk(blk) {
     hideGroupToolbar();
     hideAlignToolbar();
 
-    /* 헬퍼: 전체 블록 outline 초기화 */
-    function _clearAllOutlines() {
-      document.querySelectorAll('.blk').forEach(function(blkEl) {
-        blkEl.classList.remove('selected');
-        blkEl.style.outline = ''; blkEl.style.outlineOffset = '';
-        var bkey = blkEl.dataset.key;
-        var bdata = getBlkByKey(bkey);
-        if (bdata) {
-          blkEl.style.boxShadow = _blkNormalBoxShadow(bdata);
-        }
-      });
-    }
-
-    /* 콘텐츠 우선 모델: 그룹 멤버 블록 클릭 → 항상 개별 선택 (그룹 먼저 단계 폐기) */
+    /* 콘텐츠 우선 모델: 그룹 멤버 블록 클릭 → 개별 선택
+       단, 이미 선택된 그룹의 멤버를 클릭한 경우(그룹 생성 직후 click 이벤트 포함)는 그룹 상태 유지 */
     if (b.groupId) {
+      if (b.groupId === selectedGi) return;
       _grpIndividualMode = false;
       selectedGi = null;
       hideGroupToolbar();
@@ -1013,7 +1040,7 @@ function makeBlk(blk) {
     selKey = k;
     showBlockPanel(bt, null, b);
     /* 텍스트 블록이면 서식 툴바 표시, 아니면 숨김 */
-    if (bt === 'txt' || bt === 'title') {
+    if (bt === 'txt') {
       showTxtFormatBar(b);
     } else {
       hideTxtFormatBar();
@@ -1035,8 +1062,8 @@ function makeBlk(blk) {
       if (oldFtb) oldFtb.remove();
     });
     /* 현재 블록 선택 표시 */
-    curEl.style.outline = '2.5px solid var(--accent)';
-    curEl.style.outlineOffset = '-1px';
+    curEl.style.outline = '2.0px solid var(--accent)';
+    curEl.style.outlineOffset = '3px';
     curEl.style.boxShadow = _blkSelBoxShadow(b);
     curEl.classList.add('selected');
     /* img 블록 — 편집 모드 중이면 툴바 삽입 생략. 업로드 버튼은 B-7에서 제거(더블클릭으로 업로드) */
@@ -1053,9 +1080,13 @@ function makeBlk(blk) {
   };})(key, blk.type, blk, el);
 
   /* 더블클릭 → 텍스트 편집 진입 (txt 블록) */
-  if (blk.type === 'title' || blk.type === 'txt') {
+  if (blk.type === 'txt') {
     el.ondblclick = (function(k, b) { return function(e) {
       e.stopPropagation();
+      /* 이미 같은 블록을 편집 중이면 재진입 금지 — 안 그러면 texEl 내용을
+         b(블록 데이터)로 덮어써 입력 중이던 텍스트가 사라짐. 네이티브 더블클릭
+         단어선택 동작은 그대로 통과시킴 */
+      if (isEditing && editingKey === k) return;
       isEditing  = true;
       _userEnteredEdit = true; /* 더블클릭으로 명시적 진입 */
       editingKey = k;
@@ -1065,12 +1096,12 @@ function makeBlk(blk) {
       /* 편집 진입: contenteditable 활성화 + 서식(spans) 반영 */
       var lmEnter = b.listMode || 'none';
       var hasFormatEnter = b.spans && b.spans.some(function(s) {
-        return s.bold || s.italic || s.underline || s.color || s.bg || s.fontSize;
+        return s.bold || s.italic || s.underline || s.color || s.bg || s.fontSize || s.tstroke !== undefined;
       });
       if (lmEnter !== 'none') {
         applyListDisplay(texEl, b.text || '', lmEnter);
       } else if (hasFormatEnter) {
-        var bFsEnter = b.fontSize || (b.type === 'title' ? 15 : 12);
+        var bFsEnter = b.fontSize || 12;
         texEl.innerHTML = b.spans.map(function(s) {
           var t = s.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
           var style = 'font-size:' + (s.fontSize || bFsEnter) + 'px;';
@@ -1079,7 +1110,12 @@ function makeBlk(blk) {
           if (s.underline) style += 'text-decoration:underline;';
           if (s.color)     style += 'color:' + s.color + ';';
           if (s.bg)        style += 'background:' + s.bg + ';';
-          return '<span style="' + style + '">' + t + '</span>';
+          var tshAttr = '';
+          if (s.tstroke > 0) {
+            style += 'text-shadow:' + _textShadowCSS(s.tstroke, s.tstrokeColor || b.tstrokeColor) + ';';
+            tshAttr = ' data-tstroke="' + s.tstroke + '"' + (s.tstrokeColor ? ' data-tstroke-color="' + s.tstrokeColor + '"' : '');
+          }
+          return '<span style="' + style + '"' + tshAttr + '>' + t + '</span>';
         }).join('');
       } else {
         texEl.textContent = b.text || '';
