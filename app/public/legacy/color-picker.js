@@ -134,6 +134,7 @@ function _gmCpClampToViewport(pop, triggerRect) {
 function gmCloseColorPicker() {
   var pop = document.getElementById('gm-cp-pop');
   if (pop) pop.classList.remove('open');
+  document.body.style.userSelect = '';
   _gmCpOpts = null;
 }
 
@@ -190,6 +191,8 @@ function _gmCpCommit() {
   _gmCpUpdateSelDots(hex);
 }
 function gmCpSvPointerDown(e) {
+  e.preventDefault();
+  document.body.style.userSelect = 'none';
   var box = document.getElementById('gm-cp-sv');
   function move(ev) {
     var r = box.getBoundingClientRect();
@@ -198,11 +201,17 @@ function gmCpSvPointerDown(e) {
     _gmCpRenderPicker(); _gmCpCommit();
   }
   move(e);
-  function up() { document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up); }
+  function up() {
+    document.body.style.userSelect = '';
+    document.removeEventListener('pointermove', move);
+    document.removeEventListener('pointerup', up);
+  }
   document.addEventListener('pointermove', move);
   document.addEventListener('pointerup', up);
 }
 function gmCpHuePointerDown(e) {
+  e.preventDefault();
+  document.body.style.userSelect = 'none';
   var bar = document.getElementById('gm-cp-hue');
   function move(ev) {
     var r = bar.getBoundingClientRect();
@@ -210,7 +219,11 @@ function gmCpHuePointerDown(e) {
     _gmCpRenderPicker(); _gmCpCommit();
   }
   move(e);
-  function up() { document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up); }
+  function up() {
+    document.body.style.userSelect = '';
+    document.removeEventListener('pointermove', move);
+    document.removeEventListener('pointerup', up);
+  }
   document.addEventListener('pointermove', move);
   document.addEventListener('pointerup', up);
 }

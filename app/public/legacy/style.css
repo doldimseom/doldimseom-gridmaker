@@ -31,7 +31,7 @@
 button { font-family: inherit; cursor: pointer; color: inherit; }
 
 body {
-  font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   background: var(--app-bg);
   color: var(--text);
   height: 100vh;
@@ -49,7 +49,7 @@ body {
 .float-tabs {
   position: fixed;
   top: 18px; left: 58px;
-  width: 204px;
+  width: 240px;
   z-index: 50;
   display: flex; align-items: center; gap: 2px;
   background: var(--panel-bg);
@@ -66,7 +66,7 @@ body {
     color 0.14s,
     padding 0.22s cubic-bezier(0.2,0.7,0.3,1);
 }
-.float-tabs > .float-tab.active { flex-grow: 1.7; }
+.float-tabs > .float-tab.active { flex-grow: 2.6; }
 .float-tab {
   display: flex; align-items: center; justify-content: center;
   gap: 5px;
@@ -133,9 +133,10 @@ body {
 .cpill-btn:disabled { opacity: 0.35; cursor: default; pointer-events: none; }
 .cpill-sep { width: 1px; height: 15px; background: var(--panel-border); margin: 0 1px; }
 .cpill-add {
-  width: auto; padding: 0 12px 0 8px; gap: 6px;
-  font-size: 11px; font-weight: 600;
+  width: auto; height: 30px; padding: 0 14px 0 10px; gap: 6px;
+  font-size: 12px; font-weight: 700;
   background: var(--accent); color: #fff;
+  box-shadow: 0 2px 8px rgba(91,124,230,0.45);
 }
 .cpill-add:hover { background: var(--accent); color: #fff; opacity: 0.92; }
 
@@ -192,8 +193,6 @@ body {
   transition: scale 0.12s ease-out;
 }
 .float-pill button:hover { background: var(--input-bg); color: var(--text); }
-.float-pill .menu-trigger.open { background: var(--accent); color: #fff; }
-.float-pill .menu-trigger.open:hover { background: var(--accent); }
 .zoom-num {
   min-width: 40px; text-align: center;
   font-size: 11px; font-weight: 500;
@@ -202,48 +201,6 @@ body {
   cursor: pointer;
 }
 .zoom-num:hover { opacity: 0.65; }
-.pill-sep { width: 1px; height: 16px; background: var(--panel-border); margin: 0 4px; }
-
-.float-menu-dropdown {
-  position: absolute;
-  bottom: 44px; right: 0;
-  width: 220px;
-  background: rgba(255,255,255,0.96);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid var(--panel-border);
-  border-radius: 10px;
-  padding: 6px;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.18);
-  display: flex; flex-direction: column; gap: 1px;
-  transform-origin: bottom right;
-  animation: menuPop 0.18s ease-out;
-}
-@keyframes menuPop {
-  from { opacity: 0; transform: scale(0.92) translateY(8px); }
-  to   { opacity: 1; transform: scale(1) translateY(0); }
-}
-.float-menu-item {
-  display: flex; align-items: center; gap: 10px;
-  background: transparent; border: 0;
-  height: 34px; padding: 0 10px;
-  border-radius: 6px;
-  font-size: 12px;
-  color: var(--text);
-  text-align: left;
-  width: 100%;
-  white-space: nowrap;
-  cursor: pointer;
-}
-.float-menu-item:hover { background: var(--input-bg); }
-.float-menu-item.warn { color: var(--warn); }
-.float-menu-item .mi-ico {
-  width: 18px; flex-shrink: 0;
-  display: flex; justify-content: center;
-  color: var(--text-dim);
-}
-.float-menu-item.warn .mi-ico { color: var(--warn); }
-.float-menu-divider { height: 1px; background: var(--panel-border); margin: 4px 4px; }
 
 /* ══════════════════════════════════════════
    앱 바디
@@ -467,7 +424,7 @@ body {
   border: 1px solid var(--accent-mid);
   display: flex; align-items: center; justify-content: center;
   font-size: 9px; font-weight: 700; color: var(--accent-ink);
-  font-family: 'JetBrains Mono', 'Noto Sans KR', monospace; letter-spacing: .04em;
+  font-family: 'JetBrains Mono', 'Pretendard', monospace; letter-spacing: .04em;
 }
 .ctx-meta { flex: 1; min-width: 0; }
 .ctx-meta b { font-size: 13px; font-weight: 700; display: block; }
@@ -802,7 +759,7 @@ select.row-input {
   transition: background 0.14s;
   background: none;
   border: none;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   width: 100%;
   text-align: left;
 }
@@ -866,6 +823,9 @@ select.row-input {
   border-radius: 8px;
   overflow: visible;
   box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  display: flow-root; /* F-17: #sheet-pad의 margin-top(canvasExtraTop)이 부모 마진과
+                          합쳐져 빠져나가지 않도록 새 블록 포맷팅 컨텍스트 생성 — 시각적
+                          영향 없음(overflow 값은 그대로 visible 유지) */
 }
 
 /* 헤더 슬롯 — sheet-pad 밖, 전체 폭 */
@@ -901,7 +861,7 @@ select.row-input {
   padding: 2px 6px;
   color: rgba(255,255,255,0.85);
   cursor: pointer;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   opacity: 0;
   transition: opacity 0.13s;
   z-index: 2;
@@ -943,7 +903,7 @@ select.row-input {
   border: 1.5px solid transparent;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   transition: border-color 0.13s, background 0.13s;
 }
 .hdr-type-btn:hover  { background: var(--accent-light); }
@@ -1039,7 +999,7 @@ select.row-input {
   border: 1px solid var(--input-border);
   border-radius: var(--radius-sm);
   font-size: 11px;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   color: var(--text);
   cursor: pointer;
   transition: background 0.13s;
@@ -1094,7 +1054,7 @@ select.row-input {
   padding: 0 12px;
   flex-shrink: 0;
   font-size: 11px;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
 }
 
 /* 공통 배너 레이어 — basic·SNS 공유 */
@@ -1552,7 +1512,7 @@ select.row-input {
   color: #3A3A3A;
   font-size: 12px;
   font-weight: 700;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   cursor: pointer;
   flex-shrink: 0;
   position: relative;
@@ -1571,7 +1531,7 @@ select.row-input {
   border-radius: 5px;
   background: #F5F5F5;
   font-size: 10px;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   color: #3A3A3A;
   padding: 0 4px;
   cursor: pointer;
@@ -1655,7 +1615,7 @@ select.row-input {
 .tfb-color-btn-label {
   font-size: 11px;
   font-weight: 700;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   color: #3A3A3A;
   line-height: 1;
   pointer-events: none;
@@ -1680,7 +1640,7 @@ select.row-input {
   background: transparent;
   font-size: 9.5px;
   font-weight: 600;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   color: #B0AADB;
   cursor: pointer;
   flex-shrink: 0;
@@ -1725,7 +1685,7 @@ select.row-input {
   height: 28px; padding: 0 8px;
   border-radius: 5px; border: none;
   background: transparent; color: #3A3A3A;
-  font-size: 11px; font-family: 'Noto Sans KR', sans-serif; font-weight: 600;
+  font-size: 11px; font-family: 'Pretendard', sans-serif; font-weight: 600;
   cursor: pointer; white-space: nowrap; flex-shrink: 0;
   transition: background 0.12s; position: relative;
 }
@@ -1784,7 +1744,7 @@ select.row-input {
 }
 .tfb-hl-btn:hover, .tfb-out-btn:hover { background: #F3F3F3; }
 .tfb-hl-btn:hover .tfb-tip, .tfb-out-btn:hover .tfb-tip { display: block; }
-.tfb-out-a { font-size: 11px; font-weight: 700; font-family: 'Noto Sans KR', sans-serif; line-height: 1; -webkit-text-stroke: 0.7px #3A3A3A; color: transparent; }
+.tfb-out-a { font-size: 11px; font-weight: 700; font-family: 'Pretendard', sans-serif; line-height: 1; -webkit-text-stroke: 0.7px #3A3A3A; color: transparent; }
 
 /* ── 전역 공용 컬러피커 (gmOpenColorPicker, color-picker.js) ──
    텍스트 툴바 3곳 + 전역설정/헤더/배경지/그라디언트/컬러칩/블록배경 11곳이 공유하는 팝오버 1개 */
@@ -1793,7 +1753,7 @@ select.row-input {
   background: #fff; border: 1px solid #E0DCF8; border-radius: 12px;
   box-shadow: 0 8px 28px rgba(0,0,0,.15); padding: 12px; width: 210px;
   flex-direction: column; gap: 0;
-  font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
 }
 #gm-cp-pop.open { display: flex; }
 .gm-cp-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
@@ -1801,7 +1761,7 @@ select.row-input {
 #gm-cp-reset-btn {
   font-size: 10px; color: var(--text-dim); background: none;
   border: 1px solid var(--panel-border); border-radius: 5px; padding: 2px 8px;
-  cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer; font-family: 'Pretendard', sans-serif;
 }
 #gm-cp-reset-btn:hover { background: #F3F3F3; }
 .cp-sep { height: 1px; background: #F0EFF8; margin: 8px 0; }
@@ -1878,7 +1838,7 @@ select.row-input {
   padding: 1px 6px;
   cursor: pointer;
   color: var(--text-dim);
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   transition: background 0.12s;
 }
 .grp-btn:hover { background: var(--input-bg); }
@@ -1919,10 +1879,34 @@ select.row-input {
   border: none;
   /* box-shadow는 render() 내 JS가 직접 제어 — CSS 기본값 및 transition 제거 (번쩍임 방지) */
 }
+/* 이미지(스티커) 선택 표시(.sticker-item.selected)와 통일 — 회전 핸들 제외.
+   라운딩이 적용된 블록도 선택 표시는 무조건 사각형이어야 하는데, outline은 같은 요소의
+   border-radius를 그대로 따라가버림(모던 브라우저 사양) — JS가 inline으로 거는 outline은
+   !important로 무력화하고, border-radius를 상속하지 않는 ::after 가상요소로 항상 사각형인
+   프레임을 따로 그림(2026-06-23) */
 .blk.selected {
-  outline: 2.5px solid #8AA4EE;
-  outline-offset: -1px;
-  box-shadow: 0 0 0 3px rgba(138,164,238,0.10);
+  outline: none !important;
+}
+.blk.selected::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  outline: 2.0px solid var(--accent);
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* txt 전용 콘텐츠 클리핑 래퍼 — 원형(고라운딩) 시 내용이 모서리 밖으로 노출되는 것
+   방지. el(.blk) 자체는 overflow:visible 유지(리사이즈 핸들이 -4px 밖으로 나가야 함) */
+.blk-content-clip {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 
@@ -2114,7 +2098,7 @@ select.row-input {
   padding: 4px 9px;
   font-size: 10px;
   font-weight: 700;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   letter-spacing: 0.04em;
   cursor: pointer;
   white-space: nowrap;
@@ -2128,7 +2112,7 @@ select.row-input {
   background: rgba(18,16,14,0.7);
   color: rgba(255,255,255,0.85);
   font-size: 9px;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   padding: 3px 8px;
   border-radius: 4px;
   white-space: nowrap;
@@ -2159,19 +2143,9 @@ select.row-input {
   border: none;
   background: transparent;
   transition: background 0.12s;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
 }
 .float-btn:hover { background: rgba(255,255,255,0.18); }
-
-/* 제목 블록 */
-.blk-title {
-  background: #fff;
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  position: relative;
-}
 
 /* 텍스트 블록 */
 .blk-txt {
@@ -2183,7 +2157,7 @@ select.row-input {
   position: relative;
 }
 
-/* 텍스트/제목 블록 공통 편집 영역 */
+/* 텍스트 블록 편집 영역 */
 .blk-text-area {
   width: 100%;
   min-height: 1em;
@@ -2194,17 +2168,14 @@ select.row-input {
   white-space: pre-wrap;
   line-height: 1.6;
   cursor: inherit;
-  font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   color: var(--text);
   overflow: hidden;
   padding: 0;
   box-sizing: border-box;
-  /* contenteditable 기본 margin 제거 */
-  -webkit-user-modify: read-only;
 }
 .blk-text-area[contenteditable="true"] {
   cursor: text;
-  -webkit-user-modify: read-write;
 }
 /* 플레이스홀더 — 비편집 상태: 더블클릭 힌트 / 편집 상태: 내용 안내 */
 .blk-text-area[data-placeholder]:empty::before {
@@ -2214,10 +2185,6 @@ select.row-input {
 }
 .blk-text-area[contenteditable="true"][data-placeholder]:empty::before {
   content: attr(data-placeholder);
-}
-.blk-text-title {
-  font-size: 15px;
-  font-weight: 700;
 }
 .blk-text-body {
   font-size: 12px;
@@ -2255,7 +2222,7 @@ select.row-input {
   white-space: nowrap;
   cursor: default;
   flex-shrink: 0;
-  font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
 }
 /* ── 편집 모드 공통 (텍스트·항목 블록) ── */
 @keyframes pulse {
@@ -2289,7 +2256,7 @@ select.row-input {
   max-width: 100%;
   font-size: 11px;
   font-weight: 500;
-  font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   color: var(--text);
   outline: none;
   border: none;
@@ -2320,17 +2287,21 @@ select.row-input {
 /* 컬러칩 블록 */
 .blk-colorchip {
   display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
 }
 .cc-block {
   width: 100%;
-  height: 100%;
   display: flex;
   flex-wrap: wrap;
-  align-content: flex-start;
+  align-content: center;
   align-items: center;
   padding: 8px;
   box-sizing: border-box;
   overflow: hidden;
+  /* 원형(고라운딩) 시 칩이 모서리 밖으로 노출되지 않도록 클리핑 모양도 라운딩 따라가게 */
+  border-radius: inherit;
 }
 .cc-chip {
   height: 30px;
@@ -2342,7 +2313,7 @@ select.row-input {
   position: relative;
   font-size: 11px;
   font-weight: 600;
-  font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   user-select: none;
   cursor: pointer;
   white-space: nowrap;
@@ -2440,6 +2411,15 @@ select.row-input {
 .snap-spacing-bar-v::before { top: 0; }
 .snap-spacing-bar-v::after  { bottom: 0; }
 
+/* 빈 캔버스 드래그 다중선택 박스 */
+.marquee-select {
+  position: absolute;
+  background: rgba(0, 122, 255, 0.12);
+  border: 1px solid rgba(0, 122, 255, 0.85);
+  pointer-events: none;
+  z-index: 200;
+}
+
 /* 등간격 레이블 */
 .snap-spacing-lbl {
   position: absolute;
@@ -2453,7 +2433,7 @@ select.row-input {
   border-radius: 3px;
   white-space: nowrap;
   pointer-events: none;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   line-height: 1.5;
   box-shadow: 0 1px 4px rgba(0,122,255,0.12);
 }
@@ -2482,8 +2462,8 @@ select.row-input {
 /* M3 라벨칩 */
 .pm-chip { display:flex; flex-direction:column; gap:calc(8px * var(--item-gap-scale,1)); }
 .pm-chip .ir { display:flex; align-items:baseline; gap:calc(10px * var(--item-gap-scale,1)); padding-right:calc(20px * var(--item-gap-scale,1)); }
-.pm-chip .k { flex-shrink:0; min-width:48px; text-align:center; font-size:calc(10.5px * var(--item-size-scale,1)); font-weight:700; padding:calc(3px * var(--item-size-scale,1)) calc(10px * var(--item-size-scale,1)); border-radius:8px; background:var(--pt); color:#fff; }
-.pm-chip.outline .k { background:transparent; color:var(--pt-ink); box-shadow:inset 0 0 0 1.3px var(--pt-mid); }
+.pm-chip .k { flex-shrink:0; min-width:48px; text-align:center; font-size:calc(10.5px * var(--item-size-scale,1) * var(--item-btn-font-scale,1)); font-weight:700; padding:calc(3px * var(--item-size-scale,1)) calc(10px * var(--item-size-scale,1)); border-radius:var(--item-btn-radius,8px); background:var(--pt); color:var(--item-btn-color,#fff); }
+.pm-chip.outline .k { background:transparent; color:var(--item-btn-color,var(--pt-ink)); box-shadow:inset 0 0 0 1.3px var(--pt-mid); }
 .pm-chip .v { font-size:calc(12px * var(--item-size-scale,1)); color:var(--text); line-height:1.5; }
 .pm-chip.dir-v .ir { flex-direction:column; align-items:flex-start; gap:calc(5px * var(--item-gap-scale,1)); }
 /* M4 2열 카드 — 이슈 13: 상단 여백 추가 */
@@ -2493,6 +2473,12 @@ select.row-input {
 .pm-grid .k { font-size:calc(8.5px * var(--item-size-scale,1)); font-weight:800; letter-spacing:.12em; color:var(--pt); }
 .pm-grid .v { font-size:calc(11.5px * var(--item-size-scale,1)); color:var(--text); line-height:1.35; }
 .pm-grid.dir-h .ir { flex-direction:row; align-items:baseline; justify-content:space-between; gap:calc(8px * var(--item-gap-scale,1)); }
+/* 정렬 — 중앙: 행이 컨테이너 전체폭에 늘어나는(space-between 등) 대신 콘텐츠 폭만큼만
+   차지하게 줄이고 그 행을 컨테이너 중앙에 배치 */
+.pm.align-center .ir { width: fit-content; margin-left: auto; margin-right: auto; }
+/* pm-chip align-center: 각 행 개별 중앙정렬 대신 그룹 전체를 한 덩어리로 중앙배치 */
+.pm-chip.align-center { width: fit-content; margin-left: auto; margin-right: auto; }
+.pm-chip.align-center .ir { width: auto; margin-left: 0; margin-right: 0; }
 /* 구분선 */
 .pm.div-line .ir { border-top:1px solid #ECEAE4; padding-top:calc(9px * var(--item-gap-scale,1)); }
 .pm.div-line .ir:first-child { border-top:none; padding-top:0; }
@@ -2521,11 +2507,12 @@ select.row-input {
   background: #fff;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: center;
   position: relative;
   padding: 8px;
 }
-.blk-item > .pm { overflow: hidden; }
+/* 원형(고라운딩) 시 항목 내용이 모서리 밖으로 노출되지 않도록 클리핑 모양도 라운딩 따라가게 */
+.blk-item > .pm { overflow: hidden; border-radius: inherit; }
 
 /* 가로형 행 */
 .item-h-row {
@@ -3002,7 +2989,7 @@ select.row-input {
   font-size: 10px;
   font-weight: 600;
   color: var(--text);
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   line-height: 1;
   white-space: nowrap;
 }
@@ -3061,7 +3048,7 @@ select.row-input {
   padding: 2px 6px;
   font-size: 6.5px;
   font-weight: 600;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   line-height: 1;
 }
 .pmini-color {
@@ -3184,7 +3171,7 @@ select.row-input {
   font-size: 11px;
   font-weight: 600;
   color: var(--text);
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   outline: none;
   padding: 0;
   line-height: 1.3;
@@ -3204,7 +3191,7 @@ select.row-input {
   background: transparent;
   font-size: 10px;
   font-weight: 700;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   cursor: pointer;
   color: var(--label-color);
   transition: background 0.12s, color 0.12s;
@@ -3247,7 +3234,7 @@ select.row-input {
   font-size: 9px;
   font-weight: 700;
   color: var(--text-dim);
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   line-height: 1.5;
 }
 .slot-notice span { color: var(--label-color); font-weight: 400; }
@@ -3264,8 +3251,8 @@ select.row-input {
   background: var(--input-bg);
 }
 .slot-export-now-text { flex: 1; }
-.slot-export-now-label { font-size: 10px; font-weight: 700; font-family: 'Noto Sans KR', sans-serif; color: var(--text); }
-.slot-export-now-desc { font-size: 9px; color: var(--label-color); margin-top: 2px; font-family: 'Noto Sans KR', sans-serif; }
+.slot-export-now-label { font-size: 10px; font-weight: 700; font-family: 'Pretendard', sans-serif; color: var(--text); }
+.slot-export-now-desc { font-size: 9px; color: var(--label-color); margin-top: 2px; font-family: 'Pretendard', sans-serif; }
 .slot-export-now-btn {
   display: flex;
   align-items: center;
@@ -3276,7 +3263,7 @@ select.row-input {
   background: transparent;
   font-size: 10px;
   font-weight: 700;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   color: var(--label-color);
   cursor: pointer;
   white-space: nowrap;
@@ -3303,7 +3290,7 @@ select.row-input {
   background: transparent;
   font-size: 10px;
   font-weight: 700;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   color: var(--label-color);
   cursor: pointer;
   transition: background 0.12s, color 0.12s, border-color 0.12s;
@@ -3395,7 +3382,7 @@ select.row-input {
   color: #fff;
   font-size: 11px;
   font-weight: 700;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   cursor: pointer;
   transition: opacity 0.12s;
 }
@@ -3432,7 +3419,7 @@ select.row-input {
   flex: 1; padding: 8px 0;
   border-radius: 7px; border: 1px solid var(--panel-border);
   font-size: 11px; font-weight: 700;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   cursor: pointer; transition: background 0.12s;
 }
 .delete-cancel-btn { background: transparent; color: var(--label-color); }
@@ -3450,7 +3437,7 @@ select.row-input {
   color: #fff;
   font-size: 11px;
   font-weight: 600;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   padding: 8px 16px;
   border-radius: 8px;
   white-space: nowrap;
@@ -3469,7 +3456,7 @@ select.row-input {
   color: #fff;
   font-size: 10px;
   font-weight: 600;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   padding: 3px 7px;
   border-radius: 4px;
   white-space: nowrap;
@@ -3493,9 +3480,12 @@ select.row-input {
 #sticker-layer {
   position: absolute; inset: 0;
   pointer-events: none;
-  z-index: 10;
+  /* 블록 z-index(canvas-render.js: blocks.length+10)를 항상 넘도록 — 헤더보다도 위 */
+  z-index: 100;
 }
-#sticker-layer.editing { pointer-events: all; }
+/* 레이어 자체는 항상 통과(none) — 이미지가 상시 활성화돼 캔버스 전체를 덮으면
+   레이어 빈 공간이 하단 블록 클릭을 가로채므로, 실제 이미지/핸들 요소에만
+   개별적으로 pointer-events를 켠다(부모 none이어도 자식 all은 독립 적용됨) */
 #sticker-layer.editing .sticker-handle { pointer-events: all; }
 
 .sticker-item {
@@ -3643,7 +3633,7 @@ select.row-input {
   font-size: 10px;
   color: var(--label-color);
   letter-spacing: 0.08em;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
 }
 
 .sticker-thumb-item {
@@ -3707,7 +3697,7 @@ select.row-input {
   background: var(--input-bg);
   font-size: 11px;
   font-weight: 700;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   letter-spacing: 0.06em;
   color: var(--label-color);
   cursor: pointer;
@@ -3724,7 +3714,7 @@ select.row-input {
   background: transparent;
   font-size: 11px;
   font-weight: 700;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   letter-spacing: 0.06em;
   color: var(--text);
   cursor: pointer;
@@ -3743,7 +3733,7 @@ select.row-input {
   background: transparent;
   font-size: 10px;
   font-weight: 700;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   letter-spacing: 0.06em;
   color: #C0392B;
   cursor: pointer;
@@ -3760,7 +3750,7 @@ select.row-input {
   background: transparent;
   font-size: 10px;
   font-weight: 700;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   letter-spacing: 0.06em;
   color: var(--text-dim);
   cursor: pointer;
@@ -3795,7 +3785,7 @@ select.row-input {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.06em;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
@@ -3819,12 +3809,12 @@ select.row-input {
 .sp-head-title {
   display: flex; align-items: center; gap: 8px;
   font-size: 13px; font-weight: 700; color: var(--text);
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
 }
 .sp-edit-switch-wrap {
   display: flex; align-items: center; gap: 6px;
   font-size: 9.5px; color: var(--label-color);
-  letter-spacing: 0.04em; font-family: 'Noto Sans KR', sans-serif;
+  letter-spacing: 0.04em; font-family: 'Pretendard', sans-serif;
   cursor: pointer;
 }
 .sp-edit-sw {
@@ -3854,7 +3844,7 @@ select.row-input {
   cursor: pointer;
   font-size: 10.5px; font-weight: 700;
   letter-spacing: 0.08em; color: var(--text);
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   user-select: none;
 }
 .sp-acc-chev {
@@ -3879,7 +3869,7 @@ select.row-input {
   border-radius: 8px; text-align: center;
   cursor: pointer; margin-bottom: 10px;
   transition: border-color 0.12s, background 0.12s;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   box-sizing: border-box;
 }
 .sp-drop-zone:hover { border-color: var(--accent-mid); background: var(--accent-light); }
@@ -3893,7 +3883,7 @@ select.row-input {
   background: var(--input-bg);
   border: 1px solid transparent; border-radius: 5px;
   padding: 0 10px; font-size: 11px; color: var(--text);
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
 }
 .sp-txt-inline input:focus { outline: none; border-color: #AAA; }
 .sp-txt-inline button {
@@ -3904,7 +3894,7 @@ select.row-input {
 /* 가이드 텍스트 */
 .sp-guide-txt {
   font-size: 9px; color: var(--label-color);
-  line-height: 1.7; font-family: 'Noto Sans KR', sans-serif;
+  line-height: 1.7; font-family: 'Pretendard', sans-serif;
   padding: 2px 0 4px;
 }
 .sp-guide-txt li { margin-bottom: 3px; list-style: none; padding-left: 10px; position: relative; }
@@ -3915,7 +3905,7 @@ select.row-input {
   background: transparent; border: none;
   font-size: 10px; color: var(--label-color);
   padding: 10px 0 14px; cursor: pointer;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   text-align: center;
 }
 .sp-clear-link:hover { color: var(--warn); }
@@ -4077,7 +4067,7 @@ select.row-input {
 .sticker-section-sub {
   font-size: 9px;
   color: var(--label-color);
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   letter-spacing: 0.06em;
   margin-bottom: 10px;
 }
@@ -4179,7 +4169,7 @@ select.row-input {
   position: absolute; top: -1000px; left: -1000px;
   display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; background: #fff;
   border: 1.5px solid var(--accent); border-radius: 9px; box-shadow: 0 10px 24px rgba(91,124,230,.40);
-  white-space: nowrap; font-family: 'Noto Sans KR', sans-serif;
+  white-space: nowrap; font-family: 'Pretendard', sans-serif;
 }
 .le-ghost .gsw { width: 16px; height: 16px; border-radius: 5px; flex-shrink: 0; }
 .le-ghost .gtx { font-size: 12px; font-weight: 700; color: var(--text); }
