@@ -25,6 +25,7 @@ function collectData(includeImages) {
     canvasW:          canvasW,
     canvasH:          canvasH,
     canvasExtraTop:   canvasExtraTop,
+    canvasExtraLeft:  canvasExtraLeft,
     headerPos:        headerPos,
     headerData:    hdrCopy,
     globalVals:    JSON.parse(JSON.stringify(globalVals)),
@@ -138,6 +139,8 @@ function applyData(data) {
   /* canvasExtraTop 복원 — F-17. 구버전 데이터(필드 없음)는 0 — 과거엔 상단 여백이 블록 y에
      이미 녹아있어 별도 마이그레이션이 필요 없음(canvasW와 동일 패턴) */
   canvasExtraTop = typeof data.canvasExtraTop === 'number' ? data.canvasExtraTop : 0;
+  canvasExtraLeft = typeof data.canvasExtraLeft === 'number' ? data.canvasExtraLeft : 0;
+  _syncCanvasLeft(); /* L95의 _setStageWidth('center')가 canvasExtraLeft=0으로 리셋했으므로 재반영 */
   if (data.sheetBg) {
     sheetBg = data.sheetBg;
     var sheetEl = document.getElementById('sheet');
@@ -618,6 +621,7 @@ function resetAll() {
   gaps = { pad: 12 };
   canvasH = 0; /* autoCanvasH()가 다음 render()에서 콘텐츠 기준으로 다시 계산 */
   canvasExtraTop = 0;
+  canvasExtraLeft = 0;
   _updateSliderUI('sl-pad', 12);
   var snPad = document.getElementById('sn-pad');
   if (snPad) snPad.value = 12;

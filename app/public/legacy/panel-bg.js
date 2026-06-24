@@ -81,11 +81,12 @@ function makeTileSvgDataUriPx(imgSrc, tileW, tileH, angle, svgW, svgH) {
 function _syncBgOverlayBounds() {
   var ol = document.getElementById('bgl-overlay');
   if (!ol) return;
-  var extend = Math.max(0, canvasExtraTop);
-  ol.style.top    = (-extend) + 'px';
-  ol.style.left   = '0px';
+  var extendTop  = Math.max(0, canvasExtraTop);
+  var extendLeft = Math.max(0, canvasExtraLeft);
+  ol.style.top    = (-extendTop)  + 'px';
+  ol.style.left   = (-extendLeft) + 'px';
   ol.style.right  = '0px';
-  ol.style.height = (canvasH + extend) + 'px';
+  ol.style.height = (canvasH + extendTop) + 'px';
 }
 
 function applySheetBgLayer() {

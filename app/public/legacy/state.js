@@ -9,6 +9,12 @@ var canvasH = 0;   /* 캔버스 높이 (px) — autoCanvasH()가 콘텐츠보다
 var canvasExtraTop = 0; /* 블록 위에 추가로 존재하는 여백(px) — 상단 핸들 전용, canvasH와 대칭
                        (F-17: 블록/스티커 데이터는 건드리지 않고 이 값만 조정 — autoCanvasH()가
                        #sheet-pad margin-top / #sticker-layer top에 반영) */
+var canvasExtraLeft = 0; /* 콘텐츠 왼쪽에 추가 존재하는 여백(px) — 좌측 핸들 전용, canvasExtraTop과 대칭
+                         (블록/스티커 x데이터 불변, _setStageWidth 'right' anchor가 sheet-pad.marginLeft /
+                         sticker-layer.left에 반영. applyData/resetAll에서 0 리셋) */
+var _stageML = null;   /* #canvas-stage의 현재 marginLeft(px) — _setStageWidth()가 설정·추적.
+                       null = JS가 아직 설정한 적 없음(첫 호출 시 canvasW/2 기반으로 초기화).
+                       getComputedStyle 의존 제거를 위해 도입 — applyData/resetAll에서 null 리셋 */
 var blocks = [
   { id: _nextBlkId(), x: 12,  y: 12,  w: 260, h: 500, groupId: 'g_01', type: 'img', imgSrc: null, imgTransform: { scale:1, x:0, y:0 }, radius: null, shadow: null, opacity: null, bgColor: null },
   { id: _nextBlkId(), x: 284, y: 12,  w: 216, h: 247, groupId: 'g_01', type: 'img', imgSrc: null, imgTransform: { scale:1, x:0, y:0 }, radius: null, shadow: null, opacity: null, bgColor: null },

@@ -169,6 +169,9 @@ function renderBgLayerPng(ctx, ox, oy, layout, SHEET_R) {
   var _bgExtend = Math.max(0, canvasExtraTop);
   pdY -= _bgExtend;
   pdH += _bgExtend;
+  var _bgExtendLeft = Math.max(0, canvasExtraLeft);
+  pdX -= _bgExtendLeft;
+  pdW += _bgExtendLeft;
 
   /* round 타입 보정 불필요 —
      round clip이 saveAsPNG에서 배경지보다 먼저 열리므로
@@ -1296,7 +1299,7 @@ function saveAsPNG() {
        F-17: #sticker-layer가 canvasExtraTop만큼 아래로 이동해 렌더되므로(라이브 DOM과 동일하게)
        oy에도 canvasExtraTop을 더해 보정 — renderStickersToCanvas(재작성 금지) 내부는 안 건드림 */
     var stickerPromise = (typeof renderStickersToCanvas === 'function' && stickers.length > 0)
-      ? renderStickersToCanvas(ctx, ox, oy + canvasExtraTop, DPR)
+      ? renderStickersToCanvas(ctx, ox + canvasExtraLeft, oy + canvasExtraTop, DPR)
       : Promise.resolve();
 
     return stickerPromise;

@@ -697,10 +697,19 @@ function updateResizeHandles() {
   var ht = document.getElementById('canvas-handle-top');
   var hb = document.getElementById('canvas-handle-bottom');
 
-  if (hl) { hl.style.cssText += ';top:' + (midY - HL/2) + 'px;left:' + (-OFF - HT) + 'px;'; }
-  if (hr) { hr.style.cssText += ';top:' + (midY - HL/2) + 'px;left:' + (canvasW + OFF) + 'px;'; }
-  if (ht) { ht.style.cssText += ';left:' + (midX - HL/2) + 'px;top:' + (-OFF - HT) + 'px;'; }
-  if (hb) { hb.style.cssText += ';left:' + (midX - HL/2) + 'px;top:' + (sheetH + OFF) + 'px;'; }
+  if (hl) { hl.style.top = (midY - HL/2) + 'px'; hl.style.left = (-OFF - HT) + 'px'; }
+  if (hr) { hr.style.top = (midY - HL/2) + 'px'; hr.style.left = (canvasW + OFF) + 'px'; }
+  if (ht) { ht.style.left = (midX - HL/2) + 'px'; ht.style.top = (-OFF - HT) + 'px'; }
+  if (hb) { hb.style.left = (midX - HL/2) + 'px'; hb.style.top = (sheetH + OFF) + 'px'; }
+}
+
+function _syncCanvasLeft() {
+  /* canvasExtraTop / autoCanvasH()와 대칭 — 좌측 핸들 확장 시 콘텐츠 화면위치 고정 */
+  var padEl = document.getElementById('sheet-pad');
+  if (padEl) padEl.style.marginLeft = canvasExtraLeft + 'px';
+  var stickerLayerEl = document.getElementById('sticker-layer');
+  if (stickerLayerEl) stickerLayerEl.style.left = canvasExtraLeft + 'px';
+  if (typeof _syncBgOverlayBounds === 'function') _syncBgOverlayBounds();
 }
 
 /* ══════════════════════════════════════════
@@ -723,13 +732,24 @@ function _setStageWidth(newW, anchor) {
   if (stageEl) {
     stageEl.style.width = newW + 'px';
     if (anchor === 'right') {
-      var curML = parseFloat(getComputedStyle(stageEl).marginLeft);
-      if (isNaN(curML)) curML = -oldW / 2;
-      stageEl.style.marginLeft = (curML - (newW - oldW)) + 'px';
+      /* 좌측 핸들: 우측 경계 고정 + 콘텐츠 반대방향 상쇄 → 콘텐츠 화면위치 불변
+         canvas-stage가 delta만큼 왼쪽으로 이동하는 동시에 sheet-pad가 delta만큼 오른쪽으로 이동
+         → 블록/스티커는 화면 기준 제자리, 캔버스 좌측 경계만 확장 */
+      var delta = newW - oldW;
+      canvasExtraLeft = Math.max(0, canvasExtraLeft + delta);
+      if (_stageML === null) _stageML = -(oldW / 2);
+      _stageML -= delta;
+      stageEl.style.marginLeft = _stageML + 'px';
+      _syncCanvasLeft();
     } else if (anchor === 'left') {
-      /* 좌측 경계 고정 — marginLeft는 그대로(이미 좌측 경계 기준으로 맞춰져 있음) */
+      /* 우측 핸들: 좌측 경계 고정, marginLeft/canvasExtraLeft 불변 */
+      if (_stageML === null) _stageML = -(oldW / 2);
     } else {
-      stageEl.style.marginLeft = (-newW / 2) + 'px';
+      /* center: 슬라이더·슬롯복원·초기화 등 → canvasExtraLeft 리셋 */
+      canvasExtraLeft = 0;
+      _stageML = -(newW / 2);
+      stageEl.style.marginLeft = _stageML + 'px';
+      _syncCanvasLeft();
     }
   }
   if (padEl) padEl.style.width = newW + 'px';
@@ -1897,6 +1917,7 @@ document.addEventListener('mousemove', function(e) {
           : _applyCanvasExpand(delta_cw, 0, 0, 0);
       }
     }
+    updateResizeHandles();
     return;
   }
 
