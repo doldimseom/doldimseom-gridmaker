@@ -769,16 +769,22 @@ function _applyCanvasExpand(left, right, top, bottom) {
        우측 핸들 단독·좌측 핸들 단독(0620_2: 좌측도 블록 고정 요구) 모두 동일하게 적용 —
        블록을 안 움직이는 한 "콘텐츠 우측 끝" 기준 브레이크가 좌/우 어느 쪽이든 그대로 유효함 */
     if (requestedW < canvasW) {
-      var minNeededW = gaps.pad * 2;
-      blocks.forEach(function(b) {
-        var re = b.x + b.w + gaps.pad;
-        if (re > minNeededW) minNeededW = re;
-      });
-      stickers.forEach(function(s) {
-        var re = s.x + (s.size || 0) + gaps.pad;
-        if (re > minNeededW) minNeededW = re;
-      });
-      requestedW = Math.max(requestedW, minNeededW);
+      if (left < 0 && right === 0) {
+        /* 좌핸들 단독 축소: canvasExtraLeft 소진까지만 허용.
+           블록은 sheet-pad 기준 고정이므로 우측 콘텐츠 브레이크 불필요. */
+        requestedW = Math.max(requestedW, canvasW - canvasExtraLeft);
+      } else {
+        var minNeededW = gaps.pad * 2;
+        blocks.forEach(function(b) {
+          var re = b.x + b.w + gaps.pad;
+          if (re > minNeededW) minNeededW = re;
+        });
+        stickers.forEach(function(s) {
+          var re = s.x + (s.size || 0) + gaps.pad;
+          if (re > minNeededW) minNeededW = re;
+        });
+        requestedW = Math.max(requestedW, minNeededW);
+      }
     }
     var newW = Math.round(Math.min(1400, Math.max(400, requestedW)));
     var actual = newW - canvasW;

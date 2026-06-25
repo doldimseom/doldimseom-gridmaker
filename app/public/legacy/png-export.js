@@ -31,6 +31,7 @@ function collectLayout() {
         h:   Math.round(hr.height / Z),
         pos: headerPos
       };
+    }
   }
 
   /* sheet-pad 위치 (헤더 유무/라운드 오버랩 반영) */
