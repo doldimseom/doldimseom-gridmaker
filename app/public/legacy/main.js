@@ -770,9 +770,16 @@ function _applyCanvasExpand(left, right, top, bottom) {
        블록을 안 움직이는 한 "콘텐츠 우측 끝" 기준 브레이크가 좌/우 어느 쪽이든 그대로 유효함 */
     if (requestedW < canvasW) {
       if (left < 0 && right === 0) {
-        /* 좌핸들 단독 축소: canvasExtraLeft 소진까지만 허용.
-           블록은 sheet-pad 기준 고정이므로 우측 콘텐츠 브레이크 불필요. */
-        requestedW = Math.max(requestedW, canvasW - canvasExtraLeft);
+        /* 좌핸들 단독 축소:
+           ① canvasExtraLeft (핸들로 직접 확장한 여분)
+           ② 최좌단 블록 ~ gaps.pad (블록 드래그 자동확장으로 생긴 좌측 빈 공간)
+           두 범위 합산까지 허용 — Phase 2에서 ②만큼 블록을 왼쪽으로 이동해 화면 위치 유지 */
+        var _minBX = Infinity;
+        blocks.forEach(function(b) { if (b.x < _minBX) _minBX = b.x; });
+        stickers.forEach(function(s) { if (s.x < _minBX) _minBX = s.x; });
+        if (_minBX === Infinity) _minBX = gaps.pad;
+        var _shrinkFromBlocks = Math.max(0, _minBX - gaps.pad);
+        requestedW = Math.max(requestedW, canvasW - canvasExtraLeft - _shrinkFromBlocks);
       } else {
         var minNeededW = gaps.pad * 2;
         blocks.forEach(function(b) {
@@ -817,8 +824,23 @@ function _applyCanvasExpand(left, right, top, bottom) {
          우측 단독은 좌측 경계 고정, Shift·Alt 대칭 리사이즈(actualLeft!==0, 블록 일부 이동)는
          재중앙(_setStageWidth 공용 헬퍼 — 모든 canvasW 변경 경로가 이 함수 하나만 거치도록
          통일, 2026-06-22 좌측 핸들 버그 재발 원인 수정) */
+      var _isLeftOnly = (left < 0 && right === 0);
+      var _extraBefore = _isLeftOnly ? canvasExtraLeft : 0;
       var _anchor = actualLeft !== 0 ? 'center' : (left !== 0 ? 'right' : 'left');
       _setStageWidth(newW, _anchor);
+      /* Phase 2: 좌핸들 단독 축소에서 canvasExtraLeft 소진 후 남은 축소량 → 블록을 왼쪽으로 이동.
+         canvas-stage는 오른쪽으로 이동(anchor='right')하고 블록도 같은 양만큼 왼쪽으로 이동 →
+         블록의 화면 위치 유지됨 */
+      if (_isLeftOnly && actual < 0) {
+        var _phase2 = Math.max(0, -actual - _extraBefore);
+        if (_phase2 > 0) {
+          blocks.forEach(function(b) {
+            b.x -= _phase2;
+            var bEl = document.querySelector('.blk[data-key="' + b.id + '"]');
+            if (bEl) bEl.style.left = b.x + 'px';
+          });
+        }
+      }
     }
   }
 
