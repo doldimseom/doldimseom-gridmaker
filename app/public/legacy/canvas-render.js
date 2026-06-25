@@ -225,24 +225,26 @@ function commitHeaderEdit() {
    프리셋
 ══════════════════════════════════════════ */
 function selectPreset(id) {
-  ['a1','a2'].forEach(function(p) {
+  ['o1','o2','j1','j2','e1','e2'].forEach(function(p) {
     document.getElementById('preset-' + p).classList.toggle('selected', p === id);
   });
   _blkIdCounter = 0;
-  if (id === 'a1') {
+  if (id === 'o1') {
     blocks = [
       { id: _nextBlkId(), x: 12,  y: 12,  w: 260, h: 500, groupId: 'g_01', type: 'img', imgSrc: null, imgTransform: { scale:1, x:0, y:0 }, radius: null, shadow: null, opacity: null, bgColor: null },
       { id: _nextBlkId(), x: 284, y: 12,  w: 216, h: 247, groupId: 'g_01', type: 'img', imgSrc: null, imgTransform: { scale:1, x:0, y:0 }, radius: null, shadow: null, opacity: null, bgColor: null },
       { id: _nextBlkId(), x: 284, y: 271, w: 216, h: 241, groupId: 'g_01', type: 'img', imgSrc: null, imgTransform: { scale:1, x:0, y:0 }, radius: null, shadow: null, opacity: null, bgColor: null },
       { id: _nextBlkId(), x: 512, y: 12,  w: 276, h: 500, groupId: 'g_01', type: 'txt', spans: [{ text: '' }], radius: null, shadow: null, opacity: null, bgColor: null }
     ];
-  } else {
+  } else if (id === 'o2') {
     blocks = [
       { id: _nextBlkId(), x: 12,  y: 12,  w: 260, h: 200, groupId: 'g_01', type: 'img', imgSrc: null, imgTransform: { scale:1, x:0, y:0 }, radius: null, shadow: null, opacity: null, bgColor: null },
       { id: _nextBlkId(), x: 284, y: 12,  w: 216, h: 94,  groupId: 'g_01', type: 'img', imgSrc: null, imgTransform: { scale:1, x:0, y:0 }, radius: null, shadow: null, opacity: null, bgColor: null },
       { id: _nextBlkId(), x: 284, y: 118, w: 216, h: 94,  groupId: 'g_01', type: 'img', imgSrc: null, imgTransform: { scale:1, x:0, y:0 }, radius: null, shadow: null, opacity: null, bgColor: null },
       { id: _nextBlkId(), x: 512, y: 12,  w: 276, h: 200, groupId: 'g_01', type: 'txt', spans: [{ text: '' }], radius: null, shadow: null, opacity: null, bgColor: null }
     ];
+  } else {
+    blocks = [];
   }
   selKey = null;
   selKeys = [];
@@ -583,14 +585,29 @@ function makeBlk(blk) {
       var t = blk.imgTransform || { scale:1, x:0, y:0 };
       imgEl.style.transform =
         'translate(calc(-50% + ' + t.x + 'px), calc(-50% + ' + t.y + 'px)) scale(' + t.scale + ')';
+      if ((blk.blur || 0) > 0) imgEl.style.filter = 'blur(' + blk.blur + 'px)';
       imgWrap.appendChild(imgEl);
     } else {
       var lb = document.createElement('div'); lb.className = 'blk-inner-label';
       lb.textContent = '더블클릭으로 이미지 업로드';
       imgWrap.appendChild(lb);
     }
-    /* 이미지 있을 때 — 그라디언트·텍스트 오버레이 */
+    /* 이미지 있을 때 — 노이즈·그라디언트 오버레이 */
     if (blk.imgSrc) {
+      if ((blk.noise || 0) > 0) {
+        var noiseOverlay = document.createElement('div');
+        noiseOverlay.className = 'blk-noise-overlay';
+        var _noiseOp = (blk.noise / 100).toFixed(3);
+        noiseOverlay.innerHTML =
+          '<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">' +
+          '<filter id="gm-n-' + blk.id + '">' +
+          '<feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>' +
+          '<feColorMatrix type="saturate" values="0"/>' +
+          '</filter>' +
+          '<rect width="100%" height="100%" filter="url(#gm-n-' + blk.id + ')" opacity="' + _noiseOp + '"/>' +
+          '</svg>';
+        imgWrap.appendChild(noiseOverlay);
+      }
       if (blk.gradOn) {
         var gradDiv = document.createElement('div');
         gradDiv.className = 'blk-img-gradient';

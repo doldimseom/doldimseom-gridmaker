@@ -501,7 +501,17 @@ function saveAsPNG() {
   var a = document.createElement('a');
   a.download = fname;
 
-  bgLayerPromise.then(function() {
+  bgLayerPromise.then(async function() {
+
+    /* 헬퍼: SVG 문자열을 Image로 래스터라이즈 (noise PNG 합성용) */
+    function _svgToImg(svgStr) {
+      return new Promise(function(resolve) {
+        var img = new Image();
+        img.onload  = function() { resolve(img); };
+        img.onerror = function() { resolve(null); };
+        img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgStr);
+      });
+    }
 
     /* 헬퍼: 텍스트 줄바꿈
        dryRun=true 시 실제 fillText 없이 총 렌더 높이만 반환 (vAlign 중앙 오프셋 계산용) */
@@ -577,7 +587,7 @@ function saveAsPNG() {
     }
 
     /* 4. 블록 */
-    layout.blocks.forEach(function(item) {
+    for (var item of layout.blocks) {
     var blk = item.blk;
     var bx  = ox + item.x;
     var by  = oy + item.y;
@@ -622,6 +632,7 @@ function saveAsPNG() {
         ctx.save();
         roundRectPath(bx, by, bw, bh, r);
         ctx.clip();
+        if ((blk.blur || 0) > 0) ctx.filter = 'blur(' + (blk.blur * DPR) + 'px)';
         var t    = blk.imgTransform || { scale: 1, x: 0, y: 0 };
         var cx   = bx + bw / 2 + t.x;
         var cy   = by + bh / 2 + t.y;
@@ -631,6 +642,25 @@ function saveAsPNG() {
         ctx.scale(t.scale, t.scale);
         ctx.drawImage(imgObj, -iw / 2, -ih / 2, iw, ih);
         ctx.restore();
+        /* 노이즈 오버레이 (이미지 위, 그라디언트 아래) */
+        if ((blk.noise || 0) > 0) {
+          var _noiseOpPng = (blk.noise / 100).toFixed(3);
+          var _noiseSvgPng =
+            '<svg xmlns="http://www.w3.org/2000/svg" width="' + bw + '" height="' + bh + '">' +
+            '<filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>' +
+            '<feColorMatrix type="saturate" values="0"/></filter>' +
+            '<rect width="' + bw + '" height="' + bh + '" filter="url(#n)" opacity="' + _noiseOpPng + '"/></svg>';
+          var _noiseImg = await _svgToImg(_noiseSvgPng);
+          if (_noiseImg) {
+            ctx.save();
+            roundRectPath(bx, by, bw, bh, r);
+            ctx.clip();
+            ctx.globalCompositeOperation = 'overlay';
+            ctx.drawImage(_noiseImg, bx, by, bw, bh);
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.restore();
+          }
+        }
       }
       /* 그라디언트 오버레이 */
       if (blk.gradOn) {
@@ -1308,7 +1338,7 @@ function saveAsPNG() {
     }
 
     ctx.restore();
-    });
+    } /* /for...of blocks */
 
     /* 라운드 타입 클립 해제 */
     if (roundClipOpen) {

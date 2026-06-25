@@ -112,28 +112,69 @@
       </div>
       <div class="panel-body">
 
-        <div class="section-title">프리셋 레이아웃</div>
+        <!-- 외관 정리표 -->
+        <div class="preset-section-header">
+          <span class="preset-section-accent-bar"></span>
+          <span class="preset-section-name">외관 정리표</span>
+          <span class="preset-section-count">2</span>
+        </div>
         <div class="preset-grid">
-          <div class="preset-card selected" id="preset-a1" onclick="selectPreset('a1')">
-            <div class="preset-thumb">
-              <div class="pt-col" style="flex:1.2;"><div class="pt-block pt-img" style="flex:1;"></div></div>
-              <div class="pt-col" style="flex:1;"><div class="pt-block pt-img" style="flex:1;margin-bottom:2px;"></div><div class="pt-block pt-img" style="flex:1;"></div></div>
-              <div class="pt-col" style="flex:1.3;"><div class="pt-block pt-txt" style="flex:1;"></div></div>
-            </div>
-            <div class="preset-name">A-1 메인+서브+텍스트</div>
+          <div class="preset-card selected" id="preset-o1" onclick="selectPreset('o1')">
+            <div class="preset-thumb-blank"></div>
+            <div class="preset-name">1인</div>
           </div>
-          <div class="preset-card" id="preset-a2" onclick="selectPreset('a2')">
-            <div class="preset-thumb">
-              <div class="pt-col" style="flex:1.2;"><div class="pt-block pt-img" style="flex:1;"></div></div>
-              <div class="pt-col" style="flex:1.3;">
-                <div style="display:flex;gap:2px;flex:1;margin-bottom:2px;">
-                  <div class="pt-block pt-img" style="flex:1;"></div>
-                  <div class="pt-block pt-img" style="flex:1;"></div>
+          <div class="preset-card" id="preset-o2" onclick="selectPreset('o2')">
+            <div class="preset-thumb-b">
+              <div class="ptb-header"></div>
+              <div class="ptb-body">
+                <div class="ptb-col">
+                  <div class="ptb-img"></div>
+                  <div class="ptb-chips"><span></span><span></span><span></span></div>
+                  <div class="ptb-lines"><div></div><div style="width:80%"></div></div>
                 </div>
-                <div class="pt-block pt-txt" style="flex:1;"></div>
+                <div class="ptb-center-img"></div>
+                <div class="ptb-col">
+                  <div class="ptb-img"></div>
+                  <div class="ptb-chips"><span></span><span></span><span></span></div>
+                  <div class="ptb-lines"><div></div><div style="width:80%"></div></div>
+                </div>
               </div>
             </div>
-            <div class="preset-name">A-2 메인+서브2+텍스트</div>
+            <div class="preset-name">2인</div>
+          </div>
+        </div>
+
+        <!-- 자기소개표 -->
+        <div class="preset-section-header">
+          <span class="preset-section-accent-bar"></span>
+          <span class="preset-section-name">자기소개표</span>
+          <span class="preset-section-count">2</span>
+        </div>
+        <div class="preset-grid">
+          <div class="preset-card" id="preset-j1" onclick="selectPreset('j1')">
+            <div class="preset-thumb-blank"></div>
+            <div class="preset-name">심플</div>
+          </div>
+          <div class="preset-card" id="preset-j2" onclick="selectPreset('j2')">
+            <div class="preset-thumb-blank"></div>
+            <div class="preset-name">확장</div>
+          </div>
+        </div>
+
+        <!-- 기타 -->
+        <div class="preset-section-header">
+          <span class="preset-section-accent-bar"></span>
+          <span class="preset-section-name">기타</span>
+          <span class="preset-section-count">2</span>
+        </div>
+        <div class="preset-grid preset-grid--last">
+          <div class="preset-card" id="preset-e1" onclick="selectPreset('e1')">
+            <div class="preset-thumb-blank"></div>
+            <div class="preset-name">간단 신청서</div>
+          </div>
+          <div class="preset-card" id="preset-e2" onclick="selectPreset('e2')">
+            <div class="preset-thumb-blank"></div>
+            <div class="preset-name">자유 캔버스</div>
           </div>
         </div>
 
@@ -662,6 +703,23 @@
                   <div class="row-slider" id="bp-sl-gstop" data-min="0" data-max="100" data-val="0" data-fn="_onGradStopOpacityInput(this.value)"><div class="row-slider-fill" style="width:0%"></div><div class="row-slider-thumb" style="left:0%"></div></div>
                   <input type="number" class="row-num" id="bp-sn-gstop" min="0" max="100" value="0" oninput="_onGradStopOpacityInput(+this.value)">
                 </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 이미지 효과 -->
+          <section class="grp">
+            <div class="grp-head">이미지 효과</div>
+            <div class="grp-body">
+              <div class="row">
+                <span class="row-lbl">블러</span>
+                <div class="row-slider" id="bp-sl-blur" data-min="0" data-max="20" data-val="0" data-fn="syncImgEffect('blur',this.value)"><div class="row-slider-fill" style="width:0%"></div><div class="row-slider-thumb" style="left:0%"></div></div>
+                <input type="number" class="row-num" id="bp-sn-blur" min="0" max="20" value="0" oninput="syncImgEffect('blur',+this.value)">
+              </div>
+              <div class="row">
+                <span class="row-lbl">노이즈</span>
+                <div class="row-slider" id="bp-sl-noise" data-min="0" data-max="100" data-val="0" data-fn="syncImgEffect('noise',this.value)"><div class="row-slider-fill" style="width:0%"></div><div class="row-slider-thumb" style="left:0%"></div></div>
+                <input type="number" class="row-num" id="bp-sn-noise" min="0" max="100" value="0" oninput="syncImgEffect('noise',+this.value)">
               </div>
             </div>
           </section>

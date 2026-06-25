@@ -582,7 +582,7 @@ function _addBlkOfType(type, snapX, snapY) {
   }
   var newBlk = { id: _nextBlkId(), x: newX, y: newY, w: _side, h: _side, groupId: null, type: type, radius: null, shadow: null, opacity: null, bgColor: null, stroke: globalVals.stroke || 0, tstroke: globalVals.tstroke || 0, tstrokeColor: '#ffffff' };
   if (type === 'txt') { newBlk.listMode = 'none'; newBlk.spans = [{ text: '' }]; }
-  if (type === 'img') { newBlk.imgSrc = null; newBlk.imgTransform = { scale: 1, x: 0, y: 0 }; }
+  if (type === 'img') { newBlk.imgSrc = null; newBlk.imgTransform = { scale: 1, x: 0, y: 0 }; newBlk.blur = 0; newBlk.noise = 0; }
   if (type === 'colorchip') {
     /* textColor는 칩마다 박아두지 않음(자동대비 폐지, 2026-06-23) — 블록 단위
        기본 글자색(ccTextColor)을 따라가도록 미지정 상태로 둠(renderColorchipContent의

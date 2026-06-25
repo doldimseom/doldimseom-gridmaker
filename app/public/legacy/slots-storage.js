@@ -85,6 +85,8 @@ function applyData(data) {
           blk.gradStart.pos = (blk.gradOffset !== undefined ? blk.gradOffset : 0);
         if (blk.gradEnd && blk.gradEnd.pos === undefined)
           blk.gradEnd.pos = 100;
+        if (blk.blur  == null) blk.blur  = 0;
+        if (blk.noise == null) blk.noise = 0;
       }
     });
   }

@@ -202,6 +202,15 @@ function _loadImgOverlayPanel(blk) {
     _paintGradRamp();
     _loadGradEditor(_gradSelIdx);
   }
+  /* blur / noise 슬라이더 초기값 */
+  var _blurV  = blk.blur  || 0;
+  var _noiseV = blk.noise || 0;
+  _updateSliderUI('bp-sl-blur',  _blurV);
+  _updateSliderUI('bp-sl-noise', _noiseV);
+  var _snBlur  = document.getElementById('bp-sn-blur');
+  var _snNoise = document.getElementById('bp-sn-noise');
+  if (_snBlur)  _snBlur.value  = _blurV;
+  if (_snNoise) _snNoise.value = _noiseV;
 }
 
 /* ══════════════════════════════════════════
@@ -487,4 +496,26 @@ function clearImgSrc(key) {
   activeImgKey = null;
   render();
   _refreshImgUploadBox(blk);
+}
+
+/* ══════════════════════════════════════════
+   이미지 효과 (blur / noise)
+══════════════════════════════════════════ */
+function syncImgEffect(prop, val) {
+  var blk = getSelBlk();
+  if (!blk || blk.type !== 'img') return;
+  saveHistory();
+  val = +val;
+  if (prop === 'blur') {
+    blk.blur = Math.max(0, Math.min(20, val));
+    _updateSliderUI('bp-sl-blur', blk.blur);
+    var snB = document.getElementById('bp-sn-blur');
+    if (snB) snB.value = blk.blur;
+  } else if (prop === 'noise') {
+    blk.noise = Math.max(0, Math.min(100, val));
+    _updateSliderUI('bp-sl-noise', blk.noise);
+    var snN = document.getElementById('bp-sn-noise');
+    if (snN) snN.value = blk.noise;
+  }
+  render();
 }
