@@ -29,6 +29,9 @@
      플로팅 UI — 4코너
 ══════════════════════════════════════════ -->
 
+<!-- 좌상단: 사용 가이드 ? 버튼 -->
+<button id="gm-help-btn" onclick="_gmToggleDrawer()" title="사용 가이드">?</button>
+
 <!-- 좌상단: 탭 pill — float-tab-label로 슬라이드인 애니메이션 -->
 <div class="float-tabs" id="float-tabs">
   <button class="float-tab active" id="nb-canvas" onclick="switchNav('canvas')" title="시트 설정">
@@ -1387,6 +1390,91 @@
 <div id="slot-tooltip"></div>
 <div id="slot-toast"></div>
 
+<!-- ══════════════════════════════════════
+     사용 가이드 시스템
+══════════════════════════════════════════ -->
+
+<!-- 탭 힌트 배너 -->
+<div id="gm-hint-banner">
+  <div class="gm-hint-inner">
+    <span class="gm-hint-label" id="gm-hint-label"></span>
+    <span class="gm-hint-text" id="gm-hint-text"></span>
+  </div>
+  <button class="gm-hint-close" onclick="_gmHintDismiss()">✕</button>
+</div>
+
+<!-- 투어 오버레이 -->
+<div id="gm-tour-overlay">
+  <div id="gm-tour-highlight" class="hidden"></div>
+  <div id="gm-tour-card" class="hidden">
+    <button class="gm-tour-close" onclick="_gmTourClose()">✕</button>
+    <div class="gm-tour-step-row">
+      <div class="gm-tour-step-badge"><span id="gm-tour-step-num">1</span></div>
+      <span class="gm-tour-step-of" id="gm-tour-step-of">/ 5</span>
+    </div>
+    <div class="gm-tour-title" id="gm-tour-title"></div>
+    <div class="gm-tour-desc" id="gm-tour-desc"></div>
+    <div class="gm-tour-footer">
+      <div id="gm-tour-dots"></div>
+      <div class="gm-tour-nav">
+        <button class="gm-tour-btn gm-tour-btn-prev" id="gm-tour-btn-prev" onclick="_gmTourPrev()">← 이전</button>
+        <button class="gm-tour-btn gm-tour-btn-next" id="gm-tour-btn-next" onclick="_gmTourNext()">다음 →</button>
+      </div>
+    </div>
+  </div>
+  <div id="gm-tour-done" class="hidden">
+    <button class="gm-tour-close" onclick="_gmTourClose()">✕</button>
+    <div class="gm-tour-done-icon">🪨</div>
+    <div class="gm-tour-done-title">준비 완료!</div>
+    <div class="gm-tour-done-desc">이제 그리드메이커를 사용할 수 있습니다.<br>좌상단 ? 버튼에서 언제든 가이드를 다시 볼 수 있습니다.</div>
+    <button class="gm-tour-done-btn" onclick="_gmTourClose()">시작하기</button>
+  </div>
+</div>
+
+<!-- ? 드로어 -->
+<div id="gm-drawer">
+  <div class="gm-drawer-section">
+    <button class="gm-drawer-replay-btn" onclick="_gmDrawerReplayTour()">
+      ▶ 사용 가이드 다시보기
+    </button>
+  </div>
+  <div class="gm-drawer-sep"></div>
+  <div class="gm-drawer-section">
+    <div class="gm-drawer-section-title">탭별 기능 안내</div>
+    <div class="gm-drawer-hint-list">
+      <div class="gm-dh-item">
+        <span class="gm-dh-label">시트</span>
+        <span class="gm-dh-text">블록을 추가해 캐릭터 정보를 구성할 수 있습니다. 블록 모서리를 드래그해 크기를 조절하고, 시트 가장자리 핸들을 드래그해 캔버스 크기를 바꿀 수 있습니다.</span>
+      </div>
+      <div class="gm-dh-item">
+        <span class="gm-dh-label">이미지</span>
+        <span class="gm-dh-text">PNG·JPG·GIF 이미지를 스티커처럼 시트 위에 자유롭게 올릴 수 있습니다.</span>
+      </div>
+      <div class="gm-dh-item">
+        <span class="gm-dh-label">배경지</span>
+        <span class="gm-dh-text">시트 배경에 색상, 그라디언트, 이미지를 적용해 분위기를 바꿀 수 있습니다.</span>
+      </div>
+      <div class="gm-dh-item">
+        <span class="gm-dh-label">헤더</span>
+        <span class="gm-dh-text">시트 상단·하단에 제목용 이미지를 추가할 수 있습니다. 직접 업로드하거나 이미지 URL로 불러올 수 있습니다.</span>
+      </div>
+      <div class="gm-dh-item">
+        <span class="gm-dh-label">프리셋</span>
+        <span class="gm-dh-text">미리 만들어진 레이아웃 템플릿을 불러와 빠르게 시작할 수 있습니다. 블록을 추가한 뒤에도 적용할 수 있습니다.</span>
+      </div>
+      <div class="gm-dh-item">
+        <span class="gm-dh-label">도구</span>
+        <span class="gm-dh-text">슬롯으로 작업을 저장·불러오고, 스냅·정렬 등 고급 옵션을 설정할 수 있습니다.</span>
+      </div>
+    </div>
+  </div>
+  <div class="gm-drawer-sep"></div>
+  <div class="gm-drawer-section">
+    <div class="gm-drawer-section-title">단축키</div>
+    <div id="gm-sc-body"></div>
+  </div>
+</div>
+
 <script src="/legacy/state.js"></script>
 <script src="/legacy/color-picker.js"></script>
 <script src="/legacy/undo-redo.js"></script>
@@ -1401,6 +1489,7 @@
 <script src="/legacy/png-export.js"></script>
 <script src="/legacy/stickers.js"></script>
 <script src="/legacy/main.js"></script>
+<script src="/legacy/guide.js"></script>
 
 <!-- 블록 추가 팝업 — canvas-stage transform 영향 밖에 배치 (fixed 좌표 정확성 확보) -->
 <div class="blk-popup" id="blk-popup"></div>
