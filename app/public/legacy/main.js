@@ -2064,18 +2064,28 @@ document.addEventListener('mousemove', function(e) {
           _setStageWidth(adjustedMaxX, 'center');
         }
 
-        /* 상단 자동 확장 — 헤더 있을 때: 헤더 위는 차단 / 없을 때: gaps.pad 여백 유지 */
-        var _yFloor = headerPos === 'top' ? -getHeaderH() : 0;
-        if (moveMinY < _yFloor) {
-          var ty = _yFloor - moveMinY;
-          blkDrag.offsetY -= ty;
-          ny += ty;
-          blocks.forEach(function(b) {
-            b.y += ty;
-            if (b.id === blkDrag.id) return;
-            var bEl = document.querySelector('.blk[data-key="' + b.id + '"]');
-            if (bEl) bEl.style.top = b.y + 'px';
-          });
+        /* 상단 자동 확장
+           헤더 있을 때: 헤더 위는 차단(기존 동작 유지)
+           헤더 없을 때: canvasExtraTop 기반 자동확장 — 좌/우/하단과 동일 모델
+             · 블록은 y < 0 구역(canvasExtraTop 여백 안)을 자유롭게 이동 가능
+             · -canvasExtraTop 경계를 초과하면 canvasExtraTop 증가로 캔버스 확장 */
+        if (headerPos === 'top') {
+          var _yFloor = -getHeaderH();
+          if (moveMinY < _yFloor) {
+            var ty = _yFloor - moveMinY;
+            blkDrag.offsetY -= ty;
+            ny += ty;
+            blocks.forEach(function(b) {
+              b.y += ty;
+              if (b.id === blkDrag.id) return;
+              var bEl = document.querySelector('.blk[data-key="' + b.id + '"]');
+              if (bEl) bEl.style.top = b.y + 'px';
+            });
+            autoCanvasH();
+          }
+        } else if (moveMinY < -canvasExtraTop) {
+          var ty = (-canvasExtraTop) - moveMinY;
+          canvasExtraTop += ty;
           autoCanvasH();
         }
 

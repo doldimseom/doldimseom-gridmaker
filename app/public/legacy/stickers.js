@@ -288,14 +288,15 @@ function bindStickerEvents(el, sticker) {
         stickers.forEach(function(s) {
           if (selectedStickerIds.indexOf(s.id) !== -1 && !s.locked) {
             var el2 = document.getElementById('sticker-' + s.id);
-            s.x = s._dragStartX + dx;
-            s.y = s._dragStartY + dy;
+            s.x = Math.max(0, Math.min(canvasW - s.size, s._dragStartX + dx));
+            s.y = Math.max(0, Math.min(canvasH - s.size, s._dragStartY + dy));
             if (el2) { el2.style.left = s.x + 'px'; el2.style.top = s.y + 'px'; }
           }
         });
       }
     } else {
-      sticker.x = startSX + dx; sticker.y = startSY + dy;
+      sticker.x = Math.max(0, Math.min(canvasW - sticker.size, startSX + dx));
+      sticker.y = Math.max(0, Math.min(canvasH - sticker.size, startSY + dy));
       el.style.left = sticker.x + 'px'; el.style.top = sticker.y + 'px';
     }
     _showStickerFloatBar();
