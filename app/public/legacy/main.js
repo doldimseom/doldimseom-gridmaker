@@ -1049,9 +1049,13 @@ function updateSheetRadius(val) {
   var botSlot = document.getElementById('hdr-bot-slot');
   if (topSlot && topSlot.classList.contains('visible')) {
     topSlot.style.borderRadius = r + 'px ' + r + 'px 0 0';
+    var rndElT = topSlot.querySelector('.sheet-header-round');
+    if (rndElT) rndElT.style.borderRadius = r + 'px ' + r + 'px 0 0';
   }
   if (botSlot && botSlot.classList.contains('visible')) {
     botSlot.style.borderRadius = '0 0 ' + r + 'px ' + r + 'px';
+    var rndElB = botSlot.querySelector('.sheet-header-round');
+    if (rndElB) rndElB.style.borderRadius = '0 0 ' + r + 'px ' + r + 'px';
   }
   /* sheet-pad 라운딩 — 항상 동기화 (bgl-overlay가 border-radius:inherit로 상속함) */
   var pad = document.getElementById('sheet-pad');

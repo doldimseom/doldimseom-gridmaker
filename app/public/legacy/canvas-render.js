@@ -202,6 +202,10 @@ function makeHeaderBlock() {
     var bannerLayer = makeBannerLayer(roundH);
     bannerLayer.style.paddingBottom = (overlap + (sheetRadius || 0)) + 'px';
     bannerLayer.style.overflow      = 'visible';
+    var bR = sheetRadius || 0;
+    el.style.borderRadius = (headerPos === 'bot')
+      ? '0 0 ' + bR + 'px ' + bR + 'px'
+      : bR + 'px ' + bR + 'px 0 0';
 
     el.appendChild(bannerLayer);
     el.appendChild(makeRemoveBtn());

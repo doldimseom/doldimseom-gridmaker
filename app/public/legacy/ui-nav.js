@@ -1163,10 +1163,16 @@ function autoCanvasH() {
   pad.style.height = canvasH + 'px';
   /* F-17: canvasExtraTop은 블록/스티커 데이터를 안 건드리고 컨테이너만 이동시켜 반영
      (#sheet-pad는 일반 플로우 박스라 margin-top이 정상 동작, #sticker-layer는 inset:0
-     이라 top만 덮어쓰면 나머지 absolute 위치가 따라옴) */
-  pad.style.marginTop = canvasExtraTop + 'px';
+     이라 top만 덮어쓰면 나머지 absolute 위치가 따라옴)
+     라운드 top 헤더: pad가 배너 위로 overlap만큼 올라와야 하므로 effectiveTop = canvasExtraTop - overlap */
+  var _effectiveTop = canvasExtraTop;
+  if (headerData && headerData.type === 'round' && headerPos === 'top') {
+    var _rov = headerData.roundOverlap !== undefined ? headerData.roundOverlap : 24;
+    _effectiveTop -= _rov;
+  }
+  pad.style.marginTop = _effectiveTop + 'px';
   var stickerLayerEl = document.getElementById('sticker-layer');
-  if (stickerLayerEl) stickerLayerEl.style.top = canvasExtraTop + 'px';
+  if (stickerLayerEl) stickerLayerEl.style.top = _effectiveTop + 'px';
   _syncBgOverlayBounds();
   updateResizeHandles();
   updateSizeInfo();
