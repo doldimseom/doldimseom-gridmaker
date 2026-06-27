@@ -260,16 +260,20 @@ function _stickerDeleteKeyHandler(e) {
 
 function bindStickerEvents(el, sticker) {
   var dragging = false, startX = 0, startY = 0, startSX = 0, startSY = 0, didDrag = false;
+  var startElH = 0; /* 드래그 시작 시 실제 렌더 높이 — size(너비)와 다를 수 있음 */
   el.addEventListener('mousedown', function(e) {
     if (!stickerEditMode || sticker.locked) return;
     if (e.target.closest('.sticker-handle') || e.target.closest('.sticker-inline-editor')) return;
     dragging = true; didDrag = false;
     startX = e.clientX; startY = e.clientY;
     startSX = sticker.x; startSY = sticker.y;
-    /* 다중 드래그를 위해 현재 시점 x/y를 임시 스냅샷으로 기록 */
+    startElH = el.offsetHeight; /* 실제 렌더 높이 스냅샷 */
+    /* 다중 드래그를 위해 현재 시점 x/y + 실제 높이를 임시 스냅샷으로 기록 */
     stickers.forEach(function(s) {
       if (selectedStickerIds.indexOf(s.id) !== -1) {
         s._dragStartX = s.x; s._dragStartY = s.y;
+        var el2 = document.getElementById('sticker-' + s.id);
+        s._dragH = el2 ? el2.offsetHeight : s.size;
       }
     });
     e.preventDefault(); e.stopPropagation();
@@ -280,6 +284,9 @@ function bindStickerEvents(el, sticker) {
     if (!dragging) return;
     var dx = e.clientX - startX, dy = e.clientY - startY;
     if (Math.abs(dx) > 2 || Math.abs(dy) > 2) didDrag = true;
+    /* zoom 보정: 뷰포트 px → 캔버스 px */
+    var z = typeof _zoomLevel === 'number' && _zoomLevel > 0 ? _zoomLevel : 1;
+    var cdx = dx / z, cdy = dy / z;
     if (selectedStickerIds.length > 1) {
       /* 다중: 선택된 모든 스티커 DOM + 데이터 동시 갱신
          (데이터 미갱신 시 renderSticker 호출 시점에 위치 복귀 버그 발생) */
@@ -288,15 +295,26 @@ function bindStickerEvents(el, sticker) {
         stickers.forEach(function(s) {
           if (selectedStickerIds.indexOf(s.id) !== -1 && !s.locked) {
             var el2 = document.getElementById('sticker-' + s.id);
-            s.x = Math.max(0, Math.min(canvasW - s.size, s._dragStartX + dx));
-            s.y = Math.max(0, Math.min(canvasH - s.size, s._dragStartY + dy));
+            if (stickerOverflow) {
+              s.x = s._dragStartX + cdx;
+              s.y = s._dragStartY + cdy;
+            } else {
+              var sh = s._dragH || s.size;
+              s.x = Math.max(-canvasExtraLeft, Math.min(canvasW - s.size, s._dragStartX + cdx));
+              s.y = Math.max(-canvasExtraTop,  Math.min(canvasH - sh, s._dragStartY + cdy));
+            }
             if (el2) { el2.style.left = s.x + 'px'; el2.style.top = s.y + 'px'; }
           }
         });
       }
     } else {
-      sticker.x = Math.max(0, Math.min(canvasW - sticker.size, startSX + dx));
-      sticker.y = Math.max(0, Math.min(canvasH - sticker.size, startSY + dy));
+      if (stickerOverflow) {
+        sticker.x = startSX + cdx;
+        sticker.y = startSY + cdy;
+      } else {
+        sticker.x = Math.max(-canvasExtraLeft, Math.min(canvasW - sticker.size, startSX + cdx));
+        sticker.y = Math.max(-canvasExtraTop,  Math.min(canvasH - startElH, startSY + cdy));
+      }
       el.style.left = sticker.x + 'px'; el.style.top = sticker.y + 'px';
     }
     _showStickerFloatBar();
@@ -305,7 +323,7 @@ function bindStickerEvents(el, sticker) {
     if (!dragging) return;
     /* 다중 드래그 시작 시 기록해 둔 임시 프로퍼티 정리 */
     if (selectedStickerIds.length > 1) {
-      stickers.forEach(function(s) { delete s._dragStartX; delete s._dragStartY; });
+      stickers.forEach(function(s) { delete s._dragStartX; delete s._dragStartY; delete s._dragH; });
     }
     dragging = false;
   });
@@ -325,7 +343,8 @@ function bindResizeHandleDir(handle, sticker, dxSign, dySign) {
     var startX = e.clientX, startY = e.clientY, startSize = sticker.size;
     var axes = (dxSign !== 0 ? 1 : 0) + (dySign !== 0 ? 1 : 0);
     function onMove(e2) {
-      var delta = (dxSign * (e2.clientX - startX) + dySign * (e2.clientY - startY)) / (axes || 1);
+      var z2 = typeof _zoomLevel === 'number' && _zoomLevel > 0 ? _zoomLevel : 1;
+      var delta = (dxSign * (e2.clientX - startX) + dySign * (e2.clientY - startY)) / (axes || 1) / z2;
       sticker.size = Math.max(20, startSize + delta);
       var img = el.querySelector('img');
       if (img) img.style.width = sticker.size + 'px';
@@ -351,7 +370,8 @@ function bindResizeHandleMultiDir(handle, triggerSticker, dxSign, dySign) {
       if (s) initSizes[id] = s.size;
     });
     function onMove(e2) {
-      var delta = (dxSign * (e2.clientX - startX) + dySign * (e2.clientY - startY)) / (axes || 1);
+      var z2 = typeof _zoomLevel === 'number' && _zoomLevel > 0 ? _zoomLevel : 1;
+      var delta = (dxSign * (e2.clientX - startX) + dySign * (e2.clientY - startY)) / (axes || 1) / z2;
       selectedStickerIds.forEach(function(id) {
         var s = stickers.find(function(s){ return s.id === id; });
         var el2 = document.getElementById('sticker-' + id);
@@ -720,5 +740,16 @@ function _ctxToggleLock() {
 function _ctxDelete() {
   _closeStickerCtx();
   if (_ctxTargetId !== null) { removeSticker(_ctxTargetId); }
+}
+
+function toggleStickerOverflow() {
+  stickerOverflow = !stickerOverflow;
+  var btn = document.getElementById('sticker-overflow-sw');
+  if (btn) btn.classList.toggle('on', stickerOverflow);
+}
+
+function syncStickerOverflowUI() {
+  var btn = document.getElementById('sticker-overflow-sw');
+  if (btn) btn.classList.toggle('on', stickerOverflow);
 }
 

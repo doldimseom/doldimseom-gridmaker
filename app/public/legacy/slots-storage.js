@@ -36,7 +36,8 @@ function collectData(includeImages) {
     pngBg:         pngBg,
     bgLayer:       JSON.parse(JSON.stringify(bgLayer)),
     stickers:      stickersCopy,
-    stickerLibrary: stickerLibCopy
+    stickerLibrary: stickerLibCopy,
+    stickerOverflow: stickerOverflow
   };
 }
 
@@ -204,6 +205,9 @@ function applyData(data) {
       renderStickerLibrary();
     }
   })();
+  /* stickerOverflow 복원 */
+  stickerOverflow = typeof data.stickerOverflow === 'boolean' ? data.stickerOverflow : false;
+  if (typeof syncStickerOverflowUI === 'function') syncStickerOverflowUI();
   selKey = null;
   selKeys = [];
   showCanvasPanel();
@@ -656,6 +660,8 @@ function resetAll() {
   stickerIdCounter    = 0;
   stickerLibIdCounter = 0;
   selectedStickerIds  = [];
+  stickerOverflow     = false;
+  if (typeof syncStickerOverflowUI === 'function') syncStickerOverflowUI();
   renderStickerLibrary();
   showCanvasPanel();
   render();

@@ -132,6 +132,7 @@ var _importedSlots = null;
 var stickers = [];
 var stickerIdCounter = 0;
 var selectedStickerIds = [];
+var stickerOverflow = false; /* 시트 경계 밖 배치 허용 여부 — true: 자유배치, false: 시트 내 클램핑 */
 var stickerEditMode = false;
 var stickerLibrary = [];
 var stickerLibIdCounter = 0;
