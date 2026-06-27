@@ -688,8 +688,16 @@ function _showStickerFloatBar() {
   bar.style.left = Math.round(cx) + 'px';
   bar.style.top  = Math.round(ty) + 'px';
   bar.style.display = 'flex';
-  var distEls = bar.querySelectorAll('.ft-dist');
-  distEls.forEach(function(el) { el.style.display = n >= 2 ? (el.tagName === 'SPAN' ? 'block' : 'flex') : 'none'; });
+  /* 분배 버튼: n≥3일 때 활성(accent 솔리드), n=2이면 비활성 */
+  var dh = document.getElementById('ft-dist-h');
+  var dv = document.getElementById('ft-dist-v');
+  if (dh && dv) {
+    var active = n >= 3;
+    dh.classList.toggle('inactive', !active);
+    dv.classList.toggle('inactive', !active);
+    dh.disabled = !active;
+    dv.disabled = !active;
+  }
 }
 
 /* ══ 우클릭 컨텍스트 메뉴 ══ */

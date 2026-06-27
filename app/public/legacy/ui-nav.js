@@ -179,10 +179,109 @@ function showGroupToolbar(groupId) {
   ));
   tb.appendChild(sec1);
 
+  /* 정렬 섹션 */
+  function _mkAlignSvg(paths, isGuide) {
+    var svgNS = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('width', '17'); svg.setAttribute('height', '17');
+    svg.setAttribute('fill', 'none');
+    paths.forEach(function(p) {
+      var el = document.createElementNS(svgNS, p.tag);
+      Object.keys(p.attrs).forEach(function(k) { el.setAttribute(k, p.attrs[k]); });
+      svg.appendChild(el);
+    });
+    return svg;
+  }
+  var GS = '#5B7CE6'; /* guide stroke color */
+  var alignItems = [
+    { dir:'left', title:'좌 정렬', paths:[
+      {tag:'line',attrs:{x1:'3.5',y1:'3',x2:'3.5',y2:'21',stroke:GS,'stroke-width':'1.8','stroke-linecap':'round'}},
+      {tag:'rect',attrs:{x:'6',y:'6.5',width:'13',height:'3.6',rx:'1.2',fill:'currentColor'}},
+      {tag:'rect',attrs:{x:'6',y:'13.9',width:'8',height:'3.6',rx:'1.2',fill:'currentColor'}}
+    ]},
+    { dir:'center-h', title:'수평 중앙 정렬', paths:[
+      {tag:'line',attrs:{x1:'12',y1:'3',x2:'12',y2:'21',stroke:GS,'stroke-width':'1.8','stroke-linecap':'round'}},
+      {tag:'rect',attrs:{x:'4.5',y:'6.5',width:'15',height:'3.6',rx:'1.2',fill:'currentColor'}},
+      {tag:'rect',attrs:{x:'7.5',y:'13.9',width:'9',height:'3.6',rx:'1.2',fill:'currentColor'}}
+    ]},
+    { dir:'right', title:'우 정렬', paths:[
+      {tag:'line',attrs:{x1:'20.5',y1:'3',x2:'20.5',y2:'21',stroke:GS,'stroke-width':'1.8','stroke-linecap':'round'}},
+      {tag:'rect',attrs:{x:'5',y:'6.5',width:'13',height:'3.6',rx:'1.2',fill:'currentColor'}},
+      {tag:'rect',attrs:{x:'10',y:'13.9',width:'8',height:'3.6',rx:'1.2',fill:'currentColor'}}
+    ]},
+    { dir:'top', title:'상 정렬', paths:[
+      {tag:'line',attrs:{x1:'3',y1:'3.5',x2:'21',y2:'3.5',stroke:GS,'stroke-width':'1.8','stroke-linecap':'round'}},
+      {tag:'rect',attrs:{x:'6.4',y:'6',width:'3.6',height:'13',rx:'1.2',fill:'currentColor'}},
+      {tag:'rect',attrs:{x:'13.9',y:'6',width:'3.6',height:'8',rx:'1.2',fill:'currentColor'}}
+    ]},
+    { dir:'center-v', title:'수직 중앙 정렬', paths:[
+      {tag:'line',attrs:{x1:'3',y1:'12',x2:'21',y2:'12',stroke:GS,'stroke-width':'1.8','stroke-linecap':'round'}},
+      {tag:'rect',attrs:{x:'6.4',y:'4.5',width:'3.6',height:'15',rx:'1.2',fill:'currentColor'}},
+      {tag:'rect',attrs:{x:'13.9',y:'7.5',width:'3.6',height:'9',rx:'1.2',fill:'currentColor'}}
+    ]},
+    { dir:'bottom', title:'하 정렬', paths:[
+      {tag:'line',attrs:{x1:'3',y1:'20.5',x2:'21',y2:'20.5',stroke:GS,'stroke-width':'1.8','stroke-linecap':'round'}},
+      {tag:'rect',attrs:{x:'6.4',y:'5',width:'3.6',height:'13',rx:'1.2',fill:'currentColor'}},
+      {tag:'rect',attrs:{x:'13.9',y:'10',width:'3.6',height:'8',rx:'1.2',fill:'currentColor'}}
+    ]}
+  ];
+  var distItems = [
+    { dir:'distribute-h', label:'가로', title:'가로 균등 분배', paths:[
+      {tag:'rect',attrs:{x:'3',y:'6',width:'3.4',height:'12',rx:'1',fill:'currentColor'}},
+      {tag:'rect',attrs:{x:'10.3',y:'6',width:'3.4',height:'12',rx:'1',fill:'currentColor'}},
+      {tag:'rect',attrs:{x:'17.6',y:'6',width:'3.4',height:'12',rx:'1',fill:'currentColor'}}
+    ]},
+    { dir:'distribute-v', label:'세로', title:'세로 균등 분배', paths:[
+      {tag:'rect',attrs:{x:'6',y:'3',width:'12',height:'3.4',rx:'1',fill:'currentColor'}},
+      {tag:'rect',attrs:{x:'6',y:'10.3',width:'12',height:'3.4',rx:'1',fill:'currentColor'}},
+      {tag:'rect',attrs:{x:'6',y:'17.6',width:'12',height:'3.4',rx:'1',fill:'currentColor'}}
+    ]}
+  ];
+
+  var secAlign = document.createElement('div');
+  secAlign.className = 'dock-section';
+  var lblAlign = document.createElement('div');
+  lblAlign.className = 'dock-label';
+  lblAlign.textContent = '정렬';
+  secAlign.appendChild(lblAlign);
+
+  var alignGrid = document.createElement('div');
+  alignGrid.className = 'grp-align-grid';
+  alignItems.forEach(function(item) {
+    var btn = document.createElement('button');
+    btn.className = 'grp-align-btn'; btn.title = item.title;
+    btn.appendChild(_mkAlignSvg(item.paths));
+    btn.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+    btn.addEventListener('click', (function(d) { return function(e) { e.stopPropagation(); alignGroupBlocks(groupId, d); }; })(item.dir));
+    alignGrid.appendChild(btn);
+  });
+  secAlign.appendChild(alignGrid);
+
+  var distGrid = document.createElement('div');
+  distGrid.className = 'grp-dist-grid';
+  var canDist = grpBlksCount >= 3;
+  distItems.forEach(function(item) {
+    var btn = document.createElement('button');
+    btn.className = 'grp-dist-btn'; btn.title = item.title; btn.disabled = !canDist;
+    if (!canDist) btn.style.opacity = '0.35';
+    btn.appendChild(_mkAlignSvg(item.paths));
+    var lbl = document.createElement('span'); lbl.textContent = item.label;
+    btn.appendChild(lbl);
+    btn.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+    btn.addEventListener('click', (function(d) { return function(e) { e.stopPropagation(); distributeGroupBlocks(groupId, d); }; })(item.dir));
+    distGrid.appendChild(btn);
+  });
+  secAlign.appendChild(distGrid);
+  tb.appendChild(secAlign);
+
   var sec2 = document.createElement('div');
   sec2.className = 'dock-section';
   sec2.appendChild(mkBtn('그룹 해제', 'dock-btn del', function() { ungroupBlocks(groupId); }));
   tb.appendChild(sec2);
+
+  var solidDiv = document.createElement('div');
+  solidDiv.className = 'grp-solid-div';
+  tb.appendChild(solidDiv);
 
   var closeBtn = document.createElement('button');
   closeBtn.className = 'dock-close';
@@ -202,6 +301,47 @@ function hideGroupToolbar() {
   if (ov) ov.remove();
   var chip = document.getElementById('grp-label-chip');
   if (chip) chip.remove();
+}
+
+/* ── 그룹 정렬 ── */
+function alignGroupBlocks(groupId, dir) {
+  var grpBlks = blocks.filter(function(b) { return b.groupId === groupId; });
+  if (grpBlks.length < 2) return;
+  saveHistory();
+  var bbox = _grpBBox(groupId);
+  grpBlks.forEach(function(b) {
+    if      (dir === 'left')     b.x = bbox.x;
+    else if (dir === 'right')    b.x = bbox.x + bbox.w - b.w;
+    else if (dir === 'center-h') b.x = Math.round(bbox.x + bbox.w / 2 - b.w / 2);
+    else if (dir === 'top')      b.y = bbox.y;
+    else if (dir === 'bottom')   b.y = bbox.y + bbox.h - b.h;
+    else if (dir === 'center-v') b.y = Math.round(bbox.y + bbox.h / 2 - b.h / 2);
+  });
+  render();
+  showGroupToolbar(groupId);
+}
+
+function distributeGroupBlocks(groupId, dir) {
+  var grpBlks = blocks.filter(function(b) { return b.groupId === groupId; });
+  if (grpBlks.length < 3) return;
+  saveHistory();
+  if (dir === 'distribute-h') {
+    var sh = grpBlks.slice().sort(function(a, b) { return a.x - b.x; });
+    var totalW = sh.reduce(function(s, b) { return s + b.w; }, 0);
+    var spanW = (sh[sh.length-1].x + sh[sh.length-1].w) - sh[0].x;
+    var gapH = (spanW - totalW) / (sh.length - 1);
+    var cx = sh[0].x;
+    sh.forEach(function(b) { b.x = Math.round(cx); cx += b.w + gapH; });
+  } else if (dir === 'distribute-v') {
+    var sv = grpBlks.slice().sort(function(a, b) { return a.y - b.y; });
+    var totalH = sv.reduce(function(s, b) { return s + b.h; }, 0);
+    var spanH = (sv[sv.length-1].y + sv[sv.length-1].h) - sv[0].y;
+    var gapV = (spanH - totalH) / (sv.length - 1);
+    var cy = sv[0].y;
+    sv.forEach(function(b) { b.y = Math.round(cy); cy += b.h + gapV; });
+  }
+  render();
+  showGroupToolbar(groupId);
 }
 
 /* ── 그룹 좌우 반전 ── */

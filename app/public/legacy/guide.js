@@ -40,12 +40,12 @@ var GM_TOUR_STEPS = [
 
 /* ── 탭 힌트 메시지 ── */
 var GM_HINTS = {
-  canvas:  { label: '시트',   text: '블록을 추가해 캐릭터 정보를 구성할 수 있습니다. 블록 모서리를 드래그해 크기를 조절하고, 시트 가장자리 핸들을 드래그해 캔버스 크기를 바꿀 수 있습니다.' },
-  sticker: { label: '이미지', text: 'PNG·JPG·GIF 이미지를 스티커처럼 시트 위에 자유롭게 올릴 수 있습니다.' },
-  bg:      { label: '배경지', text: '시트 배경에 색상, 그라디언트, 이미지를 적용해 분위기를 바꿀 수 있습니다.' },
-  header:  { label: '헤더',   text: '시트 상단·하단에 제목용 이미지를 추가할 수 있습니다. 직접 업로드하거나 이미지 URL로 불러올 수 있습니다.' },
-  preset:  { label: '프리셋', text: '미리 만들어진 레이아웃 템플릿을 불러와 빠르게 시작할 수 있습니다. 블록을 추가한 뒤에도 적용할 수 있습니다.' },
-  tools:   { label: '도구',   text: '슬롯으로 작업을 저장·불러오고, 스냅·정렬 등 고급 옵션을 설정할 수 있습니다.' }
+  canvas:  { label: '시트',   text: '블록을 올려 캐릭터 정보를 구성합니다.' },
+  sticker: { label: '이미지', text: '이미지를 스티커처럼 자유롭게 올립니다.' },
+  bg:      { label: '배경지', text: '시트 배경의 색과 무늬를 바꿉니다.' },
+  header:  { label: '헤더',   text: '시트 위아래에 제목 이미지를 답니다.' },
+  preset:  { label: '프리셋', text: '준비된 레이아웃을 불러옵니다.' },
+  tools:   { label: '도구',   text: '저장·정렬 등 보조 도구를 모았습니다.' }
 };
 
 /* ── 단축키 그룹 ── */
@@ -113,7 +113,7 @@ function _gmTourGetRect(selector) {
 }
 
 function _gmTourCalcPos(rect, placement) {
-  var PAD = 16, W = 236, H = 220;
+  var PAD = 16, W = 264, H = 220;
   var vw = window.innerWidth, vh = window.innerHeight;
   var top, left;
   if (placement === 'bottom-left') {
@@ -180,7 +180,7 @@ function _gmTourRender(idx) {
       var cardH = card.offsetHeight || 220;
       var vw = window.innerWidth, vh = window.innerHeight;
       var t = Math.max(16, Math.min(parseFloat(card.style.top),  vh - cardH - 16));
-      var l = Math.max(16, Math.min(parseFloat(card.style.left), vw - 236   - 16));
+      var l = Math.max(16, Math.min(parseFloat(card.style.left), vw - 264   - 16));
       card.style.top  = t + 'px';
       card.style.left = l + 'px';
     });
@@ -248,7 +248,8 @@ function _gmHintIfNew(tab) {
   try { localStorage.setItem('gm_visited_tabs', JSON.stringify(visited)); } catch(e) {}
 
   _gmDrawerClose();
-  document.getElementById('gm-hint-label').textContent = hint.label;
+  var lbl = document.getElementById('gm-hint-label');
+  if (lbl) lbl.textContent = hint.label;
   document.getElementById('gm-hint-text').textContent  = hint.text;
   document.getElementById('gm-hint-banner').classList.add('show');
 

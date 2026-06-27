@@ -320,57 +320,47 @@
       </div>
       <div class="panel-body">
 
-        <!-- 도구 -->
-        <section class="grp">
-          <div class="grp-head">도구</div>
-          <div class="grp-body">
-            <button class="equalize-btn" onclick="equalizeBlockMargins()">↔ 상하좌우 여백 균등화</button>
-            <button class="snap-tile on" id="snap-tile" onclick="toggleSnap()">
-              <div class="tile-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M7 7h10M9 12h6M7 17h10"/></svg></div>
-              <span class="tile-lbl" id="snap-tile-lbl">스냅 정렬 켜짐</span>
-            </button>
-          </div>
-        </section>
+        <!-- 정렬 카드 -->
+        <div class="tools-card">
+          <button class="equalize-btn" onclick="equalizeBlockMargins()">↔ 상하좌우 여백 균등화</button>
+          <button class="snap-tile on" id="snap-tile" onclick="toggleSnap()">
+            <div class="tile-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M7 7h10M9 12h6M7 17h10"/></svg></div>
+            <span class="tile-lbl" id="snap-tile-lbl">스냅 정렬 켜짐</span>
+          </button>
+        </div>
 
-        <!-- 내보내기 (PNG) -->
-        <section class="grp">
-          <div class="grp-head">내보내기 (PNG)</div>
-          <div class="grp-body">
-            <div class="png-toggle-row">
-              <span class="png-toggle-label">여백 포함</span>
-              <button class="png-sw on" id="png-margin-sw" onclick="togglePngMargin()" title="여백 포함 on/off"></button>
-            </div>
-            <div class="cpC-chip" id="png-bg-row" onclick="if(event.target.tagName!=='INPUT')gmOpenColorPicker(this,{pickerId:'png-bg-picker',defaultHex:'#f2f2f2',label:'PNG 여백 배경색'})">
-              <span class="cw" id="png-bg-swatch" style="background:#f2f2f2">
-                <input type="color" id="png-bg-picker" value="#f2f2f2"
-                  oninput="updatePngBg(this.value)">
-              </span>
-              <span class="meta">
-                <span class="nm">여백 배경색</span>
-                <input class="hexedit" id="png-bg-hex" value="#f2f2f2" spellcheck="false"
-                  oninput="var v=this.value.trim(); if(/^#[0-9a-fA-F]{6}$/.test(v)){var p=document.getElementById('png-bg-picker'); if(p){p.value=v; updatePngBg(v);}}">
-              </span>
-            </div>
+        <!-- PNG 내보내기 카드 -->
+        <div class="tools-card">
+          <div class="png-toggle-row">
+            <span class="png-toggle-label">여백 포함</span>
+            <button class="png-sw on" id="png-margin-sw" onclick="togglePngMargin()" title="여백 포함 on/off"></button>
           </div>
-        </section>
+          <div class="cpC-chip" id="png-bg-row" onclick="if(event.target.tagName!=='INPUT')gmOpenColorPicker(this,{pickerId:'png-bg-picker',defaultHex:'#f2f2f2',label:'PNG 여백 배경색'})">
+            <span class="cw" id="png-bg-swatch" style="background:#f2f2f2">
+              <input type="color" id="png-bg-picker" value="#f2f2f2"
+                oninput="updatePngBg(this.value)">
+            </span>
+            <span class="meta">
+              <span class="nm">여백 배경색</span>
+              <input class="hexedit" id="png-bg-hex" value="#f2f2f2" spellcheck="false"
+                oninput="var v=this.value.trim(); if(/^#[0-9a-fA-F]{6}$/.test(v)){var p=document.getElementById('png-bg-picker'); if(p){p.value=v; updatePngBg(v);}}">
+            </span>
+          </div>
+        </div>
 
-        <!-- 슬롯 · 초기화 (B-5: 우하단 메뉴에서 이동) -->
-        <section class="grp">
-          <div class="grp-head">슬롯 · 초기화</div>
-          <div class="grp-body">
-            <button class="equalize-btn" onclick="openSlotModal()">저장 / 불러오기</button>
-            <button class="equalize-btn" style="color:var(--warn);border-color:var(--warn);" onclick="resetAll()">전체 리셋</button>
-          </div>
-        </section>
+        <!-- 슬롯 저장/불러오기 -->
+        <button class="equalize-btn" onclick="openSlotModal()">저장 / 불러오기</button>
 
-        <!-- 바로가기 (우하단 메뉴에서 이동) -->
-        <section class="grp">
-          <div class="grp-head">바로가기</div>
-          <div class="grp-body">
-            <button class="equalize-btn" onclick="window.open('https://doldimseom.tistory.com/','_blank')">🪨 돌딤섬 공방</button>
-            <button class="equalize-btn" onclick="_gmToggleDrawer()">사용 가이드</button>
-          </div>
-        </section>
+        <!-- 위험 영역 — 전체 리셋 -->
+        <div class="tools-danger-zone">
+          <button class="equalize-btn tools-danger-btn" onclick="resetAll()">전체 리셋</button>
+        </div>
+
+        <!-- 링크 푸터 -->
+        <div class="tools-footer">
+          <button class="tools-footer-btn accent" onclick="_gmToggleDrawer()">? 사용 가이드</button>
+          <button class="tools-footer-btn" onclick="window.open('https://doldimseom.tistory.com/','_blank')">돌딤섬 공방 ↗</button>
+        </div>
 
       </div><!-- /panel-body -->
     </div><!-- /panel-tools -->
@@ -1326,16 +1316,30 @@
         <div id="sticker-layer">
           <!-- 플로팅 정렬 툴바 -->
           <div id="sticker-float-bar">
-            <button class="ft-btn" onclick="alignStickers('left')" title="왼쪽 정렬"><svg viewBox="0 0 100 100"><rect x="8" y="10" width="10" height="80" rx="2" fill="currentColor"/><rect x="22" y="18" width="52" height="28" rx="4" fill="currentColor"/><rect x="22" y="54" width="36" height="28" rx="4" fill="currentColor"/></svg></button>
-            <button class="ft-btn" onclick="alignStickers('center-h')" title="가로 가운데"><svg viewBox="0 0 100 100"><rect x="45" y="10" width="10" height="80" rx="2" fill="currentColor"/><rect x="18" y="18" width="64" height="28" rx="4" fill="currentColor"/><rect x="27" y="54" width="46" height="28" rx="4" fill="currentColor"/></svg></button>
-            <button class="ft-btn" onclick="alignStickers('right')" title="오른쪽 정렬"><svg viewBox="0 0 100 100"><rect x="82" y="10" width="10" height="80" rx="2" fill="currentColor"/><rect x="26" y="18" width="52" height="28" rx="4" fill="currentColor"/><rect x="42" y="54" width="36" height="28" rx="4" fill="currentColor"/></svg></button>
-            <span class="ft-sep"></span>
-            <button class="ft-btn" onclick="alignStickers('top')" title="위 정렬"><svg viewBox="0 0 100 100"><rect x="10" y="8" width="80" height="10" rx="2" fill="currentColor"/><rect x="18" y="22" width="28" height="52" rx="4" fill="currentColor"/><rect x="54" y="22" width="28" height="36" rx="4" fill="currentColor"/></svg></button>
-            <button class="ft-btn" onclick="alignStickers('center-v')" title="세로 가운데"><svg viewBox="0 0 100 100"><rect x="10" y="45" width="80" height="10" rx="2" fill="currentColor"/><rect x="18" y="18" width="28" height="64" rx="4" fill="currentColor"/><rect x="54" y="27" width="28" height="46" rx="4" fill="currentColor"/></svg></button>
-            <button class="ft-btn" onclick="alignStickers('bottom')" title="아래 정렬"><svg viewBox="0 0 100 100"><rect x="10" y="82" width="80" height="10" rx="2" fill="currentColor"/><rect x="18" y="26" width="28" height="52" rx="4" fill="currentColor"/><rect x="54" y="42" width="28" height="36" rx="4" fill="currentColor"/></svg></button>
-            <span class="ft-sep ft-dist" style="display:none;"></span>
-            <button class="ft-btn ft-dist" onclick="alignStickers('distribute-h')" title="가로 균등" style="display:none;"><svg viewBox="0 0 100 100"><rect x="8" y="20" width="10" height="60" rx="2" fill="currentColor"/><rect x="82" y="20" width="10" height="60" rx="2" fill="currentColor"/><rect x="36" y="30" width="28" height="40" rx="4" fill="currentColor"/></svg></button>
-            <button class="ft-btn ft-dist" onclick="alignStickers('distribute-v')" title="세로 균등" style="display:none;"><svg viewBox="0 0 100 100"><rect x="20" y="8" width="60" height="10" rx="2" fill="currentColor"/><rect x="20" y="82" width="60" height="10" rx="2" fill="currentColor"/><rect x="30" y="36" width="40" height="28" rx="4" fill="currentColor"/></svg></button>
+            <!-- 행1: 수평/수직 칩 그룹 -->
+            <div class="ft-row">
+              <div class="ft-chip">
+                <div class="ft-chip-label">수평</div>
+                <div class="ft-chip-btns">
+                  <button class="ft-btn" onclick="alignStickers('left')" title="왼쪽 정렬"><svg viewBox="0 0 24 24" fill="none"><line x1="3.5" y1="3" x2="3.5" y2="21" stroke="#5B7CE6" stroke-width="1.8" stroke-linecap="round"/><rect x="6" y="6.5" width="13" height="3.6" rx="1.2" fill="currentColor"/><rect x="6" y="13.9" width="8" height="3.6" rx="1.2" fill="currentColor"/></svg></button>
+                  <button class="ft-btn" onclick="alignStickers('center-h')" title="가로 가운데"><svg viewBox="0 0 24 24" fill="none"><line x1="12" y1="3" x2="12" y2="21" stroke="#5B7CE6" stroke-width="1.8" stroke-linecap="round"/><rect x="4.5" y="6.5" width="15" height="3.6" rx="1.2" fill="currentColor"/><rect x="7.5" y="13.9" width="9" height="3.6" rx="1.2" fill="currentColor"/></svg></button>
+                  <button class="ft-btn" onclick="alignStickers('right')" title="오른쪽 정렬"><svg viewBox="0 0 24 24" fill="none"><line x1="20.5" y1="3" x2="20.5" y2="21" stroke="#5B7CE6" stroke-width="1.8" stroke-linecap="round"/><rect x="5" y="6.5" width="13" height="3.6" rx="1.2" fill="currentColor"/><rect x="10" y="13.9" width="8" height="3.6" rx="1.2" fill="currentColor"/></svg></button>
+                </div>
+              </div>
+              <div class="ft-chip">
+                <div class="ft-chip-label">수직</div>
+                <div class="ft-chip-btns">
+                  <button class="ft-btn" onclick="alignStickers('top')" title="위 정렬"><svg viewBox="0 0 24 24" fill="none"><line x1="3" y1="3.5" x2="21" y2="3.5" stroke="#5B7CE6" stroke-width="1.8" stroke-linecap="round"/><rect x="6.4" y="6" width="3.6" height="13" rx="1.2" fill="currentColor"/><rect x="13.9" y="6" width="3.6" height="8" rx="1.2" fill="currentColor"/></svg></button>
+                  <button class="ft-btn" onclick="alignStickers('center-v')" title="세로 가운데"><svg viewBox="0 0 24 24" fill="none"><line x1="3" y1="12" x2="21" y2="12" stroke="#5B7CE6" stroke-width="1.8" stroke-linecap="round"/><rect x="6.4" y="4.5" width="3.6" height="15" rx="1.2" fill="currentColor"/><rect x="13.9" y="7.5" width="3.6" height="9" rx="1.2" fill="currentColor"/></svg></button>
+                  <button class="ft-btn" onclick="alignStickers('bottom')" title="아래 정렬"><svg viewBox="0 0 24 24" fill="none"><line x1="3" y1="20.5" x2="21" y2="20.5" stroke="#5B7CE6" stroke-width="1.8" stroke-linecap="round"/><rect x="6.4" y="5" width="3.6" height="13" rx="1.2" fill="currentColor"/><rect x="13.9" y="10" width="3.6" height="8" rx="1.2" fill="currentColor"/></svg></button>
+                </div>
+              </div>
+            </div>
+            <!-- 행2: 분배 버튼 -->
+            <div class="ft-dist-row" id="ft-dist-row">
+              <button class="ft-dist-btn inactive" id="ft-dist-h" onclick="alignStickers('distribute-h')" title="가로 균등 분배"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="6" width="3.4" height="12" rx="1"/><rect x="10.3" y="6" width="3.4" height="12" rx="1"/><rect x="17.6" y="6" width="3.4" height="12" rx="1"/></svg>가로 균등</button>
+              <button class="ft-dist-btn inactive" id="ft-dist-v" onclick="alignStickers('distribute-v')" title="세로 균등 분배"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="3" width="12" height="3.4" rx="1"/><rect x="6" y="10.3" width="12" height="3.4" rx="1"/><rect x="6" y="17.6" width="12" height="3.4" rx="1"/></svg>세로 균등</button>
+            </div>
             <div class="ft-pointer"></div>
           </div>
         </div>
@@ -1466,7 +1470,7 @@
 <!-- 탭 힌트 배너 -->
 <div id="gm-hint-banner">
   <div class="gm-hint-inner">
-    <span class="gm-hint-label" id="gm-hint-label"></span>
+    <span class="gm-hint-dot"></span>
     <span class="gm-hint-text" id="gm-hint-text"></span>
   </div>
   <button class="gm-hint-close" onclick="_gmHintDismiss()">✕</button>
@@ -1493,47 +1497,49 @@
   </div>
   <div id="gm-tour-done" class="hidden">
     <button class="gm-tour-close" onclick="_gmTourClose()">✕</button>
-    <div class="gm-tour-done-icon">🪨</div>
-    <div class="gm-tour-done-title">준비 완료!</div>
-    <div class="gm-tour-done-desc">이제 그리드메이커를 사용할 수 있습니다.<br>좌상단 ? 버튼에서 언제든 가이드를 다시 볼 수 있습니다.</div>
-    <button class="gm-tour-done-btn" onclick="_gmTourClose()">시작하기</button>
+    <div class="gm-tour-done-gradient"></div>
+    <div class="gm-tour-done-inner">
+      <div class="gm-tour-done-circle">🪨</div>
+      <div class="gm-tour-done-title">준비 완료!</div>
+      <div class="gm-tour-done-desc">이제 그리드메이커를 사용할 수 있습니다.<br>좌상단 ? 버튼에서 언제든 가이드를 다시 볼 수 있습니다.</div>
+      <button class="gm-tour-done-btn" onclick="_gmTourClose()">그리드메이커 시작하기</button>
+    </div>
   </div>
 </div>
 
 <!-- ? 드로어 -->
 <div id="gm-drawer">
-  <div class="gm-drawer-section">
-    <button class="gm-drawer-replay-btn" onclick="_gmDrawerReplayTour()">
-      ▶ 사용 가이드 다시보기
-    </button>
+  <div class="gm-drawer-hd">
+    <div class="gm-drawer-hd-badge">?</div>
+    <div class="gm-drawer-hd-title">사용 가이드</div>
+    <button class="gm-drawer-hd-tour" onclick="_gmDrawerReplayTour()">투어 ▶</button>
+    <button class="gm-drawer-hd-close" onclick="_gmDrawerClose()">✕</button>
   </div>
-  <div class="gm-drawer-sep"></div>
   <div class="gm-drawer-section">
-    <div class="gm-drawer-section-title">탭별 기능 안내</div>
-    <div class="gm-drawer-hint-list">
-      <div class="gm-dh-item">
-        <span class="gm-dh-label">시트</span>
-        <span class="gm-dh-text">블록을 추가해 캐릭터 정보를 구성할 수 있습니다. 블록 모서리를 드래그해 크기를 조절하고, 시트 가장자리 핸들을 드래그해 캔버스 크기를 바꿀 수 있습니다.</span>
+    <div class="gm-hint-tile-grid">
+      <div class="gm-hint-tile">
+        <div class="gm-hint-tile-name">시트</div>
+        <div class="gm-hint-tile-desc">블록을 올려 캐릭터 정보를 구성합니다.</div>
       </div>
-      <div class="gm-dh-item">
-        <span class="gm-dh-label">이미지</span>
-        <span class="gm-dh-text">PNG·JPG·GIF 이미지를 스티커처럼 시트 위에 자유롭게 올릴 수 있습니다.</span>
+      <div class="gm-hint-tile">
+        <div class="gm-hint-tile-name">이미지</div>
+        <div class="gm-hint-tile-desc">이미지를 스티커처럼 자유롭게 올립니다.</div>
       </div>
-      <div class="gm-dh-item">
-        <span class="gm-dh-label">배경지</span>
-        <span class="gm-dh-text">시트 배경에 색상, 그라디언트, 이미지를 적용해 분위기를 바꿀 수 있습니다.</span>
+      <div class="gm-hint-tile">
+        <div class="gm-hint-tile-name">배경지</div>
+        <div class="gm-hint-tile-desc">시트 배경의 색과 무늬를 바꿉니다.</div>
       </div>
-      <div class="gm-dh-item">
-        <span class="gm-dh-label">헤더</span>
-        <span class="gm-dh-text">시트 상단·하단에 제목용 이미지를 추가할 수 있습니다. 직접 업로드하거나 이미지 URL로 불러올 수 있습니다.</span>
+      <div class="gm-hint-tile">
+        <div class="gm-hint-tile-name">헤더</div>
+        <div class="gm-hint-tile-desc">시트 위아래에 제목 이미지를 답니다.</div>
       </div>
-      <div class="gm-dh-item">
-        <span class="gm-dh-label">프리셋</span>
-        <span class="gm-dh-text">미리 만들어진 레이아웃 템플릿을 불러와 빠르게 시작할 수 있습니다. 블록을 추가한 뒤에도 적용할 수 있습니다.</span>
+      <div class="gm-hint-tile">
+        <div class="gm-hint-tile-name">프리셋</div>
+        <div class="gm-hint-tile-desc">준비된 레이아웃을 불러옵니다.</div>
       </div>
-      <div class="gm-dh-item">
-        <span class="gm-dh-label">도구</span>
-        <span class="gm-dh-text">슬롯으로 작업을 저장·불러오고, 스냅·정렬 등 고급 옵션을 설정할 수 있습니다.</span>
+      <div class="gm-hint-tile">
+        <div class="gm-hint-tile-name">도구</div>
+        <div class="gm-hint-tile-desc">저장·정렬 등 보조 도구를 모았습니다.</div>
       </div>
     </div>
   </div>
