@@ -1166,14 +1166,16 @@ function autoCanvasH() {
   /* F-17: canvasExtraTop은 블록/스티커 데이터를 안 건드리고 컨테이너만 이동시켜 반영
      (#sheet-pad는 일반 플로우 박스라 margin-top이 정상 동작, #sticker-layer는 inset:0
      이라 top만 덮어쓰면 나머지 absolute 위치가 따라옴)
-     라운드 top 헤더 + canvasExtraTop > 0: 추가 여백을 배너 위에 배치(hdr-top-slot.marginTop),
-     pad.marginTop은 항상 -overlap으로 고정하여 배너↔시트 겹침 유지 */
+     라운드 top 헤더 + canvasExtraTop > 0: 추가 여백을 #canvas-inner paddingTop으로 배치
+     (#sheet 외부라 흰 배경 문제 없음), pad.marginTop은 항상 -overlap으로 고정 */
   var _effectiveTop = canvasExtraTop;
   var _topSlotEl = document.getElementById('hdr-top-slot');
-  if (_topSlotEl) _topSlotEl.style.marginTop = '';  /* 기본 리셋 */
+  var _canvasInner = document.getElementById('canvas-inner');
+  if (_topSlotEl) _topSlotEl.style.marginTop = '';
+  if (_canvasInner) _canvasInner.style.paddingTop = '';
   if (headerData && headerData.type === 'round' && headerPos === 'top') {
     var _rov = headerData.roundOverlap !== undefined ? headerData.roundOverlap : 24;
-    if (_topSlotEl && canvasExtraTop > 0) _topSlotEl.style.marginTop = canvasExtraTop + 'px';
+    if (_canvasInner && canvasExtraTop > 0) _canvasInner.style.paddingTop = canvasExtraTop + 'px';
     _effectiveTop = -_rov;  /* 겹침 고정 — canvasExtraTop 무관 */
   }
   pad.style.marginTop = _effectiveTop + 'px';

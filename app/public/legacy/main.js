@@ -685,7 +685,12 @@ function updateResizeHandles() {
   var sheetEl = document.getElementById('sheet');
   if (!sheetEl) return;
   var sheetH = sheetEl.offsetHeight;
-  var midY   = sheetH / 2;
+  /* canvas-inner.paddingTop 보정: 라운드+상단 헤더 + canvasExtraTop > 0 시
+     #sheet가 canvas-inner 내부에서 아래로 밀리므로 하단·좌우 핸들 위치 보정 필요 */
+  var canvasTopOffset = 0;
+  var ciEl = document.getElementById('canvas-inner');
+  if (ciEl && ciEl.style.paddingTop) canvasTopOffset = parseInt(ciEl.style.paddingTop, 10) || 0;
+  var midY   = canvasTopOffset + sheetH / 2;
   var midX   = canvasW / 2;
   var OFF    = 10; /* 시트로부터 핸들까지 거리 */
   var HL     = 44; /* 핸들 길이 */
@@ -699,7 +704,7 @@ function updateResizeHandles() {
   if (hl) { hl.style.top = (midY - HL/2) + 'px'; hl.style.left = (-OFF - HT) + 'px'; }
   if (hr) { hr.style.top = (midY - HL/2) + 'px'; hr.style.left = (canvasW + OFF) + 'px'; }
   if (ht) { ht.style.left = (midX - HL/2) + 'px'; ht.style.top = (-OFF - HT) + 'px'; }
-  if (hb) { hb.style.left = (midX - HL/2) + 'px'; hb.style.top = (sheetH + OFF) + 'px'; }
+  if (hb) { hb.style.left = (midX - HL/2) + 'px'; hb.style.top = (canvasTopOffset + sheetH + OFF) + 'px'; }
 }
 
 function _syncCanvasLeft() {
