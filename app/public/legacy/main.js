@@ -690,7 +690,7 @@ function updateResizeHandles() {
   var canvasTopOffset = 0;
   var ciEl = document.getElementById('canvas-inner');
   if (ciEl && ciEl.style.paddingTop) canvasTopOffset = parseInt(ciEl.style.paddingTop, 10) || 0;
-  var midY   = canvasTopOffset + sheetH / 2;
+  var midY   = (canvasTopOffset + sheetH) / 2;
   var midX   = canvasW / 2;
   var OFF    = 10; /* 시트로부터 핸들까지 거리 */
   var HL     = 44; /* 핸들 길이 */
@@ -861,7 +861,9 @@ function _applyCanvasExpand(left, right, top, bottom) {
        헤더 겹침 허용은 F-17 통일 후에도 그대로 유지).
        블록이 더 이상 이동하지 않으므로(F-17) minY는 매 호출 고정값 — "유효 상단 여백"은
        canvasExtraTop + minY로 계산해 그 값이 _yFloor 밑으로 내려가지 않게 막는다 */
-    var _yFloor = top > 0 ? -getHeaderH() : gaps.pad;
+    /* 헤더 있을 때: 확장/축소 모두 -getHeaderH() 기준 → _headerOverlapFloor이 실제 바닥 결정
+       (round→-24, basic/sns→0). 헤더 없을 때: 축소 시 gaps.pad 여백 유지(기존 동작) */
+    var _yFloor = headerPos === 'top' ? -getHeaderH() : (top > 0 ? 0 : gaps.pad);
     var _newExtraTop = Math.max(canvasExtraTop + top, _yFloor - minY);
     /* 축소 시 배경지(모눈종이 등)가 헤더 영역을 침범하지 않도록 — pad가 헤더 경계 위로
        올라가는 걸 막는 별도 바닥값. round 헤더는 디자인상 정해진 만큼(roundOverlap)만
@@ -2108,17 +2110,12 @@ document.addEventListener('mousemove', function(e) {
              · 블록은 y < 0 구역(canvasExtraTop 여백 안)을 자유롭게 이동 가능
              · -canvasExtraTop 경계를 초과하면 canvasExtraTop 증가로 캔버스 확장 */
         if (headerPos === 'top') {
-          var _yFloor = -getHeaderH();
-          if (moveMinY < _yFloor) {
-            var ty = _yFloor - moveMinY;
-            blkDrag.offsetY -= ty;
-            ny += ty;
-            blocks.forEach(function(b) {
-              b.y += ty;
-              if (b.id === blkDrag.id) return;
-              var bEl = document.querySelector('.blk[data-key="' + b.id + '"]');
-              if (bEl) bEl.style.top = b.y + 'px';
-            });
+          /* 헤더 영역(y: 0 ~ -getHeaderH())은 자유 통과.
+             그 위(canvasExtraTop 공간)를 벗어나면 no-header 모델과 동일하게 canvasExtraTop 확장 */
+          var _canvasTopFloor = -(getHeaderH() + canvasExtraTop);
+          if (moveMinY < _canvasTopFloor) {
+            var ty = _canvasTopFloor - moveMinY;
+            canvasExtraTop += ty;
             autoCanvasH();
           }
         } else if (moveMinY < -canvasExtraTop) {
