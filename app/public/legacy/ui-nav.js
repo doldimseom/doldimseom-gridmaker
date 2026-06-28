@@ -1176,12 +1176,24 @@ function autoCanvasH() {
     var _rov = headerData.roundOverlap !== undefined ? headerData.roundOverlap : 24;
     if (_canvasInner && canvasExtraTop > 0) _canvasInner.style.paddingTop = canvasExtraTop + 'px';
     _effectiveTop = -_rov;  /* 겹침 고정 — canvasExtraTop 무관 */
+    console.log('[DEBUG autoCanvasH ROUND]',
+      'canvasExtraTop=' + canvasExtraTop,
+      'canvas-inner.paddingTop=' + (_canvasInner ? _canvasInner.style.paddingTop : 'n/a'),
+      'effectiveTop(=pad.marginTop)=' + _effectiveTop,
+      '_rov=' + _rov,
+      'sheetH=' + (document.getElementById('sheet') ? document.getElementById('sheet').offsetHeight : 'n/a'));
   }
   /* basic/sns: _effectiveTop = canvasExtraTop 그대로 → pad.marginTop = canvasExtraTop
      (헤더는 고정, 헤더↔시트 간격이 canvasExtraTop만큼 변화 — 시트 독립 모델) */
   pad.style.marginTop = _effectiveTop + 'px';
   var stickerLayerEl = document.getElementById('sticker-layer');
   if (stickerLayerEl) stickerLayerEl.style.top = _effectiveTop + 'px';
+  console.log('[DEBUG autoCanvasH ALL]',
+    'canvasExtraTop=' + canvasExtraTop,
+    'effectiveTop=' + _effectiveTop,
+    'pad.marginTop=' + pad.style.marginTop,
+    'canvas-inner.paddingTop=' + (_canvasInner ? _canvasInner.style.paddingTop : 'n/a'),
+    'canvas-stage.marginTop=' + (document.getElementById('canvas-stage') ? document.getElementById('canvas-stage').style.marginTop : 'n/a'));
   _syncBgOverlayBounds();
   updateResizeHandles();
   updateSizeInfo();

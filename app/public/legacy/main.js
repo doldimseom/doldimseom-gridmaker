@@ -881,6 +881,12 @@ function _applyCanvasExpand(left, right, top, bottom) {
         _newExtraTop = Math.max(_newExtraTop, -_rov2);
       }
       canvasExtraTop = _newExtraTop;
+      console.log('[DEBUG applyExpand TOP-ROUND/NO-HDR]',
+        'delta=' + top,
+        'canvasExtraTop=' + canvasExtraTop,
+        '_yFloor=' + _yFloor,
+        'minY=' + minY,
+        'isRound=' + _isRoundTop);
     }
   }
 
