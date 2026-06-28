@@ -588,8 +588,7 @@ function deselect() {
   });
   /* 헤더 패널에서 복귀 시 공통 스타일 복원 */
   if (wasHeader) restoreBlockPanelCommon();
-  document.getElementById('panel-block').classList.remove('active');
-  hideTxtFormatBar();
+  showCanvasPanel();
   render();
 }
 
@@ -666,7 +665,7 @@ document.addEventListener('keydown', function(e) {
   selKey = null; selKeys = []; selectedGi = null; _grpIndividualMode = false;
   hideTxtFormatBar(); hideAlignToolbar(); hideGroupToolbar();
   render();
-  document.getElementById('panel-block').classList.remove('active');
+  showCanvasPanel();
 });
 
 /* Arrow keys — 선택 블록 이동 (1px / Shift: 10px) */

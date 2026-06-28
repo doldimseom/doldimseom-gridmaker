@@ -485,7 +485,7 @@ function showBlockPanel(type, label, blk) {
   var activeBtn = document.querySelector('.float-tab.active');
   if (activeBtn) showCanvasPanel._lastNav = activeBtn.id.replace('nb-','');
   /* 모든 nav 뷰 비활성화 (BUG-9: panel-bg 추가, B-2: panel-sticker 추가) */
-  ['panel-preset','panel-canvas','panel-header-nav','panel-bg','panel-sticker'].forEach(function(id) {
+  ['panel-preset','panel-canvas','panel-header-nav','panel-bg','panel-sticker','panel-tools'].forEach(function(id) {
     var el = document.getElementById(id); if (el) el.classList.remove('active');
   });
   document.getElementById('panel-block').classList.add('active');
