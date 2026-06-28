@@ -1173,17 +1173,13 @@ function autoCanvasH() {
   var _canvasInner = document.getElementById('canvas-inner');
   if (_topSlotEl) _topSlotEl.style.marginTop = '';
   if (_canvasInner) _canvasInner.style.paddingTop = '';
-  if (headerPos === 'top' && headerData) {
-    /* 상단 헤더 공통: canvasExtraTop 여백을 canvas-inner.paddingTop으로 배치
-       → #sheet 흰 배경 밖에 위치하므로 흰 박스 없음 (round/basic/sns 모두 동일) */
+  if (headerData && headerData.type === 'round' && headerPos === 'top') {
+    var _rov = headerData.roundOverlap !== undefined ? headerData.roundOverlap : 24;
     if (_canvasInner && canvasExtraTop > 0) _canvasInner.style.paddingTop = canvasExtraTop + 'px';
-    if (headerData.type === 'round') {
-      var _rov = headerData.roundOverlap !== undefined ? headerData.roundOverlap : 24;
-      _effectiveTop = -_rov;  /* 라운드: 겹침 고정 — canvasExtraTop 무관 */
-    } else {
-      _effectiveTop = 0;  /* basic/sns: 헤더 하단에 딱 붙임 */
-    }
+    _effectiveTop = -_rov;  /* 겹침 고정 — canvasExtraTop 무관 */
   }
+  /* basic/sns: _effectiveTop = canvasExtraTop 그대로 → pad.marginTop = canvasExtraTop
+     (헤더는 고정, 헤더↔시트 간격이 canvasExtraTop만큼 변화 — 시트 독립 모델) */
   pad.style.marginTop = _effectiveTop + 'px';
   var stickerLayerEl = document.getElementById('sticker-layer');
   if (stickerLayerEl) stickerLayerEl.style.top = _effectiveTop + 'px';
