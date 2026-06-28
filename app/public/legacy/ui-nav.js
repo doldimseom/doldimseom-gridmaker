@@ -1132,16 +1132,18 @@ function handleCanvasClick(e) {
       tgt === document.getElementById('sheet-pad')) {
     /* 헤더 이미지 편집 모드 종료 */
     if (activeHdrImgKind) exitHeaderImgEditMode();
-    /* 시트 바깥 클릭 시 항상 캔버스 탭으로 복귀 */
-    showCanvasPanel._lastNav = 'canvas';
     /* 이미지(스티커) 선택도 함께 해제 */
     if (selectedStickerIds.length) deselectSticker();
-    /* 그룹·블록 동시 선택 가능하므로 둘 다 해제 */
+    /* 그룹·블록 동시 선택 가능하므로 둘 다 해제 — 탭 자동전환 없이 패널만 닫음 */
     var _hadSel = !!(selKey || selKeys.length);
     if (selectedGi !== null) deselectGroup();
     if (_hadSel) deselect();
-    /* 아무것도 선택되지 않은 상태에서도 캔버스 탭으로 전환 */
-    else switchNav('canvas');
+    else {
+      /* 선택 없어도 block 패널은 닫아줌 */
+      var _pb = document.getElementById('panel-block');
+      if (_pb) _pb.classList.remove('active');
+      hideTxtFormatBar();
+    }
   }
 }
 

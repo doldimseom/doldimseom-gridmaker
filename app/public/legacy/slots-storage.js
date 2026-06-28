@@ -210,7 +210,10 @@ function applyData(data) {
   if (typeof syncStickerOverflowUI === 'function') syncStickerOverflowUI();
   selKey = null;
   selKeys = [];
-  showCanvasPanel();
+  /* 탭 자동전환 없이 block 패널만 닫음 (프리셋 선택 시 현재 탭 유지) */
+  var _pbEl = document.getElementById('panel-block');
+  if (_pbEl) _pbEl.classList.remove('active');
+  if (typeof hideTxtFormatBar === 'function') hideTxtFormatBar();
   _pendingHistorySave = false;
   render();
   _isApplyingHistory = false;

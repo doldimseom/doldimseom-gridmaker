@@ -629,8 +629,7 @@ function switchNav(tab) {
   if (tab === 'canvas')  { var el = document.getElementById('panel-canvas');     if (el) el.classList.add('active'); }
   if (tab === 'header')  {
     var el = document.getElementById('panel-header-nav'); if (el) el.classList.add('active');
-    /* 헤더 없을 때 기본값 자동 적용 */
-    if (headerPos === null) toggleHeader('top');
+    if (typeof updateHeaderBtns === 'function') updateHeaderBtns();
   }
   if (tab === 'bg')      {
     var el = document.getElementById('panel-bg'); if (el) el.classList.add('active');
@@ -1817,11 +1816,6 @@ function deleteSelBlk() {
 
   /* 선택된 블록들을 blocks 배열에서 제거 */
   blocks = blocks.filter(function(b) { return targets.indexOf(b.id) === -1; });
-
-  /* 블록이 하나도 없으면 기본 블록 1개 추가 */
-  if (blocks.length === 0) {
-    blocks.push({ id: _nextBlkId(), x: 0, y: 0, w: canvasW, h: 120, groupId: null, type: 'img', imgSrc: null, imgTransform: { scale:1, x:0, y:0 }, radius: null, shadow: null, opacity: null, bgColor: null });
-  }
 
   /* bug 4 방지: 그룹 선택 중 일부 블록 삭제 후 그룹 선택 유지 */
   var remainingInGrp = _savedGi ? blocks.filter(function(b) { return b.groupId === _savedGi; }) : [];
