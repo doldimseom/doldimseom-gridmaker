@@ -762,7 +762,7 @@ function _setStageWidth(newW, anchor) {
 /* ══════════════════════════════════════════
    캔버스 확장 공통 처리
    left/right: 늘어날 px (양수=확장, 음수=축소)
-   top: canvasExtraTop 조정량 (F-17 — 블록·스티커 데이터는 안 건드림)
+   top: basic/sns 헤더 → canvasH 조정 / 라운드 헤더·헤더 없음 → canvasExtraTop 조정
    bottom: canvasH 조정량
 ══════════════════════════════════════════ */
 function _applyCanvasExpand(left, right, top, bottom) {
@@ -849,37 +849,39 @@ function _applyCanvasExpand(left, right, top, bottom) {
     }
   }
 
-  /* ── 상단: canvasExtraTop — 블록·스티커 데이터는 건드리지 않고 여백 변수만 조정
-     (좌/우/하단 canvasW/canvasH 모델과 동일, F-17) ── */
+  /* ── 상단 ── */
   if (top !== 0) {
-    var minY = Infinity;
-    blocks.forEach(function(b) { if (b.y < minY) minY = b.y; });
-    stickers.forEach(function(s) { if (s.y < minY) minY = s.y; });
-    if (minY === Infinity) minY = 0;
-    /* 확장(top>0): 헤더 높이만큼 위로 허용 / 축소(top<0): 블록 끝 + gaps.pad까지만 허용
-       (좌/우/하단과 동일한 여백 기준으로 통일 — 0620_2: 핸들마다 정지 패딩이 다르던 문제.
-       헤더 겹침 허용은 F-17 통일 후에도 그대로 유지).
-       블록이 더 이상 이동하지 않으므로(F-17) minY는 매 호출 고정값 — "유효 상단 여백"은
-       canvasExtraTop + minY로 계산해 그 값이 _yFloor 밑으로 내려가지 않게 막는다 */
-    /* round top: -getHeaderH() 기준 → _headerOverlapFloor=-24가 실제 바닥 결정
-       basic/sns top: 0 기준 → 블록이 헤더 하단에 닿을 수 있음(패딩0), minY<0이면 그만큼 여유
-       헤더 없음: 확장=0, 축소=gaps.pad 여백 유지 */
     var _isRoundTop = headerPos === 'top' && headerData && headerData.type === 'round';
-    var _yFloor = _isRoundTop ? -getHeaderH()
-               : headerPos === 'top' ? 0
-               : (top > 0 ? 0 : gaps.pad);
-    var _newExtraTop = Math.max(canvasExtraTop + top, _yFloor - minY);
-    /* 축소 시 배경지(모눈종이 등)가 헤더 영역을 침범하지 않도록 — pad가 헤더 경계 위로
-       올라가는 걸 막는 별도 바닥값. round 헤더는 디자인상 정해진 만큼(roundOverlap)만
-       겹침 허용, 그 외(basic/sns)는 전혀 겹치지 않게(0) — 블록 위치(minY)와 무관하게
-       항상 적용돼야 하므로 위 블록 기준 바닥과 별개로 한 번 더 클램프 */
-    if (top < 0 && headerPos === 'top') {
-      var _headerOverlapFloor = (headerData.type === 'round')
-        ? -(headerData.roundOverlap !== undefined ? headerData.roundOverlap : 24)
-        : 0;
-      _newExtraTop = Math.max(_newExtraTop, _headerOverlapFloor);
+    var _isBasicSnsTop = headerPos === 'top' && headerData && !_isRoundTop;
+
+    if (_isBasicSnsTop) {
+      /* basic/sns 헤더: 상단 핸들 = 시트 높이 조정 (하단 핸들과 동일, 드래그 방향만 반전)
+         canvasExtraTop = 0 고정 — 헤더↔시트 갭 없음 */
+      var _minNeededH = gaps.pad;
+      blocks.forEach(function(b) {
+        var _be = b.y + b.h + gaps.pad;
+        if (_be > _minNeededH) _minNeededH = _be;
+      });
+      stickers.forEach(function(s) {
+        var _se = s.y + (s.size || 0) + gaps.pad;
+        if (_se > _minNeededH) _minNeededH = _se;
+      });
+      canvasH = Math.max(_minNeededH, canvasH + top);
+      canvasExtraTop = 0;
+    } else {
+      /* 라운드 헤더 또는 헤더 없음: canvasExtraTop 모델 유지 */
+      var minY = Infinity;
+      blocks.forEach(function(b) { if (b.y < minY) minY = b.y; });
+      stickers.forEach(function(s) { if (s.y < minY) minY = s.y; });
+      if (minY === Infinity) minY = 0;
+      var _yFloor = _isRoundTop ? -getHeaderH() : (top > 0 ? 0 : gaps.pad);
+      var _newExtraTop = Math.max(canvasExtraTop + top, _yFloor - minY);
+      if (top < 0 && _isRoundTop) {
+        var _rov2 = headerData.roundOverlap !== undefined ? headerData.roundOverlap : 24;
+        _newExtraTop = Math.max(_newExtraTop, -_rov2);
+      }
+      canvasExtraTop = _newExtraTop;
     }
-    canvasExtraTop = _newExtraTop;
   }
 
   /* ── 하단: canvasH — 블록·스티커 하단이 잘리지 않도록 브레이크 (canvasW 모델과 대칭) ── */
