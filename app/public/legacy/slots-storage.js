@@ -37,7 +37,8 @@ function collectData(includeImages) {
     bgLayer:       JSON.parse(JSON.stringify(bgLayer)),
     stickers:      stickersCopy,
     stickerLibrary: stickerLibCopy,
-    stickerOverflow: stickerOverflow
+    stickerOverflow: stickerOverflow,
+    canvasSizeLocked: canvasSizeLocked
   };
 }
 
@@ -208,6 +209,14 @@ function applyData(data) {
   /* stickerOverflow 복원 */
   stickerOverflow = typeof data.stickerOverflow === 'boolean' ? data.stickerOverflow : false;
   if (typeof syncStickerOverflowUI === 'function') syncStickerOverflowUI();
+  /* canvasSizeLocked 복원 */
+  canvasSizeLocked = typeof data.canvasSizeLocked === 'boolean' ? data.canvasSizeLocked : false;
+  var _lsw = document.getElementById('canvas-lock-sw');
+  if (_lsw) _lsw.classList.toggle('on', canvasSizeLocked);
+  var _llbl = document.getElementById('canvas-lock-lbl');
+  if (_llbl) _llbl.textContent = '크기 고정 ' + (canvasSizeLocked ? '켜짐' : '꺼짐');
+  var _lhs = document.querySelectorAll('.canvas-resize-handle');
+  _lhs.forEach(function(h) { h.style.opacity = canvasSizeLocked ? '0.2' : ''; });
   selKey = null;
   selKeys = [];
   /* 탭 자동전환 없이 block 패널만 닫음 (프리셋 선택 시 현재 탭 유지) */
@@ -665,6 +674,11 @@ function resetAll() {
   selectedStickerIds  = [];
   stickerOverflow     = false;
   if (typeof syncStickerOverflowUI === 'function') syncStickerOverflowUI();
+  canvasSizeLocked    = false;
+  var _rlsw = document.getElementById('canvas-lock-sw');
+  if (_rlsw) _rlsw.classList.remove('on');
+  var _rllbl = document.getElementById('canvas-lock-lbl');
+  if (_rllbl) _rllbl.textContent = '크기 고정 꺼짐';
   renderStickerLibrary();
   showCanvasPanel();
   render();

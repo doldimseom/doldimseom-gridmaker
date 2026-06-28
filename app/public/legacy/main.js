@@ -761,6 +761,7 @@ function _setStageWidth(newW, anchor) {
    bottom: canvasH 조정량
 ══════════════════════════════════════════ */
 function _applyCanvasExpand(left, right, top, bottom) {
+  if (canvasSizeLocked) return; /* 시트 크기 고정 시 핸들·자동확장 전부 무시 */
   /* ── 좌/우 ── */
   if (left !== 0 || right !== 0) {
     var requestedW = canvasW + left + right;
@@ -1065,6 +1066,34 @@ function togglePngMargin() {
   pngMargin = !pngMargin;
   var sw = document.getElementById('png-margin-sw');
   if (sw) sw.classList.toggle('on', pngMargin);
+}
+
+function toggleCanvasSizeLock() {
+  canvasSizeLocked = !canvasSizeLocked;
+  var sw = document.getElementById('canvas-lock-sw');
+  if (sw) sw.classList.toggle('on', canvasSizeLocked);
+  var lbl = document.getElementById('canvas-lock-lbl');
+  if (lbl) lbl.textContent = '크기 고정 ' + (canvasSizeLocked ? '켜짐' : '꺼짐');
+  var handles = document.querySelectorAll('.canvas-resize-handle');
+  handles.forEach(function(h) { h.style.opacity = canvasSizeLocked ? '0.2' : ''; });
+}
+
+function roundCanvasSize() {
+  function _roundNice(v) {
+    var steps = [1000, 500, 200, 100, 50, 20, 10];
+    for (var i = 0; i < steps.length; i++) {
+      var rounded = Math.round(v / steps[i]) * steps[i];
+      if (Math.abs(rounded - v) / v <= 0.06) return rounded;
+    }
+    return v;
+  }
+  saveHistory();
+  var newW = _roundNice(canvasW);
+  var newH = _roundNice(autoCanvasH());
+  _setStageWidth(newW, 'center');
+  canvasH = newH;
+  render();
+  showToast('시트 수치 ' + canvasW + ' × ' + canvasH + ' 으로 정리됐습니다');
 }
 
 function toggleSnap() {

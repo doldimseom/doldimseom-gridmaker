@@ -320,6 +320,15 @@
       </div>
       <div class="panel-body">
 
+        <!-- 시트 크기 카드 -->
+        <div class="tools-card">
+          <div class="png-toggle-row">
+            <span class="png-toggle-label" id="canvas-lock-lbl">크기 고정 꺼짐</span>
+            <button class="png-sw" id="canvas-lock-sw" onclick="toggleCanvasSizeLock()" title="시트 크기 고정 on/off"></button>
+          </div>
+          <button class="equalize-btn" onclick="roundCanvasSize()">수치 정리 (근삿값으로 반올림)</button>
+        </div>
+
         <!-- 정렬 카드 -->
         <div class="tools-card">
           <button class="equalize-btn" onclick="equalizeBlockMargins()">↔ 상하좌우 여백 균등화</button>

@@ -4,6 +4,7 @@ function _nextBlkId() { return 'b_' + (++_blkIdCounter); }
 var _blkCopyClipboard = null;  /* Ctrl+C 블록 복사 클립보드 */
 var _blkStyleClipboard = null; /* 블록 옵션 복사 클립보드 { radius, shadow, bgColor, stroke, opacity } */
 var canvasW = 800; /* 캔버스 너비 (px) */
+var canvasSizeLocked = false; /* 시트 크기 고정 — true 시 핸들·자동확장 비활성 */
 var canvasH = 0;   /* 캔버스 높이 (px) — autoCanvasH()가 콘텐츠보다 작으면 확장만 함(축소 없음).
                        0은 "아직 계산 안 됨" 상태로, 첫 render() 시 콘텐츠 높이로 채워짐 */
 var canvasExtraTop = 0; /* 블록 위에 추가로 존재하는 여백(px) — 상단 핸들 전용, canvasH와 대칭
