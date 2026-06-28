@@ -1682,7 +1682,13 @@ function syncLineHeight(val) {
   var blkEl = document.querySelector('.blk[data-key="' + selKey + '"]');
   if (blkEl) {
     var ta = blkEl.querySelector('.blk-text-area');
-    if (ta) ta.style.lineHeight = blk.lineHeight;
+    if (ta) {
+      ta.style.lineHeight = blk.lineHeight;
+      ta.querySelectorAll('span').forEach(function(sp) {
+        var spFs = parseFloat(sp.style.fontSize) || 0;
+        if (spFs >= 15) sp.style.lineHeight = Math.max(blk.lineHeight, 2.2) + '';
+      });
+    }
   }
   _updateSliderUI('bp-txt-sl-lh', blk.lineHeight);
   var snEl = document.getElementById('bp-txt-sn-lh');

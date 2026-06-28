@@ -150,7 +150,7 @@ function renderHeaderPngBg(ctx, ox, oy, hdr) {
    ※ 배경색: hexWithAlpha(color, opacity) — GUIDE opacity 규칙 준수
    ※ 모눈종이: SVG stroke-opacity에 이미 반영 — globalAlpha 불필요
    ※ 이 함수가 resolve된 뒤 블록 루프 진입 — 배경지가 블록 아래에 그려짐 보장 */
-function renderBgLayerPng(ctx, ox, oy, layout, SHEET_R) {
+function renderBgLayerPng(ctx, ox, oy, layout, SHEET_R, DPR) {
   if (!bgLayer.on) {
     return Promise.resolve();
   }
@@ -222,7 +222,13 @@ function renderBgLayerPng(ctx, ox, oy, layout, SHEET_R) {
       var gAngle  = bgLayer.gridAngle || 0;
       var gColor  = bgLayer.gridColor;
       var gAlpha  = (bgLayer.opacity / 100).toFixed(3);
-      var gStroke = 'stroke="' + gColor + '" stroke-opacity="' + gAlpha + '" stroke-width="0.5"';
+      /* DPR 스케일 SVG: 디바이스 픽셀 해상도로 생성 → drawImage 시 1:1 매핑
+         stroke-width는 0.5 CSS px × DPR = 디바이스 픽셀 기준, 일관된 굵기 보장 */
+      var _dpr    = DPR || 1;
+      var svgW    = pdW * _dpr;
+      var svgH    = pdH * _dpr;
+      var svgGS   = gSize * _dpr;
+      var gStroke = 'stroke="' + gColor + '" stroke-opacity="' + gAlpha + '" stroke-width="' + (0.5 * _dpr) + '"';
 
       /* 격자 구현:
          가로선 패턴(ph)을 gAngle로 회전 + 세로선 패턴(pv)을 (gAngle+90)으로 회전
@@ -230,19 +236,21 @@ function renderBgLayerPng(ctx, ox, oy, layout, SHEET_R) {
       var ptH = gAngle !== 0 ? ' patternTransform="rotate(' + gAngle + ')"' : '';
       var ptV = ' patternTransform="rotate(' + (gAngle + 90) + ')"';
 
-      /* SVG 크기를 실제 px 고정 (100%는 Canvas에서 0으로 해석됨) */
+      /* SVG 크기를 실제 디바이스 픽셀 고정 (100%는 Canvas에서 0으로 해석됨)
+         DPR 스케일 SVG를 drawImage(img, pdX, pdY, pdW, pdH)로 그리면
+         CTM(scale DPR)에 의해 정확히 1:1 매핑됨 — 픽셀 정렬 일관성 보장 */
       var gSvg =
-        '<svg xmlns="http://www.w3.org/2000/svg" width="' + pdW + '" height="' + pdH + '">' +
+        '<svg xmlns="http://www.w3.org/2000/svg" width="' + svgW + '" height="' + svgH + '">' +
           '<defs>' +
-            '<pattern id="ph" x="0" y="0" width="' + gSize + '" height="' + gSize + '" patternUnits="userSpaceOnUse"' + ptH + '>' +
-              '<line x1="0" y1="0" x2="' + (gSize * 30) + '" y2="0" ' + gStroke + '/>' +
+            '<pattern id="ph" x="0" y="0" width="' + svgGS + '" height="' + svgGS + '" patternUnits="userSpaceOnUse"' + ptH + '>' +
+              '<line x1="0" y1="0" x2="' + (svgGS * 30) + '" y2="0" ' + gStroke + '/>' +
             '</pattern>' +
-            '<pattern id="pv" x="0" y="0" width="' + gSize + '" height="' + gSize + '" patternUnits="userSpaceOnUse"' + ptV + '>' +
-              '<line x1="0" y1="0" x2="' + (gSize * 30) + '" y2="0" ' + gStroke + '/>' +
+            '<pattern id="pv" x="0" y="0" width="' + svgGS + '" height="' + svgGS + '" patternUnits="userSpaceOnUse"' + ptV + '>' +
+              '<line x1="0" y1="0" x2="' + (svgGS * 30) + '" y2="0" ' + gStroke + '/>' +
             '</pattern>' +
           '</defs>' +
-          '<rect width="' + pdW + '" height="' + pdH + '" fill="url(#ph)"/>' +
-          '<rect width="' + pdW + '" height="' + pdH + '" fill="url(#pv)"/>' +
+          '<rect width="' + svgW + '" height="' + svgH + '" fill="url(#ph)"/>' +
+          '<rect width="' + svgW + '" height="' + svgH + '" fill="url(#pv)"/>' +
         '</svg>';
 
       var img = new Image();
@@ -488,7 +496,7 @@ function saveAsPNG() {
 
   /* 2-d. 배경지 — round clip 안에서 그려야 흰 카드 위, 블록 아래에 보임
      bgLayerPromise 완료 후 블록 루프 진입 → 배경지가 블록 아래에 그려짐 보장 */
-  var bgLayerPromise = renderBgLayerPng(ctx, ox, oy, layout, SHEET_R);
+  var bgLayerPromise = renderBgLayerPng(ctx, ox, oy, layout, SHEET_R, DPR);
 
   /* 배경지 완료 → 블록 루프 → 스티커 → 다운로드 */
   var now    = new Date();
@@ -522,7 +530,7 @@ function saveAsPNG() {
       var curY  = y;
       lines.forEach(function(line) {
         if (!line) { curY += lineH; return; }
-        var words = line.split('');  /* 한글 대응 — 글자 단위 */
+        var words = [...line];  /* 한글·이모지 대응 — Unicode 코드포인트 단위 */
         var cur   = '';
         words.forEach(function(ch) {
           var test = cur + ch;
@@ -632,7 +640,7 @@ function saveAsPNG() {
         ctx.save();
         roundRectPath(bx, by, bw, bh, r);
         ctx.clip();
-        if ((blk.blur || 0) > 0) ctx.filter = 'blur(' + (blk.blur * DPR) + 'px)';
+        if ((blk.blur || 0) > 0) ctx.filter = 'blur(' + blk.blur + 'px)';
         var t    = blk.imgTransform || { scale: 1, x: 0, y: 0 };
         var cx   = bx + bw / 2 + t.x;
         var cy   = by + bh / 2 + t.y;
@@ -720,7 +728,7 @@ function saveAsPNG() {
         /* spans를 글자 단위 토큰으로 분해 */
         var tokens = []; /* { ch, bold, italic, underline, color, bg, fontSize } */
         spans.forEach(function(sp) {
-          var chars = (sp.text || '').split('');
+          var chars = [...(sp.text || '')];  /* 이모지·서로게이트 쌍 대응 */
           chars.forEach(function(ch) {
             tokens.push({
               ch: ch,
@@ -739,12 +747,20 @@ function saveAsPNG() {
         var curY   = startY;
         var lineTokens = []; /* 현재 줄에 쌓인 토큰들 */
         var lineW  = 0;
+        var lineMaxFs = 0; /* 현재 줄의 최대 fontSize — 제목 크기 줄 line advance 보정 */
+
+        function _dynLineH(maxFs) {
+          var lh = blk.lineHeight || 1.6;
+          var fs = maxFs > 0 ? maxFs : tSize;
+          if (fs >= 15) lh = Math.max(lh, 2.2);
+          return Math.round(fs * lh);
+        }
 
         function flushLine(tokens, y, isLast) {
           if (!tokens.length) return;
           /* 정렬에 따른 시작 X 계산 */
           var totalW = tokens.reduce(function(sum, t) {
-            ctx.font = (t.bold ? '700' : '400') + ' ' + t.fontSize + 'px \'' + tFont + '\', \'Pretendard\', sans-serif';
+            ctx.font = (t.bold ? '700' : '400') + ' ' + t.fontSize + 'px \'' + tFont + '\', \'Pretendard\', \'Segoe UI Emoji\', \'Apple Color Emoji\', \'Noto Color Emoji\', sans-serif';
             return sum + ctx.measureText(t.ch).width;
           }, 0);
           /* 좌표를 정수로 고정 — 글자 단위 measureText 폭을 그대로 누적하면
@@ -757,7 +773,7 @@ function saveAsPNG() {
           var positioned = tokens.map(function(t) {
             var fw = t.bold ? '700' : '400';
             var fs = t.italic ? 'italic ' : '';
-            ctx.font = fs + fw + ' ' + t.fontSize + 'px \'' + tFont + '\', \'Pretendard\', sans-serif';
+            ctx.font = fs + fw + ' ' + t.fontSize + 'px \'' + tFont + '\', \'Pretendard\', \'Segoe UI Emoji\', \'Apple Color Emoji\', \'Noto Color Emoji\', sans-serif';
             var cw = ctx.measureText(t.ch).width;
             var x = drawX;
             drawX = Math.round(drawX + cw);
@@ -786,7 +802,7 @@ function saveAsPNG() {
             var t = p.t;
             var fw = t.bold ? '700' : '400';
             var fs = t.italic ? 'italic ' : '';
-            ctx.font = fs + fw + ' ' + t.fontSize + 'px \'' + tFont + '\', \'Pretendard\', sans-serif';
+            ctx.font = fs + fw + ' ' + t.fontSize + 'px \'' + tFont + '\', \'Pretendard\', \'Segoe UI Emoji\', \'Apple Color Emoji\', \'Noto Color Emoji\', sans-serif';
             var _tTsh = t.tstroke !== undefined
               ? (t.tstroke > 0 ? { color: t.tstrokeColor || '#ffffff', lw: (t.tstroke >= 2 ? 3.2 : 1.8) } : null)
               : pTsh;
@@ -805,27 +821,30 @@ function saveAsPNG() {
           var t = tokens[i];
           if (t.ch === '\n') {
             if (!dryRun) flushLine(lineTokens, curY, false);
-            curY += baseLineH;
+            curY += _dynLineH(lineMaxFs);
             lineTokens = [];
             lineW = 0;
+            lineMaxFs = 0;
             i++;
             continue;
           }
-          ctx.font = (t.bold ? '700' : '400') + ' ' + t.fontSize + 'px \'' + tFont + '\', \'Pretendard\', sans-serif';
+          ctx.font = (t.bold ? '700' : '400') + ' ' + t.fontSize + 'px \'' + tFont + '\', \'Pretendard\', \'Segoe UI Emoji\', \'Apple Color Emoji\', \'Noto Color Emoji\', sans-serif';
           var cw = ctx.measureText(t.ch).width;
           if (lineW + cw > maxW && lineTokens.length > 0) {
             if (!dryRun) flushLine(lineTokens, curY, false);
-            curY += baseLineH;
+            curY += _dynLineH(lineMaxFs);
             lineTokens = [];
             lineW = 0;
+            lineMaxFs = 0;
           }
           lineTokens.push(t);
           lineW += cw;
+          lineMaxFs = Math.max(lineMaxFs, t.fontSize || tSize);
           i++;
         }
         if (lineTokens.length > 0) {
           if (!dryRun) flushLine(lineTokens, curY, true);
-          curY += baseLineH;
+          curY += _dynLineH(lineMaxFs);
         }
         return curY - startY;
       }
@@ -844,7 +863,7 @@ function saveAsPNG() {
         wrapSpans(blk.spans, textX, textStartY, maxTextW, lineH, false);
       } else {
         /* 기존 단색 렌더링 (목록형 포함) */
-        ctx.font      = tSize + 'px \'' + tFont + '\', \'Pretendard\', sans-serif';
+        ctx.font      = tSize + 'px \'' + tFont + '\', \'Pretendard\', \'Segoe UI Emoji\', \'Apple Color Emoji\', \'Noto Color Emoji\', sans-serif';
         ctx.fillStyle = tColor;
         var rawText   = blk.text || '';
         var renderText = rawText;
@@ -905,7 +924,7 @@ function saveAsPNG() {
                            :                         Math.max(0, (avail - totalH) / 2));
       };
 
-      ctx.font         = '600 ' + ccFSize + 'px \'' + ccFont + '\', \'Pretendard\', sans-serif';
+      ctx.font         = '600 ' + ccFSize + 'px \'' + ccFont + '\', \'Pretendard\', \'Segoe UI Emoji\', \'Apple Color Emoji\', \'Noto Color Emoji\', sans-serif';
       ctx.textBaseline = 'middle';
 
       if (showText) {
@@ -913,10 +932,10 @@ function saveAsPNG() {
         var ccRows2 = [[]];
         var ccRowWidths2 = [0];
         ccChips.forEach(function(chip) {
-          ctx.font = '600 ' + ccFSize + 'px \'' + ccFont + '\', \'Pretendard\', sans-serif';
+          ctx.font = '600 ' + ccFSize + 'px \'' + ccFont + '\', \'Pretendard\', \'Segoe UI Emoji\', \'Apple Color Emoji\', \'Noto Color Emoji\', sans-serif';
           var tw    = ctx.measureText(chip.label || '').width;
           var chipW = Math.max(ccChipH, tw + ccChipPadH * 2);
-          ctx.font  = ccFSize + 'px \'' + ccFont + '\', \'Pretendard\', sans-serif';
+          ctx.font  = ccFSize + 'px \'' + ccFont + '\', \'Pretendard\', \'Segoe UI Emoji\', \'Apple Color Emoji\', \'Noto Color Emoji\', sans-serif';
           var descW = chip.desc ? ctx.measureText(chip.desc).width : 0;
           var rowW  = chipW + (descW > 0 ? ccDescGap + descW : 0);
           var ri = ccRows2.length - 1;
@@ -950,12 +969,12 @@ function saveAsPNG() {
               ctx.restore();
             }
             ctx.fillStyle = showSwatch ? (item.chip.textColor || blk.ccTextColor || '#212121') : (item.chip.color || '#888888');
-            ctx.font      = '600 ' + ccFSize + 'px \'' + ccFont + '\', \'Pretendard\', sans-serif';
+            ctx.font      = '600 ' + ccFSize + 'px \'' + ccFont + '\', \'Pretendard\', \'Segoe UI Emoji\', \'Apple Color Emoji\', \'Noto Color Emoji\', sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText(item.chip.label || '', curX + item.chipW / 2, rowY + ccChipH / 2);
             if (item.chip.desc) {
               ctx.fillStyle = '#212121';
-              ctx.font      = ccFSize + 'px \'' + ccFont + '\', \'Pretendard\', sans-serif';
+              ctx.font      = ccFSize + 'px \'' + ccFont + '\', \'Pretendard\', \'Segoe UI Emoji\', \'Apple Color Emoji\', \'Noto Color Emoji\', sans-serif';
               ctx.textAlign = 'left';
               ctx.fillText(item.chip.desc, curX + item.chipW + ccDescGap, rowY + ccChipH / 2);
             }
@@ -1077,7 +1096,7 @@ function saveAsPNG() {
                 ctx.moveTo(_iX, curY); ctx.lineTo(_iX + _iW, curY);
                 ctx.stroke(); ctx.restore();
               }
-              curY += 9 * _iGapScale;
+              curY += 9 * _iGapScale + 1; /* +1: DOM border-top:1px 반영 */
             }
             ctx.font = '700 ' + _cKFont + 'px ' + _iFS;
             var _lw = ctx.measureText(it.k || '').width;
@@ -1087,7 +1106,7 @@ function saveAsPNG() {
             ctx.font = '400 ' + _cVFont + 'px ' + _iFS;
             var _vH = wrapText(it.v || '', 0, 0, _vMaxW, _cVLineH, true) || _cVLineH;
             var _rowH = Math.max(_cTokenH, _vH);
-            var _chipY = _iDir === 'h' ? (curY + (_rowH - _cTokenH) / 2) : curY;
+            var _chipY = curY; /* DOM align-items:baseline ≈ 상단정렬 */
             if (draw) {
               if (_iCS === 'fill') {
                 ctx.fillStyle = _iPt;
@@ -1108,7 +1127,7 @@ function saveAsPNG() {
               ctx.textAlign = 'left'; ctx.textBaseline = 'top';
             }
             if (_iDir === 'h') {
-              if (draw) wrapText(it.v || '', _iX + _cw2 + _cKVGapH, curY + (_rowH - _vH) / 2, _vMaxW, _cVLineH, false);
+              if (draw) wrapText(it.v || '', _iX + _cw2 + _cKVGapH, curY, _vMaxW, _cVLineH, false);
             } else {
               if (draw) wrapText(it.v || '', _iX, _chipY + _cTokenH + _cKVGapV, _vMaxW, _cVLineH, false);
               _rowH = _cTokenH + _cKVGapV + _vH;
@@ -1143,7 +1162,7 @@ function saveAsPNG() {
                 ctx.moveTo(_iX, curY); ctx.lineTo(_iX + _iW - _hPadR, curY);
                 ctx.stroke(); ctx.restore();
               }
-              curY += 9 * _iGapScale;
+              curY += 9 * _iGapScale + 1; /* +1: DOM border-top:1px 반영 */
             }
             ctx.font = '600 ' + _hKFont + 'px ' + _iFS;
             var _kw = ctx.measureText(it.k || '').width;  /* .pm-hair .k는 nowrap — 줄바꿈 없음 */
@@ -1202,7 +1221,7 @@ function saveAsPNG() {
                 ctx.moveTo(_iX, curY); ctx.lineTo(_iX + _iW - _capPadR, curY);
                 ctx.stroke(); ctx.restore();
               }
-              curY += 9 * _iGapScale;
+              curY += 9 * _iGapScale + 1; /* +1: DOM border-top:1px 반영 */
             }
             if (_iDir === 'h') {
               ctx.font = '800 ' + _capKFont + 'px ' + _iFS;

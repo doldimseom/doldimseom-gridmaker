@@ -669,7 +669,9 @@ function makeBlk(blk) {
         var bFs = b.fontSize || 12;
         el2.innerHTML = b.spans.map(function(s) {
           var t = s.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
-          var style = 'font-size:' + (s.fontSize || bFs) + 'px;';
+          var spFs = s.fontSize || bFs;
+          var style = 'font-size:' + spFs + 'px;';
+          if (spFs >= 15) style += 'line-height:' + Math.max(b.lineHeight || 1.6, 2.2) + ';';
           if (s.bold)      style += 'font-weight:700;';
           if (s.italic)    style += 'font-style:italic;';
           if (s.underline) style += 'text-decoration:underline;';
@@ -1129,7 +1131,9 @@ function makeBlk(blk) {
         var bFsEnter = b.fontSize || 12;
         texEl.innerHTML = b.spans.map(function(s) {
           var t = s.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
-          var style = 'font-size:' + (s.fontSize || bFsEnter) + 'px;';
+          var spFsEnter = s.fontSize || bFsEnter;
+          var style = 'font-size:' + spFsEnter + 'px;';
+          if (spFsEnter >= 15) style += 'line-height:' + Math.max(b.lineHeight || 1.6, 2.2) + ';';
           if (s.bold)      style += 'font-weight:700;';
           if (s.italic)    style += 'font-style:italic;';
           if (s.underline) style += 'text-decoration:underline;';
