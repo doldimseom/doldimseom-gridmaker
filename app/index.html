@@ -551,8 +551,11 @@
 
         <!-- [배경 이미지] -->
         <section class="grp">
-          <div class="grp-head">배경 이미지</div>
-          <div class="grp-body">
+          <div class="grp-head" style="display:flex;align-items:center;justify-content:space-between;">
+            배경 이미지
+            <button class="png-sw" id="bgl-img-sw" onclick="toggleBgLayerImgOn()" title="배경 이미지 켜기/끄기"></button>
+          </div>
+          <div class="grp-body" id="bgl-img-body">
 
             <!-- 소스 선택 tiles c2 -->
             <div class="tiles c2" style="margin-bottom:10px;">

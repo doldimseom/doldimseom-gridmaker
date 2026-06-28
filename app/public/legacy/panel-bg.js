@@ -212,6 +212,12 @@ function syncBgLayerPanel() {
     if (ch) ch.value = '없음';
   }
 
+  /* 이미지 on/off 토글 */
+  var imgSw = document.getElementById('bgl-img-sw');
+  if (imgSw) imgSw.classList.toggle('on', !!bgLayer.imgOn);
+  var imgBody = document.getElementById('bgl-img-body');
+  if (imgBody) imgBody.style.display = bgLayer.imgOn ? '' : 'none';
+
   /* 소스 세그먼트 */
   var su = document.getElementById('bgl-src-upload');
   var sg = document.getElementById('bgl-src-grid');
@@ -316,15 +322,20 @@ function clearBgLayerColor() {
   syncBgLayerPanel();
 }
 
+function toggleBgLayerImgOn() {
+  saveHistory();
+  if (bgLayer.imgOn) {
+    bgLayer.imgOn = false;
+  } else {
+    bgLayer.imgOn = true;
+    if (!bgLayer.imgMode) bgLayer.imgMode = 'grid'; /* 기본 모드 */
+  }
+  applySheetBgLayer();
+  syncBgLayerPanel();
+}
+
 function setBgLayerMode(mode) {
   saveHistory();
-  if (bgLayer.imgOn && bgLayer.imgMode === mode) {
-    bgLayer.imgOn = false;
-    bgLayer.imgMode = null;
-    applySheetBgLayer();
-    syncBgLayerPanel();
-    return;
-  }
   bgLayer.imgMode = mode;
   bgLayer.imgOn = true;
   applySheetBgLayer();
