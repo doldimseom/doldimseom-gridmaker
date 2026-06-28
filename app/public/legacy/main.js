@@ -2244,7 +2244,8 @@ document.addEventListener('mousedown', function(e) {
     commitTextEdit();
     requestAnimationFrame(function() {
       if (selKey) { return; }
-      showCanvasPanel();
+      document.getElementById('panel-block').classList.remove('active');
+      if (typeof hideTxtFormatBar === 'function') hideTxtFormatBar();
       render();
     });
     return;
@@ -2259,9 +2260,10 @@ document.addEventListener('mousedown', function(e) {
     requestAnimationFrame(function() {
       /* 다른 블록이 click으로 선택된 경우 — onclick이 DOM 직접 반영 완료, 추가 작업 불필요 */
       if (selKey) { return; }
-      /* 빈 캔버스·외부 영역 클릭 — 선택 해제 + 패널 복귀 + 재렌더 */
+      /* 빈 캔버스·외부 영역 클릭 — 선택 해제 + 블록 패널 닫기 + 재렌더 */
       selectedGi = null;
-      showCanvasPanel();
+      document.getElementById('panel-block').classList.remove('active');
+      if (typeof hideTxtFormatBar === 'function') hideTxtFormatBar();
       render();
     });
   }

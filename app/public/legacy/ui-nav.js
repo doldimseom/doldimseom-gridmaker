@@ -45,8 +45,8 @@ function deselectGroup() {
   document.querySelectorAll('.dock-tb').forEach(function(el) {
     el.classList.remove('visible');
   });
-  /* 블록이 선택된 상태면 패널 유지, 아니면 캔버스 설정으로 복귀 */
-  if (!selKey) showCanvasPanel();
+  /* 블록이 선택된 상태면 패널 유지, 아니면 블록 패널만 닫기 (탭 전환 없음) */
+  if (!selKey) { document.getElementById('panel-block').classList.remove('active'); hideTxtFormatBar(); }
 }
 
 /* ══════════════════════════════════════════
@@ -588,7 +588,8 @@ function deselect() {
   });
   /* 헤더 패널에서 복귀 시 공통 스타일 복원 */
   if (wasHeader) restoreBlockPanelCommon();
-  showCanvasPanel();
+  document.getElementById('panel-block').classList.remove('active');
+  hideTxtFormatBar();
   render();
 }
 
@@ -643,7 +644,7 @@ document.addEventListener('keydown', function(e) {
 document.addEventListener('keydown', function(e) {
   if (e.key !== 'Escape') return;
   if (isEditing) { commitTextEdit(); return; }
-  if (activeImgKey) { exitImgEditMode(); render(); showCanvasPanel(); return; }
+  if (activeImgKey) { exitImgEditMode(); render(); document.getElementById('panel-block').classList.remove('active'); hideTxtFormatBar(); return; }
   if (activeHdrImgKind) { exitHeaderImgEditMode(); return; }
   if (selKey || selKeys.length > 0) { deselect(); return; }
 });
@@ -662,12 +663,10 @@ document.addEventListener('keydown', function(e) {
   saveHistory();
   var toDelete = _delKeys;
   blocks = blocks.filter(function(b) { return toDelete.indexOf(b.id) === -1; });
-  if (blocks.length === 0) {
-    blocks.push({ id: _nextBlkId(), x: gaps.pad, y: gaps.pad, w: canvasW - gaps.pad * 2, h: 120, groupId: null, type: 'img', imgSrc: null, imgTransform: { scale:1, x:0, y:0 }, radius: null, shadow: null, opacity: null, bgColor: null });
-  }
   selKey = null; selKeys = []; selectedGi = null; _grpIndividualMode = false;
   hideTxtFormatBar(); hideAlignToolbar(); hideGroupToolbar();
-  render(); showCanvasPanel();
+  render();
+  document.getElementById('panel-block').classList.remove('active');
 });
 
 /* Arrow keys — 선택 블록 이동 (1px / Shift: 10px) */
@@ -900,7 +899,8 @@ function showCtxMenu(e, ctxGroupId) {
         el.style.outline = '';
         el.style.outlineOffset = '';
       });
-      showCanvasPanel();
+      document.getElementById('panel-block').classList.remove('active');
+      hideTxtFormatBar();
       showGroupToolbar(ctxGroupId);
     });
     menu.appendChild(grpSelItem);
@@ -1166,11 +1166,15 @@ function autoCanvasH() {
   /* F-17: canvasExtraTop은 블록/스티커 데이터를 안 건드리고 컨테이너만 이동시켜 반영
      (#sheet-pad는 일반 플로우 박스라 margin-top이 정상 동작, #sticker-layer는 inset:0
      이라 top만 덮어쓰면 나머지 absolute 위치가 따라옴)
-     라운드 top 헤더: pad가 배너 위로 overlap만큼 올라와야 하므로 effectiveTop = canvasExtraTop - overlap */
+     라운드 top 헤더 + canvasExtraTop > 0: 추가 여백을 배너 위에 배치(hdr-top-slot.marginTop),
+     pad.marginTop은 항상 -overlap으로 고정하여 배너↔시트 겹침 유지 */
   var _effectiveTop = canvasExtraTop;
+  var _topSlotEl = document.getElementById('hdr-top-slot');
+  if (_topSlotEl) _topSlotEl.style.marginTop = '';  /* 기본 리셋 */
   if (headerData && headerData.type === 'round' && headerPos === 'top') {
     var _rov = headerData.roundOverlap !== undefined ? headerData.roundOverlap : 24;
-    _effectiveTop -= _rov;
+    if (_topSlotEl && canvasExtraTop > 0) _topSlotEl.style.marginTop = canvasExtraTop + 'px';
+    _effectiveTop = -_rov;  /* 겹침 고정 — canvasExtraTop 무관 */
   }
   pad.style.marginTop = _effectiveTop + 'px';
   var stickerLayerEl = document.getElementById('sticker-layer');

@@ -252,8 +252,8 @@ function selectPreset(id) {
   }
   selKey = null;
   selKeys = [];
+  document.getElementById('panel-block').classList.remove('active');
   render();
-  showCanvasPanel();
 }
 
 /* ══════════════════════════════════════════
@@ -378,7 +378,7 @@ function render() {
           blkEl.style.outline = '';
           blkEl.style.outlineOffset = '';
         });
-        showCanvasPanel();
+        document.getElementById('panel-block').classList.remove('active');
         showGroupToolbar(gid);
         /* 호버 오버레이 제거 */
         var hov = document.getElementById('grp-hover-' + gid);
@@ -414,7 +414,8 @@ function render() {
           blkEl.style.outline = '';
           blkEl.style.outlineOffset = '';
         });
-        showCanvasPanel();
+        document.getElementById('panel-block').classList.remove('active');
+        hideTxtFormatBar();
         showGroupToolbar(gid);
         showCtxMenu(e, gid);
       });
