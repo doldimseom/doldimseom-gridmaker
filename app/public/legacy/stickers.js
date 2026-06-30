@@ -285,6 +285,16 @@ function bindStickerEvents(el, sticker) {
     /* zoom 보정: 뷰포트 px → 캔버스 px */
     var z = typeof _zoomLevel === 'number' && _zoomLevel > 0 ? _zoomLevel : 1;
     var cdx = dx / z, cdy = dy / z;
+    /* 헤더 배치 시 스티커 y좌표 기준 보정 — 헤더 높이만큼 y-max에 여유 추가
+       최상단: 스티커 레이어 기준점이 헤더 상단 → 카드 하단 = 헤더높이 + canvasH
+       최하단: 스티커가 하단 헤더 영역까지 내려갈 수 있도록 동일하게 적용 */
+    var _hOff = 0;
+    if (headerPos && headerData) {
+      var _ht = headerData.type;
+      _hOff = _ht === 'sns'   ? (headerData.navH || 32) + (headerData.snsH || 120) :
+              _ht === 'round' ? (headerData.roundH || 120) :
+                                (headerData.bannerH || 160);
+    }
     if (selectedStickerIds.length > 1) {
       /* 다중: 선택된 모든 스티커 DOM + 데이터 동시 갱신
          (데이터 미갱신 시 renderSticker 호출 시점에 위치 복귀 버그 발생) */
@@ -293,12 +303,13 @@ function bindStickerEvents(el, sticker) {
         stickers.forEach(function(s) {
           if (selectedStickerIds.indexOf(s.id) !== -1 && !s.locked) {
             var el2 = document.getElementById('sticker-' + s.id);
+            var _sh = (s._dragH || (el2 ? el2.offsetHeight : s.size));
             if (stickerOverflow) {
               s.x = s._dragStartX + cdx;
               s.y = s._dragStartY + cdy;
             } else {
               s.x = Math.max(-canvasExtraLeft, Math.min(canvasW - s.size, s._dragStartX + cdx));
-              s.y = Math.max(-canvasExtraTop,  Math.min(canvasH - s.size, s._dragStartY + cdy));
+              s.y = Math.max(-canvasExtraTop,  Math.min(_hOff + canvasH - _sh, s._dragStartY + cdy));
             }
             if (el2) { el2.style.left = s.x + 'px'; el2.style.top = s.y + 'px'; }
           }
@@ -310,7 +321,7 @@ function bindStickerEvents(el, sticker) {
         sticker.y = startSY + cdy;
       } else {
         sticker.x = Math.max(-canvasExtraLeft, Math.min(canvasW - sticker.size, startSX + cdx));
-        sticker.y = Math.max(-canvasExtraTop,  Math.min(canvasH - sticker.size, startSY + cdy));
+        sticker.y = Math.max(-canvasExtraTop,  Math.min(_hOff + canvasH - el.offsetHeight, startSY + cdy));
       }
       el.style.left = sticker.x + 'px'; el.style.top = sticker.y + 'px';
     }

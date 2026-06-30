@@ -368,6 +368,7 @@ function render() {
         if (isEditing) return;
         _grpIndividualMode = false;
         selectedGi = gid;
+        plate.style.zIndex = '0';
         selKeys = grpBlks.map(function(b) { return b.id; });
         selKey = null;
         hideTxtFormatBar();
@@ -378,7 +379,7 @@ function render() {
           blkEl.style.outline = '';
           blkEl.style.outlineOffset = '';
         });
-        document.getElementById('panel-block').classList.remove('active');
+        showCanvasPanel();
         showGroupToolbar(gid);
         /* 호버 오버레이 제거 */
         var hov = document.getElementById('grp-hover-' + gid);
