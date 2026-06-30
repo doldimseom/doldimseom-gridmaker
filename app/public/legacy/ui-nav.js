@@ -618,6 +618,10 @@ document.addEventListener('keydown', function(e) {
   }
   /* Ctrl+C — 블록 복사 (편집 중이 아닐 때 + 블록 선택 중일 때만) */
   if (e.key.toLowerCase() === 'c' && !isEditing && selKey) {
+    var _ae = document.activeElement;
+    if (_ae && (_ae.tagName === 'INPUT' || _ae.tagName === 'TEXTAREA')) return;
+    var _sel = window.getSelection();
+    if (_sel && _sel.toString().length > 0) return;
     var _cblk = getBlkByKey(selKey);
     if (_cblk) { _blkCopyClipboard = JSON.parse(JSON.stringify(_cblk)); }
     e.preventDefault();

@@ -460,6 +460,7 @@ function selectSticker(id) {
   _deselectBlocksOnly();
   selectedStickerIds = [id];
   _refreshStickerSelection();
+  switchNav('sticker');
 }
 function toggleStickerSelection(id) {
   _deselectBlocksOnly();
