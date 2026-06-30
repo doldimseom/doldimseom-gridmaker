@@ -1053,12 +1053,16 @@ function makeBlk(blk) {
     hideAlignToolbar();
 
     /* 콘텐츠 우선 모델: 그룹 멤버 블록 클릭 → 개별 선택
-       단, 이미 선택된 그룹의 멤버를 클릭한 경우(그룹 생성 직후 click 이벤트 포함)는 그룹 상태 유지 */
+       그룹 선택 상태에서 재클릭도 개별 블록 진입 ([0630-3]) */
     if (b.groupId) {
-      if (b.groupId === selectedGi) return;
-      _grpIndividualMode = false;
-      selectedGi = null;
-      hideGroupToolbar();
+      if (b.groupId === selectedGi) {
+        selectedGi = null;
+        hideGroupToolbar();
+      } else {
+        _grpIndividualMode = false;
+        selectedGi = null;
+        hideGroupToolbar();
+      }
     }
 
     /* 그룹 없는 블록 클릭 → 일반 개별 선택 */

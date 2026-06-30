@@ -260,14 +260,12 @@ function _stickerDeleteKeyHandler(e) {
 
 function bindStickerEvents(el, sticker) {
   var dragging = false, startX = 0, startY = 0, startSX = 0, startSY = 0, didDrag = false;
-  var startElH = 0; /* 드래그 시작 시 실제 렌더 높이 — size(너비)와 다를 수 있음 */
   el.addEventListener('mousedown', function(e) {
     if (!stickerEditMode || sticker.locked) return;
     if (e.target.closest('.sticker-handle') || e.target.closest('.sticker-inline-editor')) return;
     dragging = true; didDrag = false;
     startX = e.clientX; startY = e.clientY;
     startSX = sticker.x; startSY = sticker.y;
-    startElH = el.offsetHeight; /* 실제 렌더 높이 스냅샷 */
     /* 다중 드래그를 위해 현재 시점 x/y + 실제 높이를 임시 스냅샷으로 기록 */
     stickers.forEach(function(s) {
       if (selectedStickerIds.indexOf(s.id) !== -1) {
@@ -299,9 +297,8 @@ function bindStickerEvents(el, sticker) {
               s.x = s._dragStartX + cdx;
               s.y = s._dragStartY + cdy;
             } else {
-              var sh = s._dragH || s.size;
               s.x = Math.max(-canvasExtraLeft, Math.min(canvasW - s.size, s._dragStartX + cdx));
-              s.y = Math.max(-canvasExtraTop,  Math.min(canvasH - sh, s._dragStartY + cdy));
+              s.y = Math.max(-canvasExtraTop,  Math.min(canvasH - s.size, s._dragStartY + cdy));
             }
             if (el2) { el2.style.left = s.x + 'px'; el2.style.top = s.y + 'px'; }
           }
@@ -313,7 +310,7 @@ function bindStickerEvents(el, sticker) {
         sticker.y = startSY + cdy;
       } else {
         sticker.x = Math.max(-canvasExtraLeft, Math.min(canvasW - sticker.size, startSX + cdx));
-        sticker.y = Math.max(-canvasExtraTop,  Math.min(canvasH - startElH, startSY + cdy));
+        sticker.y = Math.max(-canvasExtraTop,  Math.min(canvasH - sticker.size, startSY + cdy));
       }
       el.style.left = sticker.x + 'px'; el.style.top = sticker.y + 'px';
     }

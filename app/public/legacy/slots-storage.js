@@ -681,6 +681,17 @@ function resetAll() {
   if (_rllbl) _rllbl.textContent = '크기 고정 꺼짐';
   renderStickerLibrary();
   showCanvasPanel();
+  /* 헤더 타입 버튼 UI 동기화 — render() 안의 updateHeaderBtns()는 위치 버튼만 갱신하므로
+     타입 버튼은 별도 동기화 필요 ([0630-5]) */
+  ['basic','sns','round'].forEach(function(t) {
+    var _b = document.getElementById('hdr-type-' + t);
+    if (_b) _b.classList.toggle('on', t === 'basic');
+  });
+  var _hdrTypeMap = { basic: 'bp-hdr-basic-opts', sns: 'bp-hdr-sns-opts', round: 'bp-hdr-round-opts' };
+  Object.keys(_hdrTypeMap).forEach(function(t) {
+    var _e = document.getElementById(_hdrTypeMap[t]);
+    if (_e) _e.style.display = (t === 'basic') ? '' : 'none';
+  });
   render();
   showToast('초기화했습니다');
 }
