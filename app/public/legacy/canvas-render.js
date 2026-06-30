@@ -419,6 +419,9 @@ function render() {
         showGroupToolbar(gid);
         showCtxMenu(e, gid);
       });
+      /* [0630-3] 그룹 미선택 → 판을 블록 위로 올려 블록 클릭도 그룹 선택으로 받음
+                 그룹 선택 중 → 판을 블록 아래로 내려 블록 개별 선택 허용 */
+      plate.style.zIndex = (selectedGi === gid) ? '0' : String(blocks.length + 20);
       pad.appendChild(plate);
     });
   })();
