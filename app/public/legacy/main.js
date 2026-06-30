@@ -713,6 +713,11 @@ function _syncCanvasLeft() {
   if (padEl) padEl.style.marginLeft = canvasExtraLeft + 'px';
   var stickerLayerEl = document.getElementById('sticker-layer');
   if (stickerLayerEl) stickerLayerEl.style.left = canvasExtraLeft + 'px';
+  /* 헤더 슬롯도 pad와 동일하게 오프셋 — 라운드 헤더 곡선↔카드 정렬 유지 ([0630-6]) */
+  var topSlotEl = document.getElementById('hdr-top-slot');
+  if (topSlotEl) topSlotEl.style.marginLeft = canvasExtraLeft + 'px';
+  var botSlotEl = document.getElementById('hdr-bot-slot');
+  if (botSlotEl) botSlotEl.style.marginLeft = canvasExtraLeft + 'px';
   if (typeof _syncBgOverlayBounds === 'function') _syncBgOverlayBounds();
 }
 
