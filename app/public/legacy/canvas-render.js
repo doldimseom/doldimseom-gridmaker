@@ -279,7 +279,7 @@ function render() {
   pad.innerHTML = '';
   pad.style.display   = 'block';
   pad.style.position  = 'relative';
-  pad.style.width     = canvasW + 'px';
+  pad.style.width     = (canvasW - canvasExtraLeft) + 'px';
 
   /* ── 라운드 헤더 겹침 처리 ── */
   var isRound = (headerData.type === 'round' && headerPos !== null);
