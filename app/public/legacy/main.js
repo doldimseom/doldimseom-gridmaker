@@ -745,7 +745,7 @@ function _setStageWidth(newW, anchor) {
       var delta = newW - oldW;
       canvasExtraLeft = Math.max(0, canvasExtraLeft + delta);
       if (_stageML === null) _stageML = -(oldW / 2);
-      _stageML -= delta;
+      _stageML -= delta * _zoomLevel;
       stageEl.style.marginLeft = _stageML + 'px';
       _syncCanvasLeft();
     } else if (anchor === 'left') {
