@@ -717,6 +717,13 @@ function _syncCanvasLeft() {
   var stickerLayerEl = document.getElementById('sticker-layer');
   if (stickerLayerEl) stickerLayerEl.style.left = canvasExtraLeft + 'px';
   if (typeof _syncBgOverlayBounds === 'function') _syncBgOverlayBounds();
+  var _isRoundHdr = (typeof headerData !== 'undefined' && headerData.type === 'round' && headerPos !== null);
+  if (_isRoundHdr && padEl) {
+    var _baseShadow = headerPos === 'top' ? '0 -6px 16px rgba(0,0,0,0.13)' : '0 6px 16px rgba(0,0,0,0.13)';
+    padEl.style.boxShadow = canvasExtraLeft > 0
+      ? '-' + canvasExtraLeft + 'px 0 0 0 ' + (sheetBg || '#ffffff') + ', ' + _baseShadow
+      : _baseShadow;
+  }
 }
 
 /* ══════════════════════════════════════════

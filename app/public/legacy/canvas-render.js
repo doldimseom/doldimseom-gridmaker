@@ -291,9 +291,12 @@ function render() {
     pad.style.borderRadius = sr + 'px';
     pad.style.position     = 'relative';
     pad.style.zIndex       = '2';
-    pad.style.boxShadow    = headerPos === 'top'
+    var _baseShadow = headerPos === 'top'
       ? '0 -6px 16px rgba(0,0,0,0.13)'
       : '0  6px 16px rgba(0,0,0,0.13)';
+    pad.style.boxShadow = canvasExtraLeft > 0
+      ? '-' + canvasExtraLeft + 'px 0 0 0 ' + (sheetBg || '#ffffff') + ', ' + _baseShadow
+      : _baseShadow;
     pad.style.backgroundColor = sheetBg || '#ffffff';
   } else {
     pad.style.marginTop       = '';
