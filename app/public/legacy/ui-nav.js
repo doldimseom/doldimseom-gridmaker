@@ -587,8 +587,12 @@ function deselect() {
     }
   });
   /* 헤더 패널에서 복귀 시 공통 스타일 복원 */
-  if (wasHeader) restoreBlockPanelCommon();
-  showCanvasPanel();
+  if (wasHeader) {
+    restoreBlockPanelCommon();
+    /* 헤더 선택 해제(바깥 클릭·Esc) → 헤더 패널 탭 유지, canvas 전환 없음 */
+  } else {
+    showCanvasPanel();
+  }
   render();
 }
 
