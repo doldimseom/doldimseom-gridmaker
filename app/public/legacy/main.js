@@ -328,7 +328,7 @@ function _textShadowCSS(tstroke, tstrokeColor) {
 ══════════════════════════════════════════ */
 /* ── 줌/팬 상태 ── */
 
-/* stage transform 적용 */
+/* stage transform 적용 — pan/zoom만 반영, 헤더 타입에 무관하게 동일 */
 function _applyStageTransform() {
   var stage = document.getElementById('canvas-stage');
   if (!stage) return;
@@ -855,19 +855,9 @@ function _applyCanvasExpand(left, right, top, bottom) {
     var _isBasicSnsTop = headerPos === 'top' && headerData && !_isRoundTop;
 
     if (_isBasicSnsTop) {
-      /* basic/sns 헤더: 상단 핸들 = 시트 높이 조정 (하단 핸들과 동일, 드래그 방향만 반전)
-         canvasExtraTop = 0 고정 — 헤더↔시트 갭 없음 */
-      var _minNeededH = gaps.pad;
-      blocks.forEach(function(b) {
-        var _be = b.y + b.h + gaps.pad;
-        if (_be > _minNeededH) _minNeededH = _be;
-      });
-      stickers.forEach(function(s) {
-        var _se = s.y + (s.size || 0) + gaps.pad;
-        if (_se > _minNeededH) _minNeededH = _se;
-      });
-      canvasH = Math.max(_minNeededH, canvasH + top);
-      canvasExtraTop = 0;
+      /* basic/sns 헤더: 상단 핸들 = 헤더↔시트 gap 조절 (canvasExtraTop 모델)
+         헤더는 고정, pad.marginTop = canvasExtraTop으로 시트-pad만 아래로 밀림 */
+      canvasExtraTop = Math.max(0, canvasExtraTop + top);
     } else {
       /* 라운드 헤더 또는 헤더 없음: canvasExtraTop 모델 유지 */
       var minY = Infinity;
@@ -880,13 +870,20 @@ function _applyCanvasExpand(left, right, top, bottom) {
         var _rov2 = headerData.roundOverlap !== undefined ? headerData.roundOverlap : 24;
         _newExtraTop = Math.max(_newExtraTop, -_rov2);
       }
+      if (_isRoundTop) {
+        /* left 핸들 모델과 대칭: b.y += δ, canvasH += δ, canvasExtraTop += δ
+           stage가 δ 위로 이동하고 data.y도 δ 증가 → 화면 위치 불변, pad가 δ만큼 성장
+           드래그 중 DOM도 즉시 갱신 (render()는 mouseup 후라 기다리면 시각 깨짐) */
+        var _dl = _newExtraTop - canvasExtraTop;
+        blocks.forEach(function(b) {
+          b.y += _dl;
+          var bEl = document.querySelector('.blk[data-key="' + b.id + '"]');
+          if (bEl) bEl.style.top = b.y + 'px';
+        });
+        stickers.forEach(function(s) { s.y += _dl; });
+        canvasH = Math.max(canvasH + _dl, gaps.pad);
+      }
       canvasExtraTop = _newExtraTop;
-      console.log('[DEBUG applyExpand TOP-ROUND/NO-HDR]',
-        'delta=' + top,
-        'canvasExtraTop=' + canvasExtraTop,
-        '_yFloor=' + _yFloor,
-        'minY=' + minY,
-        'isRound=' + _isRoundTop);
     }
   }
 

@@ -1162,38 +1162,28 @@ function autoCanvasH() {
      축소하지 않음 — canvasW와 대칭되는 모델(0620_2: 핸들 4방향 동작 통일) */
   if (contentH > canvasH) canvasH = contentH;
   pad.style.height = canvasH + 'px';
-  /* F-17: canvasExtraTop은 블록/스티커 데이터를 안 건드리고 컨테이너만 이동시켜 반영
-     (#sheet-pad는 일반 플로우 박스라 margin-top이 정상 동작, #sticker-layer는 inset:0
-     이라 top만 덮어쓰면 나머지 absolute 위치가 따라옴)
-     라운드 top 헤더 + canvasExtraTop > 0: 추가 여백을 #canvas-inner paddingTop으로 배치
-     (#sheet 외부라 흰 배경 문제 없음), pad.marginTop은 항상 -overlap으로 고정 */
+  /* F-17: canvasExtraTop = 시트 상단 확장 여백(px).
+     round+top: canvas-stage를 위로 올리고 hdr-top-slot으로 보정 → 핸들이 화면에서 이동,
+     배너+드롭쉐도우(pad.marginTop=-rov) 고정. pad.paddingTop 방식은 핸들이 안 움직임(canvas-stage
+     기준 고정)이라 사용 안 함. basic/sns/no-header: pad.marginTop = canvasExtraTop (기존 모델) */
   var _effectiveTop = canvasExtraTop;
   var _topSlotEl = document.getElementById('hdr-top-slot');
   var _canvasInner = document.getElementById('canvas-inner');
+  var _stageEl = document.getElementById('canvas-stage');
   if (_topSlotEl) _topSlotEl.style.marginTop = '';
   if (_canvasInner) _canvasInner.style.paddingTop = '';
+  if (_stageEl) _stageEl.style.marginTop = '';
+  pad.style.paddingTop = '';
   if (headerData && headerData.type === 'round' && headerPos === 'top') {
     var _rov = headerData.roundOverlap !== undefined ? headerData.roundOverlap : 24;
-    if (_canvasInner && canvasExtraTop > 0) _canvasInner.style.paddingTop = canvasExtraTop + 'px';
-    _effectiveTop = -_rov;  /* 겹침 고정 — canvasExtraTop 무관 */
-    console.log('[DEBUG autoCanvasH ROUND]',
-      'canvasExtraTop=' + canvasExtraTop,
-      'canvas-inner.paddingTop=' + (_canvasInner ? _canvasInner.style.paddingTop : 'n/a'),
-      'effectiveTop(=pad.marginTop)=' + _effectiveTop,
-      '_rov=' + _rov,
-      'sheetH=' + (document.getElementById('sheet') ? document.getElementById('sheet').offsetHeight : 'n/a'));
+    _effectiveTop = -_rov;  /* pad.marginTop = -24 고정 (배너↔카드 겹침 유지) */
   }
-  /* basic/sns: _effectiveTop = canvasExtraTop 그대로 → pad.marginTop = canvasExtraTop
-     (헤더는 고정, 헤더↔시트 간격이 canvasExtraTop만큼 변화 — 시트 독립 모델) */
   pad.style.marginTop = _effectiveTop + 'px';
   var stickerLayerEl = document.getElementById('sticker-layer');
-  if (stickerLayerEl) stickerLayerEl.style.top = _effectiveTop + 'px';
-  console.log('[DEBUG autoCanvasH ALL]',
-    'canvasExtraTop=' + canvasExtraTop,
-    'effectiveTop=' + _effectiveTop,
-    'pad.marginTop=' + pad.style.marginTop,
-    'canvas-inner.paddingTop=' + (_canvasInner ? _canvasInner.style.paddingTop : 'n/a'),
-    'canvas-stage.marginTop=' + (document.getElementById('canvas-stage') ? document.getElementById('canvas-stage').style.marginTop : 'n/a'));
+  if (stickerLayerEl) {
+    stickerLayerEl.style.top = _effectiveTop + 'px';
+  }
+  _applyStageTransform();
   _syncBgOverlayBounds();
   updateResizeHandles();
   updateSizeInfo();

@@ -81,7 +81,10 @@ function makeTileSvgDataUriPx(imgSrc, tileW, tileH, angle, svgW, svgH) {
 function _syncBgOverlayBounds() {
   var ol = document.getElementById('bgl-overlay');
   if (!ol) return;
-  var extendTop  = Math.max(0, canvasExtraTop);
+  /* round+top: canvasExtraTop 공간은 canvas-stage 최상단(pad 외부)에 있어 bgl-overlay(pad 자식)가
+     덮을 수 없음 → extendTop=0. 다른 케이스는 기존 모델(pad 위 공간 확장) 유지 */
+  var _bgIsRoundTop = headerPos === 'top' && headerData && headerData.type === 'round';
+  var extendTop  = _bgIsRoundTop ? 0 : Math.max(0, canvasExtraTop);
   var extendLeft = Math.max(0, canvasExtraLeft);
   ol.style.top    = (-extendTop)  + 'px';
   ol.style.left   = (-extendLeft) + 'px';
