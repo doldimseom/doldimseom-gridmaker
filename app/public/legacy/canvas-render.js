@@ -334,6 +334,7 @@ function render() {
         if (_spaceDown) return;  /* Space+드래그 패닝은 기존 로직에 위임 */
         e.stopPropagation();
         if (isEditing) return;
+        if (activeImgKey) return;
         /* 여집합 드래그 — 그룹 전체 이동 설정 */
         var repBlk = grpBlks[0];
         if (!repBlk) return;
@@ -370,6 +371,7 @@ function render() {
         /* 드래그로 이동한 경우 click 무시 */
         if (blkDrag && blkDrag.didMove) return;
         if (isEditing) return;
+        if (activeImgKey) return;
         _grpIndividualMode = false;
         selectedGi = gid;
         plate.style.zIndex = '0';
@@ -409,6 +411,7 @@ function render() {
       });
       plate.addEventListener('contextmenu', function(e) {
         e.stopPropagation();
+        if (activeImgKey) return;
         /* 여집합 우클릭: 그룹 선택 상태로 전환 후 "그룹 선택" 메뉴 표시 */
         _grpIndividualMode = false;
         selectedGi = gid;
@@ -1068,7 +1071,9 @@ function makeBlk(blk) {
         hideGroupToolbar();
         _grpIndividualMode = true; /* 그룹→개별 전환: 이후 드래그는 개별 블록만 이동 ([0630-3-C]) */
       } else {
-        _grpIndividualMode = false;
+        /* 같은 블록 재클릭(더블클릭 2번째 onclick 포함) 시 개별 모드 유지
+           다른 블록 클릭 시에만 초기화 */
+        if (selKey !== k) _grpIndividualMode = false;
         selectedGi = null;
         hideGroupToolbar();
       }
