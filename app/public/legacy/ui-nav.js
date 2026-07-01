@@ -334,13 +334,11 @@ function distributeGroupBlocks(groupId, dir) {
     var cx = sh[0].x;
     sh.forEach(function(b) { b.x = Math.round(cx); cx += b.w + gapH; });
   } else if (dir === 'distribute-v') {
-    var sv = grpBlks.slice().sort(function(a, b) { return a.y - b.y; });
-    var totalH = sv.reduce(function(s, b) { return s + b.h; }, 0);
-    var bottomEdge = Math.max.apply(null, sv.map(function(b) { return b.y + b.h; }));
-    var spanH = bottomEdge - sv[0].y;
-    var gapV = (spanH - totalH) / (sv.length - 1);
-    var cy = sv[0].y;
-    sv.forEach(function(b) { b.y = Math.round(cy); cy += b.h + gapV; });
+    var sv = grpBlks.slice().sort(function(a, b) { return (a.y + a.h / 2) - (b.y + b.h / 2); });
+    var firstCY = sv[0].y + sv[0].h / 2;
+    var lastCY  = sv[sv.length - 1].y + sv[sv.length - 1].h / 2;
+    var stepV   = (lastCY - firstCY) / (sv.length - 1);
+    sv.forEach(function(b, i) { b.y = Math.round(firstCY + stepV * i - b.h / 2); });
   }
   render();
   showGroupToolbar(groupId);
