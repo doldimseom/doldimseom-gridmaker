@@ -407,6 +407,8 @@ function loadFromSlot(i) {
   if (!slots[i] || !slots[i].data) return;
   if (!confirm('슬롯 ' + (i + 1) + '을 불러올까요?\n현재 작업 내용이 덮어씌워집니다.')) return;
   applyData(slots[i].data);
+  resetCamera();
+  document.fonts.ready.then(function() { render(); });
   closeSlotModal();
   showToast('슬롯 ' + (i + 1) + '을 불러왔습니다');
 }
@@ -501,6 +503,8 @@ function handleJsonFile(e) {
         var srcIdx = parseInt(keys[0]);
         var slot   = parsed.slots[keys[0]];
         applyData(slot.data);
+        resetCamera();
+        document.fonts.ready.then(function() { render(); });
         closeSlotModal();
         showToast('"' + (slot.name || '슬롯' + (srcIdx + 1)) + '" 불러오기 완료');
       } else {
@@ -601,7 +605,11 @@ function doImport() {
   saveSlots(slots);
   closeImportModal();
   closeSlotModal();
-  if (lastSlot && lastSlot.data) applyData(lastSlot.data);
+  if (lastSlot && lastSlot.data) {
+    applyData(lastSlot.data);
+    resetCamera();
+    document.fonts.ready.then(function() { render(); });
+  }
   showToast('불러오기 완료');
 }
 
