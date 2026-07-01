@@ -1,4 +1,4 @@
-/* panel-header.js — 리팩토링 2단계 9번째 조각: 블록 추가 팝업 + 헤더 패널(이미지 변형 포함) + showBlockPanel 디스패처 (app/public/legacy/main.js에서 추출, 로직 변경 없음. enterHeaderImgEditMode 등 재작성 금지 함수 포함 — 그대로 이동만 함) */
+/* panel-header.js — 블록 추가 팝업·헤더 패널·showBlockPanel 디스패처 */
 /* ══════════════════════════════════════════
    블록 추가 팝업
 ══════════════════════════════════════════ */

@@ -1,4 +1,4 @@
-/* panel-block-txt.js — 리팩토링 2단계 7번째 조각: 텍스트 서식 플로팅 툴바 + 텍스트 편집 커밋 (두 군데로 나뉜 블록을 합침, app/public/legacy/main.js에서 추출, 로직 변경 없음) */
+/* panel-block-txt.js — 텍스트 서식 플로팅 툴바·텍스트 편집 커밋 */
 
 /* 정렬·목록 split버튼 아이콘부에 현재 상태를 보여주기 위한 SVG path (Phase 6 (3)) */
 var TFB_ALIGN_SVG = {

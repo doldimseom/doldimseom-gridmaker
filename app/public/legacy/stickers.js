@@ -1,4 +1,4 @@
-/* stickers.js — 리팩토링 2단계 12번째(마지막) 조각: 스티커 시스템 전체 — REFACTOR_PLAN상 가장 마지막에 가장 조심스럽게 분리해야 할 영역. bindStickerEvents/bindResizeHandle/bindRotateHandle/renderStickersToCanvas/bindResizeHandleMulti/bindRotateHandleMulti 재작성 금지 함수 포함 — app/public/legacy/main.js에서 그대로 이동만 함 */
+/* stickers.js — 스티커 시스템 (배치·크기조절·회전·PNG 렌더) */
 /* ══════════════════════════════════════════
    스티커 시스템 (돌딤섬 동일 UI/UX)
 ══════════════════════════════════════════ */

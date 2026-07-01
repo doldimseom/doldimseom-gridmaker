@@ -1,4 +1,4 @@
-/* slots-storage.js — 리팩토링 2단계 3번째 조각: 슬롯 저장/불러오기·JSON import/export·resetAll (app/public/legacy/main.js에서 추출, 로직 변경 없음) */
+/* slots-storage.js — 슬롯 저장·불러오기·JSON import/export·전체 초기화 */
 /* ══════════════════════════════════════════
    슬롯 — 데이터 수집 / 복원
 ══════════════════════════════════════════ */

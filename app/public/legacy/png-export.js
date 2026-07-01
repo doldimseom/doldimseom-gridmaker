@@ -1,4 +1,4 @@
-/* png-export.js — 리팩토링 2단계 11번째 조각: PNG 캡처 파이프라인 (collectLayout/renderHeaderPngBg/renderBgLayerPng/saveAsPNG) — REFACTOR_PLAN상 가장 조심스럽게 분리해야 할 영역, app/public/legacy/main.js에서 그대로 이동만 함 */
+/* png-export.js — PNG 내보내기 파이프라인 (collectLayout·renderHeaderPngBg·renderBgLayerPng·saveAsPNG) */
 /* ══════════════════════════════════════════
    PNG 렌더러 — 레이아웃 좌표 수집
    13-3 Canvas 렌더러에 넘기는 픽셀 좌표 맵

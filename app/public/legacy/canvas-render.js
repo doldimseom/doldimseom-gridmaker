@@ -1,4 +1,4 @@
-/* canvas-render.js — 리팩토링 2단계 8번째 조각: 헤더 빌드 + 시트 렌더 + 블록 렌더(getHeaderH~makeBlk) (app/public/legacy/main.js에서 추출, 로직 변경 없음) */
+/* canvas-render.js — 헤더 빌드·시트 렌더·블록 렌더 */
 function getHeaderH() {
   if (!headerPos || headerPos !== 'top') return 0;
   if (headerData.type === 'sns')   return (headerData.navH || 32) + (headerData.snsH || 120);

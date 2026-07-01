@@ -1,4 +1,4 @@
-/* state.js — 리팩토링 2단계 1번째 조각: 전역 상태(var) 선언 모음 (app/public/legacy/main.js에서 추출, 로직 변경 없음) */
+/* state.js — 전역 상태(var) 선언 모음 */
 var _blkIdCounter = 0;
 function _nextBlkId() { return 'b_' + (++_blkIdCounter); }
 var _blkCopyClipboard = null;  /* Ctrl+C 블록 복사 클립보드 */
