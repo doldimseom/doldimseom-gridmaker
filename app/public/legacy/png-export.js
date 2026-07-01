@@ -752,9 +752,9 @@ function saveAsPNG() {
         function _dynLineH(maxFs) {
           var lh = blk.lineHeight || 1.6;
           var fs = maxFs > 0 ? maxFs : tSize;
-          fs = Math.max(fs, tSize);  /* CSS strut: 줄 높이 최소 tSize 기준 보장 */
           if (fs >= 15) lh = Math.max(lh, 2.2);
-          return Math.round(fs * lh);
+          /* CSS strut: 줄 높이 최소 tSize×기본lh 보장 (strut은 2.2 미적용) */
+          return Math.max(Math.round(fs * lh), Math.round(tSize * (blk.lineHeight || 1.6)));
         }
 
         function flushLine(tokens, y, isLast) {
