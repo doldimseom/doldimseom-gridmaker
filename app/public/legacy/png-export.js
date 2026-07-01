@@ -821,8 +821,9 @@ function saveAsPNG() {
         while (i < tokens.length) {
           var t = tokens[i];
           if (t.ch === '\n') {
-            if (!dryRun) flushLine(lineTokens, curY, false);
-            curY += _dynLineH(lineMaxFs);
+            var lhN = _dynLineH(lineMaxFs);
+            if (!dryRun) flushLine(lineTokens, curY + Math.floor((lhN - lineMaxFs) / 2), false);
+            curY += lhN;
             lineTokens = [];
             lineW = 0;
             lineMaxFs = 0;
@@ -832,8 +833,9 @@ function saveAsPNG() {
           ctx.font = (t.bold ? '700' : '400') + ' ' + t.fontSize + 'px \'' + tFont + '\', \'Pretendard\', \'Segoe UI Emoji\', \'Apple Color Emoji\', \'Noto Color Emoji\', sans-serif';
           var cw = ctx.measureText(t.ch).width;
           if (lineW + cw > maxW && lineTokens.length > 0) {
-            if (!dryRun) flushLine(lineTokens, curY, false);
-            curY += _dynLineH(lineMaxFs);
+            var lhW = _dynLineH(lineMaxFs);
+            if (!dryRun) flushLine(lineTokens, curY + Math.floor((lhW - lineMaxFs) / 2), false);
+            curY += lhW;
             lineTokens = [];
             lineW = 0;
             lineMaxFs = 0;
@@ -844,8 +846,9 @@ function saveAsPNG() {
           i++;
         }
         if (lineTokens.length > 0) {
-          if (!dryRun) flushLine(lineTokens, curY, true);
-          curY += _dynLineH(lineMaxFs);
+          var lhL = _dynLineH(lineMaxFs);
+          if (!dryRun) flushLine(lineTokens, curY + Math.floor((lhL - lineMaxFs) / 2), true);
+          curY += lhL;
         }
         return curY - startY;
       }
