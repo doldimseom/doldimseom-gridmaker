@@ -1158,18 +1158,19 @@ function handleCanvasClick(e) {
    캔버스 높이 자동 확장
 ══════════════════════════════════════════ */
 function autoCanvasH() {
-  if (canvasSizeLocked) return;
   var pad = document.getElementById('sheet-pad');
   if (!pad) return;
-  var maxBottom = 0;
-  blocks.forEach(function(blk) {
-    var b = blk.y + blk.h;
-    if (b > maxBottom) maxBottom = b;
-  });
-  var contentH = maxBottom + gaps.pad;
-  /* 콘텐츠가 canvasH보다 커지면 자동으로 확장. 콘텐츠가 줄어도(블록 삭제 등) canvasH는
-     축소하지 않음 — canvasW와 대칭되는 모델(0620_2: 핸들 4방향 동작 통일) */
-  if (contentH > canvasH) canvasH = contentH;
+  if (!canvasSizeLocked) {
+    var maxBottom = 0;
+    blocks.forEach(function(blk) {
+      var b = blk.y + blk.h;
+      if (b > maxBottom) maxBottom = b;
+    });
+    var contentH = maxBottom + gaps.pad;
+    /* 콘텐츠가 canvasH보다 커지면 자동으로 확장. 콘텐츠가 줄어도(블록 삭제 등) canvasH는
+       축소하지 않음 — canvasW와 대칭되는 모델(0620_2: 핸들 4방향 동작 통일) */
+    if (contentH > canvasH) canvasH = contentH;
+  }
   pad.style.height = canvasH + 'px';
   /* F-17: canvasExtraTop = 시트 상단 확장 여백(px).
      round+top: canvas-stage를 위로 올리고 hdr-top-slot으로 보정 → 핸들이 화면에서 이동,

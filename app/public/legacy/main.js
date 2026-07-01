@@ -2156,6 +2156,24 @@ document.addEventListener('mousemove', function(e) {
           sr6.guides.forEach(function(g) { _drawSnapGuide(g); });
         }
 
+        /* 크기 고정 시 캔버스 경계 클램핑 (그룹 전체 바운딩박스 기준) */
+        if (canvasSizeLocked) {
+          var _minRX = 0, _minRY = 0, _maxRX = blk5.w, _maxRY = blk5.h;
+          if (hasRel) {
+            Object.keys(blkDrag.relPositions).forEach(function(gid) {
+              var _rel = blkDrag.relPositions[gid];
+              var _gb  = getBlkByKey(gid);
+              if (!_gb) return;
+              if (_rel.dx          < _minRX) _minRX = _rel.dx;
+              if (_rel.dy          < _minRY) _minRY = _rel.dy;
+              if (_rel.dx + _gb.w  > _maxRX) _maxRX = _rel.dx + _gb.w;
+              if (_rel.dy + _gb.h  > _maxRY) _maxRY = _rel.dy + _gb.h;
+            });
+          }
+          nx = Math.max(-canvasExtraLeft - _minRX, Math.min(canvasW - _maxRX, nx));
+          ny = Math.max(-canvasExtraTop  - _minRY, Math.min(canvasH - _maxRY, ny));
+        }
+
         blk5.x = nx; blk5.y = ny;
         var blkEl5 = document.querySelector('.blk[data-key="' + blkDrag.id + '"]');
         if (blkEl5) { blkEl5.style.left = nx + 'px'; blkEl5.style.top = ny + 'px'; }
