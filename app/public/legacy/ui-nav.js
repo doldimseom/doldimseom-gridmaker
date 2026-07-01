@@ -328,14 +328,16 @@ function distributeGroupBlocks(groupId, dir) {
   if (dir === 'distribute-h') {
     var sh = grpBlks.slice().sort(function(a, b) { return a.x - b.x; });
     var totalW = sh.reduce(function(s, b) { return s + b.w; }, 0);
-    var spanW = (sh[sh.length-1].x + sh[sh.length-1].w) - sh[0].x;
+    var rightEdge = Math.max.apply(null, sh.map(function(b) { return b.x + b.w; }));
+    var spanW = rightEdge - sh[0].x;
     var gapH = (spanW - totalW) / (sh.length - 1);
     var cx = sh[0].x;
     sh.forEach(function(b) { b.x = Math.round(cx); cx += b.w + gapH; });
   } else if (dir === 'distribute-v') {
     var sv = grpBlks.slice().sort(function(a, b) { return a.y - b.y; });
     var totalH = sv.reduce(function(s, b) { return s + b.h; }, 0);
-    var spanH = (sv[sv.length-1].y + sv[sv.length-1].h) - sv[0].y;
+    var bottomEdge = Math.max.apply(null, sv.map(function(b) { return b.y + b.h; }));
+    var spanH = bottomEdge - sv[0].y;
     var gapV = (spanH - totalH) / (sv.length - 1);
     var cy = sv[0].y;
     sv.forEach(function(b) { b.y = Math.round(cy); cy += b.h + gapV; });
