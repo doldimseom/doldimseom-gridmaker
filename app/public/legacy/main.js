@@ -2274,7 +2274,7 @@ document.addEventListener('mousedown', function(e) {
     /* 텍스트 서식 툴바 · 색상 팝업 클릭은 편집 종료하지 않음 */
     if (e.target.closest('#txt-format-bar') || e.target.closest('#gm-cp-pop') || e.target.closest('.tfb-popover')) return;
     var blkEl2 = editingKey ? document.querySelector('.blk[data-key="' + editingKey + '"]') : null;
-    /* BUG-34: item 블록 편집 중 — commitTextEdit 대신 blur로 저장 처리
+    /* item 블록 편집 중 — commitTextEdit 대신 blur로 저장 처리
        .blk-text-area가 없으므로 activeArea=null 경로를 타면 데이터 미저장 + saveHistory 중복 발생 */
     var blk2 = blkEl2 ? getBlkByKey(editingKey) : null;
     if (blk2 && blk2.type === 'item') {

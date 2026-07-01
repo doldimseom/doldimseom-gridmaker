@@ -295,7 +295,7 @@ function showGroupToolbar(groupId) {
 
 function hideGroupToolbar() {
   var tb = document.getElementById('grp-toolbar');
-  if (!tb) return;  /* BUG-3: 이미 숨겨진 경우 이중 실행 방지 */
+  if (!tb) return;  /* 이미 숨겨진 경우 이중 실행 방지 */
   tb.remove();
   var ov = document.getElementById('grp-selection-overlay');
   if (ov) ov.remove();
@@ -358,7 +358,7 @@ function flipGroupBlocks(groupId) {
   render();
 }
 
-/* ── 그룹 복사 (BUG-10 / F-07) ── */
+/* ── 그룹 복사 ── */
 function duplicateGroup(groupId) {
   var grpBlks = blocks.filter(function(b) { return b.groupId === groupId; });
   if (!grpBlks.length) return;

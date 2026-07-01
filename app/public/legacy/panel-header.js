@@ -484,7 +484,7 @@ function showBlockPanel(type, label, blk) {
   /* 현재 활성 nav 탭 기억 (블록 닫을 때 복귀용) */
   var activeBtn = document.querySelector('.float-tab.active');
   if (activeBtn) showCanvasPanel._lastNav = activeBtn.id.replace('nb-','');
-  /* 모든 nav 뷰 비활성화 (BUG-9: panel-bg 추가, B-2: panel-sticker 추가) */
+  /* 모든 nav 뷰 비활성화 */
   ['panel-preset','panel-canvas','panel-header-nav','panel-bg','panel-sticker','panel-tools'].forEach(function(id) {
     var el = document.getElementById(id); if (el) el.classList.remove('active');
   });
@@ -515,7 +515,7 @@ function showBlockPanel(type, label, blk) {
     if (isColorchip && blk) renderColorchipPanel(blk);
     if (isItem && blk) showItemPanel(blk);
   }
-  /* BUG-006: img 블록은 패딩 미지원 — padV 슬라이더 숨김 */
+  /* img 블록은 패딩 미지원 — padV 슬라이더 숨김 */
   if (isImg) {
     var padvRowImg = document.getElementById('bp-padv-row');
     if (padvRowImg) padvRowImg.style.display = 'none';

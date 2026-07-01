@@ -560,7 +560,7 @@ function saveAsPNG() {
     function setShadow(sh) {
       if (sh > 0) {
         ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = (sh === 1 ? 1 : 6) * DPR;  /* BUG-8: offsetY도 DPR 보정 */
+        ctx.shadowOffsetY = (sh === 1 ? 1 : 6) * DPR;  /* offsetY도 DPR 보정 */
         ctx.shadowBlur    = (sh === 1 ? 3 : 16) * DPR;
         ctx.shadowColor   = sh === 1 ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.18)';
       } else {
@@ -1069,7 +1069,7 @@ function saveAsPNG() {
       ctx.clip();
 
       /* 아래 4개 프리셋은 wrapText()로 값(v) 텍스트 줄바꿈 높이를 dryRun 사전 측정한 뒤
-         행 높이를 동적으로 계산함 — DOM이 폭 부족 시 자동 줄바꿈하는 것과 동일하게 맞춤(BUG-39, 2026-06-17).
+         행 높이를 동적으로 계산함 — DOM이 폭 부족 시 자동 줄바꿈하는 것과 동일하게 맞춤.
          _applyItemSize()/_itemMinH()는 여전히 _ITEM_METRICS(고정 1줄 기준)를 초기 추정치로 사용하며,
          실제 줄바꿈 발생 시 정확한 높이는 _itemAutoExpand()가 DOM 측정으로 보정함. */
 
