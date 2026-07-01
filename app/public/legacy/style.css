@@ -82,9 +82,31 @@ body {
   height: 26px;
   padding: 0;
   font-size: 12px; font-weight: 500;
-  overflow: hidden;
+  position: relative;
   white-space: nowrap;
   transition: scale 0.12s ease-out;
+}
+.float-tab[data-tip]:not(.active)::before {
+  content: attr(data-tip);
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--text);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: 'Pretendard', sans-serif;
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s;
+  z-index: 9999;
+}
+.float-tab[data-tip]:not(.active):hover::before {
+  opacity: 1;
 }
 .float-tab-label {
   opacity: 0;
@@ -426,7 +448,7 @@ body {
   border-bottom: 1px solid var(--panel-border);
   flex-shrink: 0;
 }
-.ctx.fill { background: var(--accent); border-bottom-color: transparent; }
+.ctx.fill { background: var(--accent-mid); border-bottom-color: transparent; }
 .ctx.fill .ctx-thumb {
   border-color: rgba(255,255,255,.32);
   background: rgba(255,255,255,.18); color: #fff;
@@ -4390,7 +4412,7 @@ select.row-input {
 /* ── 탭 힌트 배너 ── */
 #gm-hint-banner {
   position: fixed;
-  top: 58px; left: 18px;
+  top: 58px; left: 306px;
   width: fit-content;
   max-width: 320px;
   z-index: 200;
@@ -4401,13 +4423,13 @@ select.row-input {
   box-shadow: 0 6px 18px rgba(0,0,0,0.12);
   display: flex; align-items: center; gap: 8px;
   opacity: 0;
-  transform: translateY(-6px);
+  transform: translateX(-20px);
   pointer-events: none;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: transform 0.28s ease-out, opacity 0.28s ease-out;
 }
 #gm-hint-banner.show {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateX(0);
   pointer-events: all;
 }
 .gm-hint-dot {

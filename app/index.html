@@ -34,27 +34,27 @@
 
 <!-- 좌상단: 탭 pill — float-tab-label로 슬라이드인 애니메이션 -->
 <div class="float-tabs" id="float-tabs">
-  <button class="float-tab active" id="nb-canvas" onclick="switchNav('canvas')" title="시트 설정">
+  <button class="float-tab active" id="nb-canvas" onclick="switchNav('canvas')" data-tip="시트">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="14" rx="1.5"/><path d="M3.5 9.5h17M9.5 4.5v14"/></svg>
     <span class="float-tab-label">시트</span>
   </button>
-  <button class="float-tab" id="nb-sticker" onclick="switchNav('sticker')" title="스티커">
+  <button class="float-tab" id="nb-sticker" onclick="switchNav('sticker')" data-tip="스티커">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5h-7A3.5 3.5 0 0 0 3.5 7v10A3.5 3.5 0 0 0 7 20.5h7L20.5 14V7A3.5 3.5 0 0 0 17 3.5z"/><path d="M14 20.5V17a3 3 0 0 1 3-3h3.5"/></svg>
     <span class="float-tab-label">스티커</span>
   </button>
-  <button class="float-tab" id="nb-bg" onclick="switchNav('bg')" title="배경지">
+  <button class="float-tab" id="nb-bg" onclick="switchNav('bg')" data-tip="배경지">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="M3.5 9.5h17M3.5 15.5h17M9.5 3.5v17M15.5 3.5v17" stroke-width="1.1"/></svg>
     <span class="float-tab-label">배경지</span>
   </button>
-  <button class="float-tab" id="nb-header" onclick="switchNav('header')" title="헤더">
+  <button class="float-tab" id="nb-header" onclick="switchNav('header')" data-tip="헤더">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="5" rx="1"/><path d="M3.5 13h13M3.5 17h9"/></svg>
     <span class="float-tab-label">헤더</span>
   </button>
-  <button class="float-tab" id="nb-preset" onclick="switchNav('preset')" title="프리셋">
+  <button class="float-tab" id="nb-preset" onclick="switchNav('preset')" data-tip="프리셋">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg>
     <span class="float-tab-label">프리셋</span>
   </button>
-  <button class="float-tab" id="nb-tools" onclick="switchNav('tools')" title="도구">
+  <button class="float-tab" id="nb-tools" onclick="switchNav('tools')" data-tip="도구">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 1 1.4 0l1.6 1.6a1 1 0 0 1 0 1.4L9.5 17.5 5.5 18.5l1-4L14.7 6.3z"/><path d="M3.5 20.5h17"/></svg>
     <span class="float-tab-label">도구</span>
   </button>
