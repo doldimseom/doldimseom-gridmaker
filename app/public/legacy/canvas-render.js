@@ -760,8 +760,8 @@ function makeBlk(blk) {
         parentEl.style.height = contentH + 'px';
       }
       applyVAlignAll();
-      /* 너비 자동 늘어남 — txt는 줄바꿈으로 대응하므로 제외 */
-      if (b.type !== 'txt') {
+      /* 너비 자동 늘어남 — txt는 줄바꿈으로, item은 _itemAutoExpand가 별도 처리하므로 제외 */
+      if (b.type !== 'txt' && b.type !== 'item') {
         var minW = getTextMinW(parentEl);
         if (minW > b.w) {
           b.w = minW;

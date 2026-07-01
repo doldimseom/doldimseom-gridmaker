@@ -1158,6 +1158,7 @@ function handleCanvasClick(e) {
    캔버스 높이 자동 확장
 ══════════════════════════════════════════ */
 function autoCanvasH() {
+  if (canvasSizeLocked) return;
   var pad = document.getElementById('sheet-pad');
   if (!pad) return;
   var maxBottom = 0;
