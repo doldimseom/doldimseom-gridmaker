@@ -2091,7 +2091,7 @@ document.addEventListener('mousemove', function(e) {
         /* 좌측 자동 확장 — 이동 세트 최좌단 기준
            marginLeft 변화량(lx/2)만큼 cx5가 다음 프레임에서 증가하므로
            offsetX 보정은 (lx - lx/2) = lx/2 만큼만 해야 피드백루프를 막을 수 있음 */
-        if (moveMinX < 0) {
+        if (!canvasSizeLocked && moveMinX < 0) {
           var lx = -moveMinX;
           blkDrag.offsetX -= Math.round(lx / 2);  /* lx 전체가 아닌 절반만 보정 */
           nx += lx;
@@ -2116,7 +2116,7 @@ document.addEventListener('mousemove', function(e) {
             if (gb) { var rx = nx + rel.dx + gb.w; if (rx > adjustedMaxX) adjustedMaxX = rx; }
           });
         }
-        if (adjustedMaxX > canvasW) {
+        if (!canvasSizeLocked && adjustedMaxX > canvasW) {
           var rExp = adjustedMaxX - canvasW;
           blkDrag.offsetX += Math.round(rExp / 2);  /* stage 이동량만큼 offsetX 보정 */
           /* _setStageWidth 공용 헬퍼로 통일(2026-06-22) — 동작은 기존과 동일(center 재중앙) */
@@ -2142,7 +2142,7 @@ document.addEventListener('mousemove', function(e) {
             });
             autoCanvasH();
           }
-        } else if (moveMinY < -canvasExtraTop) {
+        } else if (!canvasSizeLocked && moveMinY < -canvasExtraTop) {
           var ty = (-canvasExtraTop) - moveMinY;
           canvasExtraTop += ty;
           autoCanvasH();
