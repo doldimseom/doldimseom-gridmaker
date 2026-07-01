@@ -3140,8 +3140,8 @@ select.row-input {
   z-index: 1000;
   background: rgba(255,255,255,0.85); /* fallback */
   background: rgba(255,255,255,0.55);
-  backdrop-filter: blur(10px) saturate(120%);
-  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  backdrop-filter: blur(5px) saturate(120%);
+  -webkit-backdrop-filter: blur(5px) saturate(120%);
   align-items: center;
   justify-content: center;
 }
