@@ -395,16 +395,21 @@ function renderCcListEdit(blk) {
     var row = document.createElement('div');
     row.className = 'le-row';
     row.innerHTML = _leHandle() +
-      '<div class="le-sw" style="background:' + (chip.color || '#888888') + '"><input type="color" value="' + _toHex6(chip.color || '#888888') + '"></div>' +
+      '<div class="le-sw" style="background:' + (chip.color || '#888888') + '"></div>' +
       '<input class="le-input le-label" value="' + (chip.label || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;') + '" placeholder="라벨" maxlength="12">' +
       '<button class="le-del" type="button" title="삭제" aria-label="삭제">×</button>';
     var sw = row.querySelector('.le-sw');
-    var picker = sw.querySelector('input[type=color]');
-    picker.addEventListener('input', function(e) {
-      if (!_pendingHistorySave) { saveHistory(); _pendingHistorySave = true; }
-      chip.color = e.target.value;
-      sw.style.background = chip.color;
-      render();
+    sw.addEventListener('click', function() {
+      gmOpenColorPicker(sw, {
+        label: (chip.label || ('칩 ' + (idx + 1))) + ' 색상',
+        getValue: function() { return _toHex6(chip.color || '#888888'); },
+        onChange: function(hex) {
+          if (!_pendingHistorySave) { saveHistory(); _pendingHistorySave = true; }
+          chip.color = hex;
+          sw.style.background = hex;
+          render();
+        }
+      });
     });
     var labelInput = row.querySelector('.le-label');
     labelInput.addEventListener('input', function(e) { chip.label = e.target.value.slice(0, 12); render(); if (_ccAutoExpand(blk, selKey)) render(); });
