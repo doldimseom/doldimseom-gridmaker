@@ -4171,17 +4171,6 @@ select.row-input {
   border-radius: 9px; padding: 16px; text-align: center;
   font-size: 10.5px; color: var(--label-color); background: #FCFCFD;
 }
-/* 가이드 v2 */
-.sp-guide { margin: 0; padding: 0; list-style: none; }
-.sp-guide li {
-  font-size: 10.5px; color: var(--text-dim); line-height: 1.6;
-  padding-left: 13px; position: relative; margin-bottom: 6px;
-}
-.sp-guide li:last-child { margin-bottom: 0; }
-.sp-guide li::before {
-  content: ''; position: absolute; left: 3px; top: 7px;
-  width: 3px; height: 3px; border-radius: 50%; background: var(--accent-mid);
-}
 /* 전체 삭제 버튼 v2 */
 .sp-clear {
   width: 100%; margin-top: 18px; padding: 11px;

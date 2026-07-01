@@ -38,9 +38,9 @@
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="14" rx="1.5"/><path d="M3.5 9.5h17M9.5 4.5v14"/></svg>
     <span class="float-tab-label">시트</span>
   </button>
-  <button class="float-tab" id="nb-sticker" onclick="switchNav('sticker')" title="이미지">
+  <button class="float-tab" id="nb-sticker" onclick="switchNav('sticker')" title="스티커">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5h-7A3.5 3.5 0 0 0 3.5 7v10A3.5 3.5 0 0 0 7 20.5h7L20.5 14V7A3.5 3.5 0 0 0 17 3.5z"/><path d="M14 20.5V17a3 3 0 0 1 3-3h3.5"/></svg>
-    <span class="float-tab-label">이미지</span>
+    <span class="float-tab-label">스티커</span>
   </button>
   <button class="float-tab" id="nb-bg" onclick="switchNav('bg')" title="배경지">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="M3.5 9.5h17M3.5 15.5h17M9.5 3.5v17M15.5 3.5v17" stroke-width="1.1"/></svg>
@@ -1149,8 +1149,8 @@
     <div class="panel-view" id="panel-sticker">
       <div class="sp-head">
         <div class="sp-head-title">
-          <div class="panel-badge">I</div>
-          이미지
+          <div class="panel-badge">S</div>
+          스티커
         </div>
       </div>
 
@@ -1158,7 +1158,7 @@
 
         <!-- 이미지 섹션 -->
         <section class="grp">
-          <div class="grp-head">이미지 <span class="gh-count" id="sp-grp-img-count">0</span></div>
+          <div class="grp-head">스티커 <span class="gh-count" id="sp-grp-img-count">0</span></div>
           <div class="grp-body">
             <label class="sp-drop" for="sticker-img-input">
               <div class="dz-ico">
@@ -1185,20 +1185,8 @@
           </div>
         </section>
 
-        <!-- 사용 가이드 섹션 -->
-        <section class="grp">
-          <div class="grp-head">사용 가이드</div>
-          <div class="grp-body">
-            <ul class="sp-guide">
-              <li>시트에 추가된 이미지는 <b>다른 탭에 있어도</b> 캔버스에서 바로 클릭해 위치·크기·회전을 조정합니다.</li>
-              <li>이미지를 선택하면 <b>정렬 툴바</b>가 캔버스에 떠서 나타납니다.</li>
-              <li><b>우클릭</b>으로 복제·잠금·순서·삭제를 할 수 있어요.</li>
-              <li>이미지 다중 업로드 · 섬네일 드래그로 시트에 추가됩니다.</li>
-            </ul>
-          </div>
-        </section>
 
-        <button class="sp-clear" onclick="clearAllStickers()">✕ 시트 이미지 전체 삭제</button>
+        <button class="sp-clear" onclick="clearAllStickers()">✕ 시트 스티커 전체 삭제</button>
 
       </div><!-- /panel-body -->
     </div><!-- /panel-sticker -->
@@ -1537,8 +1525,8 @@
         <div class="gm-hint-tile-desc">블록을 올려 캐릭터 정보를 구성합니다.</div>
       </div>
       <div class="gm-hint-tile">
-        <div class="gm-hint-tile-name">이미지</div>
-        <div class="gm-hint-tile-desc">이미지를 스티커처럼 자유롭게 올립니다.</div>
+        <div class="gm-hint-tile-name">스티커</div>
+        <div class="gm-hint-tile-desc">스티커를 자유롭게 올립니다.</div>
       </div>
       <div class="gm-hint-tile">
         <div class="gm-hint-tile-name">배경지</div>

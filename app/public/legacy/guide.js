@@ -20,8 +20,8 @@ var GM_TOUR_STEPS = [
     placement: 'left'
   },
   {
-    title: '이미지 & 배경지',
-    desc: '이미지 탭에서 스티커를 추가하고,\n배경지 탭에서 시트 배경색·무늬를 설정할 수 있습니다.',
+    title: '스티커 & 배경지',
+    desc: '스티커 탭에서 스티커를 추가하고,\n배경지 탭에서 시트 배경색·무늬를 설정할 수 있습니다.',
     target: '#nb-sticker',
     placement: 'bottom'
   },
@@ -42,7 +42,7 @@ var GM_TOUR_STEPS = [
 /* ── 탭 힌트 메시지 ── */
 var GM_HINTS = {
   canvas:  { label: '시트',   text: '블록을 올려 캐릭터 정보를 구성합니다.' },
-  sticker: { label: '이미지', text: '이미지를 스티커처럼 자유롭게 올립니다.' },
+  sticker: { label: '스티커', text: '스티커를 자유롭게 올립니다.' },
   bg:      { label: '배경지', text: '시트 배경의 색과 무늬를 바꿉니다.' },
   header:  { label: '헤더',   text: '시트 위아래에 제목 이미지를 답니다.' },
   preset:  { label: '프리셋', text: '준비된 레이아웃을 불러옵니다.' },
