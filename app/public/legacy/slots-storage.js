@@ -213,8 +213,7 @@ function applyData(data) {
   canvasSizeLocked = typeof data.canvasSizeLocked === 'boolean' ? data.canvasSizeLocked : false;
   var _lsw = document.getElementById('canvas-lock-sw');
   if (_lsw) _lsw.classList.toggle('on', canvasSizeLocked);
-  var _llbl = document.getElementById('canvas-lock-lbl');
-  if (_llbl) _llbl.textContent = '크기 고정 ' + (canvasSizeLocked ? '켜짐' : '꺼짐');
+  /* 라벨 텍스트는 고정 — 스위치로 상태 표현 */
   var _lhs = document.querySelectorAll('.canvas-resize-handle');
   _lhs.forEach(function(h) { h.style.opacity = canvasSizeLocked ? '0.2' : ''; });
   selKey = null;
@@ -701,8 +700,7 @@ function resetAll() {
   canvasSizeLocked    = false;
   var _rlsw = document.getElementById('canvas-lock-sw');
   if (_rlsw) _rlsw.classList.remove('on');
-  var _rllbl = document.getElementById('canvas-lock-lbl');
-  if (_rllbl) _rllbl.textContent = '크기 고정 꺼짐';
+  /* 라벨 텍스트는 고정 — 스위치로 상태 표현 */
   renderStickerLibrary();
   showCanvasPanel();
   /* 헤더 타입 버튼 UI 동기화 — render() 안의 updateHeaderBtns()는 위치 버튼만 갱신하므로

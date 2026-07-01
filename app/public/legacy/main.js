@@ -1099,8 +1099,7 @@ function toggleCanvasSizeLock() {
   canvasSizeLocked = !canvasSizeLocked;
   var sw = document.getElementById('canvas-lock-sw');
   if (sw) sw.classList.toggle('on', canvasSizeLocked);
-  var lbl = document.getElementById('canvas-lock-lbl');
-  if (lbl) lbl.textContent = '크기 고정 ' + (canvasSizeLocked ? '켜짐' : '꺼짐');
+  /* 라벨 텍스트는 고정 — 스위치로 상태 표현 */
   var handles = document.querySelectorAll('.canvas-resize-handle');
   handles.forEach(function(h) { h.style.opacity = canvasSizeLocked ? '0.2' : ''; });
 }
@@ -1129,8 +1128,8 @@ function toggleSnap() {
   if (sw) sw.classList.toggle('on', snapEnabled);
   var snapTile = document.getElementById('snap-tile');
   if (snapTile) snapTile.classList.toggle('on', snapEnabled);
-  var snapLbl = document.getElementById('snap-tile-lbl');
-  if (snapLbl) snapLbl.textContent = '스냅 정렬 ' + (snapEnabled ? '켜짐' : '꺼짐');
+  var snapRow = document.getElementById('snap-row');
+  if (snapRow) snapRow.classList.toggle('is-on', snapEnabled);
 }
 
 function updatePngBg(val) {
