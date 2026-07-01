@@ -279,3 +279,18 @@ function _gmCpUpdateSelDots(hex) {
     d.classList.toggle('sel', !!hex && d.dataset.c.toLowerCase() === hex.toLowerCase());
   });
 }
+
+/* ── 스포이드 (EyeDropper API) ── */
+function gmCpEyeDrop() {
+  if (!window.EyeDropper) return;
+  new EyeDropper().open().then(function(r) {
+    var hex = r.sRGBHex;
+    _gmCpSetHex(hex);
+    if (_gmCpOpts && _gmCpOpts.onChange) _gmCpOpts.onChange(hex);
+  }).catch(function() {});
+}
+
+/* ── 패널 hex 입력 클릭 시 전체 선택 ── */
+document.addEventListener('click', function(e) {
+  if (e.target.classList && e.target.classList.contains('hexedit')) e.target.select();
+});
