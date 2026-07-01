@@ -489,7 +489,7 @@ function handleJsonFile(e) {
     try {
       var parsed = JSON.parse(ev.target.result);
       if (!parsed.gridmaker || !parsed.slots) {
-        showToast('그리드메이커 JSON 파일이 아닙니다');
+        showToast('DDSGrid JSON 파일이 아닙니다');
         return;
       }
       _importedSlots = parsed.slots;
