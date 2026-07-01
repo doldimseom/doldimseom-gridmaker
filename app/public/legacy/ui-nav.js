@@ -650,7 +650,7 @@ document.addEventListener('keydown', function(e) {
 /* Escape — 편집 종료 / 이미지 편집 종료 / 블록 선택 해제 */
 document.addEventListener('keydown', function(e) {
   if (e.key !== 'Escape') return;
-  if (isEditing) { commitTextEdit(); return; }
+  if (isEditing) { commitTextEdit(); render(); return; }
   if (activeImgKey) { exitImgEditMode(); render(); document.getElementById('panel-block').classList.remove('active'); hideTxtFormatBar(); return; }
   if (activeHdrImgKind) { exitHeaderImgEditMode(); return; }
   if (selKey || selKeys.length > 0) { deselect(); return; }
