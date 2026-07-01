@@ -25,6 +25,12 @@
 
   /* 캔버스 배경 */
   --canvas-bg:     #f2f2f2;
+
+  /* 위험 색상 */
+  --danger:        #DC4A4A;
+
+  /* 타일 테두리 */
+  --tile-border:   #DCDCDC;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -3113,142 +3119,229 @@ select.row-input {
 
 
 /* ══════════════════════════════════════════
-   슬롯 모달 — 시트메이커 원본 그대로
+   슬롯 모달 — TO-BE 디자인 (design_brief/README.md 기준)
 ══════════════════════════════════════════ */
+
+/* 등장 애니메이션 */
+@keyframes modalFadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes backdropFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* 백드롭 — 화이트 글래스 */
 .slot-modal-backdrop {
   display: none;
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: rgba(10,9,8,0.55);
-  backdrop-filter: blur(2px);
+  background: rgba(255,255,255,0.85); /* fallback */
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
   align-items: center;
   justify-content: center;
 }
-.slot-modal-backdrop.open { display: flex; }
+.slot-modal-backdrop.open {
+  display: flex;
+  animation: backdropFadeIn 280ms ease-out both;
+}
+.slot-modal-backdrop.open .slot-modal {
+  animation: modalFadeUp 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* 모달 컨테이너 */
 .slot-modal {
-  background: #FAFAFA;
-  border-radius: 16px;
-  width: 380px;
+  background: #FFFFFF;
+  border: 1px solid #E0E0E0;
+  border-radius: 14px;
+  width: 360px;
   max-height: 82vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.22);
+  box-shadow: 0 8px 32px rgba(0,0,0,.12);
+  font-family: 'Pretendard', sans-serif;
 }
+
+/* 헤더 */
 .slot-modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px 14px;
-  border-bottom: 1px solid var(--panel-border);
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid #F0F0F0;
   flex-shrink: 0;
 }
 .slot-modal-title {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
-  letter-spacing: 0.14em;
   color: var(--text);
   display: flex;
   align-items: center;
   gap: 8px;
 }
 .slot-modal-title-badge {
-  width: 20px; height: 20px;
-  border-radius: 5px;
-  background: var(--text);
+  width: 28px; height: 28px;
+  border-radius: 7px;
+  background: var(--accent);
   display: flex; align-items: center; justify-content: center;
-  font-size: 10px; font-weight: 700; color: #fff;
-  font-family: 'Cinzel', serif;
+  font-size: 11px; font-weight: 800; color: #fff;
+  font-family: 'Pretendard', sans-serif;
+  letter-spacing: 0;
+  flex-shrink: 0;
 }
 .slot-modal-close {
-  width: 26px; height: 26px;
+  width: 28px; height: 28px;
   border-radius: 6px;
-  border: 1px solid var(--panel-border);
+  border: none;
   background: transparent;
-  color: var(--label-color);
-  font-size: 14px;
+  color: var(--text-dim);
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: background 0.12s;
 }
-.slot-modal-close:hover { background: var(--panel-border); }
-.slot-list {
-  overflow-y: auto;
+.slot-modal-close:hover { background: #F3F3F3; }
+.slot-modal-close svg { display: block; pointer-events: none; }
+
+/* 모달 바디 (스크롤 영역) */
+.slot-modal-body {
   flex: 1;
-  padding: 8px 12px 6px;
+  overflow-y: auto;
 }
-.slot-list::-webkit-scrollbar { width: 4px; }
-.slot-list::-webkit-scrollbar-thumb { background: var(--panel-border); border-radius: 2px; }
+.slot-modal-body::-webkit-scrollbar { width: 4px; }
+.slot-modal-body::-webkit-scrollbar-thumb { background: var(--panel-border); border-radius: 2px; }
 
-/* 슬롯 아이템 */
-.slot-item {
-  border-radius: 10px;
-  border: 1px solid var(--panel-border);
-  margin-bottom: 5px;
-  background: #fff;
-  transition: border-color 0.12s;
-  position: relative;
+/* 섹션 패딩 래퍼 */
+.slot-section-pad {
+  padding: 14px 18px 8px;
 }
-.slot-item:last-child { margin-bottom: 0; }
-.slot-item.has-data { border-color: #A3B4F0; background: #EEF1FD0A; }
-.slot-item.has-data:hover { border-color: var(--text-dim); }
+.slot-section-pad + .slot-section-pad {
+  padding-top: 12px;
+}
 
-.slot-item-main {
+/* 섹션 라벨 (그리드메이커 양식) */
+.slot-section-label {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 7px 8px;
-}
-.slot-num {
-  width: 20px; height: 20px;
-  border-radius: 4px;
-  background: var(--input-bg);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 9px; font-weight: 700; color: var(--label-color);
-  font-family: 'Cinzel', serif;
-  flex-shrink: 0;
-}
-.slot-num.filled { background: #EEF1FD; color: #5B7CE6; }
-.slot-text-wrap { flex: 1; min-width: 0; }
-.slot-name-input {
-  display: block;
-  width: 100%;
-  background: transparent;
-  border: none;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text);
-  font-family: 'Pretendard', sans-serif;
-  outline: none;
-  padding: 0;
-  line-height: 1.3;
-}
-.slot-name-input::placeholder { color: var(--label-color); font-weight: 400; }
-.slot-date-line {
-  font-size: 9px;
-  color: var(--label-color);
-  margin-top: 2px;
-  line-height: 1;
-  white-space: nowrap;
-}
-.slot-save-btn {
-  padding: 3px 8px;
-  border-radius: 5px;
-  border: 1px solid var(--panel-border);
-  background: transparent;
-  font-size: 10px;
+  gap: 7px;
+  font-size: 12px;
   font-weight: 700;
-  font-family: 'Pretendard', sans-serif;
-  cursor: pointer;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+.slot-section-label::before {
+  content: '';
+  display: block;
+  width: 3px; height: 13px;
+  background: var(--accent);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.slot-section-label .sub {
+  font-weight: 500;
   color: var(--label-color);
-  transition: background 0.12s, color 0.12s;
+  font-size: 11px;
+  margin-left: 2px;
+}
+
+/* 슬롯 목록 */
+.slot-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* 슬롯 타일 */
+.slot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px 9px 8px;
+  background: #FAFBFC;
+  border-radius: 9px;
+  border: 1.5px solid #ECECEE;
+  transition: background .12s, border-color .12s;
+}
+.slot:not(.active):hover { background: #F4F6FA; }
+.slot.active {
+  background: var(--accent-light);
+  border-color: var(--accent);
+}
+
+/* 숫자 배지 */
+.slot-num {
+  width: 22px; height: 22px;
+  border-radius: 5px;
+  background: #fff;
+  border: 1px solid var(--tile-border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+  font-family: 'Pretendard', sans-serif;
+  flex-shrink: 0;
+  transition: background .12s, color .12s, border-color .12s;
+}
+.slot.active .slot-num {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* 슬롯 텍스트 영역 */
+.slot-text-wrap { flex: 1; min-width: 0; }
+.slot-name-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+.slot-name {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.slot.active .slot-name { color: var(--accent-ink); }
+.slot-date {
+  font-size: 10.5px;
+  color: var(--text-dim);
   white-space: nowrap;
   flex-shrink: 0;
 }
-.slot-save-btn:hover { background: var(--input-bg); color: var(--text); }
+.slot-empty {
+  font-size: 11px;
+  color: var(--label-color);
+}
 
-/* 슬롯 아이콘 그룹 */
+/* 저장 칩 (비활성 슬롯) */
+.slot-save-chip {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-dim);
+  background: #fff;
+  border: 1px solid var(--tile-border);
+  border-radius: 5px;
+  padding: 4px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-family: 'Pretendard', sans-serif;
+  transition: background .12s, border-color .12s, color .12s;
+}
+.slot-save-chip:hover {
+  background: var(--accent-light);
+  border-color: var(--accent-light);
+  color: var(--accent-ink);
+}
+
+/* 슬롯 액션 아이콘 그룹 */
 .slot-icon-group {
   display: flex;
   align-items: center;
@@ -3261,91 +3354,102 @@ select.row-input {
   border: none;
   background: transparent;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 5px;
+  color: var(--text-dim);
   flex-shrink: 0;
-  transition: background 0.12s;
-  position: relative;
+  transition: background 0.12s, color 0.12s;
 }
-.slot-icon-btn:hover { background: var(--input-bg); }
+.slot-icon-btn:hover {
+  background: rgba(91,124,230,.12);
+  color: var(--accent-ink);
+}
+.slot-icon-btn.danger:hover {
+  background: rgba(220,74,74,.12);
+  color: var(--danger);
+}
 .slot-icon-btn svg { display: block; pointer-events: none; }
 .slot-icon-divider {
   width: 1px; height: 11px;
   background: #A3B4F040;
   flex-shrink: 0;
-  margin: 0 1px;
+  margin: 0 2px;
 }
 
-/* 슬롯 모달 하단 안내 */
-.slot-notice {
-  padding: 7px 12px 5px;
-  border-top: 1px solid var(--panel-border);
-  font-size: 9px;
+/* 이름 인풋 (활성 슬롯 — 이름 편집용) */
+.slot-name-input {
+  font-size: 12.5px;
   font-weight: 700;
-  color: var(--text-dim);
-  font-family: 'Pretendard', sans-serif;
-  line-height: 1.5;
-}
-.slot-notice span { color: var(--label-color); font-weight: 400; }
-
-/* 현재 작업 내보내기 */
-.slot-export-now {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 12px 6px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid var(--panel-border);
-  background: var(--input-bg);
-}
-.slot-export-now-text { flex: 1; }
-.slot-export-now-label { font-size: 10px; font-weight: 700; font-family: 'Pretendard', sans-serif; color: var(--text); }
-.slot-export-now-desc { font-size: 9px; color: var(--label-color); margin-top: 2px; font-family: 'Pretendard', sans-serif; }
-.slot-export-now-btn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 5px 10px;
-  border-radius: 6px;
-  border: 1px solid var(--panel-border);
+  color: var(--accent-ink);
   background: transparent;
-  font-size: 10px;
-  font-weight: 700;
+  border: none;
+  outline: none;
+  padding: 0;
+  min-width: 0;
+  max-width: 120px;
   font-family: 'Pretendard', sans-serif;
-  color: var(--label-color);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  line-height: 1;
 }
-.slot-export-now-btn:hover { background: var(--panel-bg); color: var(--text); border-color: #C4C4C4; }
+.slot-name-input::placeholder { color: var(--label-color); font-weight: 400; }
 
-/* JSON 버튼 바 */
-.slot-json-bar {
+/* 파일 저장 — 2열 타일 그리드 */
+.backup-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.slot-tile-btn {
+  background: #fff;
+  border: 1.5px solid var(--tile-border);
+  border-radius: 8px;
+  padding: 12px 8px 9px;
   display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 5px;
-  padding: 5px 12px 12px;
+  cursor: pointer;
+  transition: background .12s, border-color .12s;
+  font-family: 'Pretendard', sans-serif;
+}
+.slot-tile-btn:hover { background: var(--accent-light); border-color: var(--accent); }
+.slot-tile-btn:hover .slot-tile-lbl { color: var(--accent-ink); }
+.slot-tile-btn:hover .slot-tile-sub { color: var(--accent-ink); opacity: .7; }
+.slot-tile-ic { color: var(--text); }
+.slot-tile-ic svg { display: block; }
+.slot-tile-lbl { font-size: 11.5px; font-weight: 600; color: var(--text); }
+.slot-tile-sub { font-size: 10px; color: var(--label-color); }
+
+/* 푸터 */
+.slot-footer {
+  border-top: 1px solid #F0F0F0;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #FAFAFA;
   flex-shrink: 0;
 }
-.slot-json-btn {
-  flex: 1;
+.slot-footer-hint {
+  font-size: 10.5px;
+  color: var(--label-color);
+  font-family: 'Pretendard', sans-serif;
+}
+.slot-reset-btn {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 5px;
-  padding: 7px 0;
-  border-radius: 7px;
-  border: 1px solid var(--panel-border);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--danger);
   background: transparent;
-  font-size: 10px;
-  font-weight: 700;
-  font-family: 'Pretendard', sans-serif;
-  color: var(--label-color);
+  border: none;
+  padding: 4px 8px;
+  border-radius: 5px;
   cursor: pointer;
-  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  font-family: 'Pretendard', sans-serif;
+  transition: background 0.12s;
 }
-.slot-json-btn:hover { background: var(--input-bg); color: var(--text); border-color: #C4C4C4; }
-.slot-json-btn.reset-btn { flex: 0 0 36px; color: rgba(220,90,70,0.8); border-color: rgba(220,90,70,0.3); }
-.slot-json-btn.reset-btn:hover { background: #FDF2F1; color: #C0392B; border-color: #E8B4B0; }
+.slot-reset-btn:hover { background: rgba(220,74,74,.08); }
+.slot-reset-btn svg { display: block; pointer-events: none; }
 
 /* JSON 불러오기 모달 */
 .import-modal-backdrop {

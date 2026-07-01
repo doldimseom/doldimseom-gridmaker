@@ -314,54 +314,68 @@ function renderSlotList() {
     var name    = (slot && slot.name) ? slot.name : ('슬롯 ' + (i + 1));
     var date    = formatDate(slot ? slot.savedAt : null);
     var item    = document.createElement('div');
-    item.className = 'slot-item' + (hasData ? ' has-data' : '');
+    item.className = 'slot' + (hasData ? ' active' : '');
 
     if (!hasData) {
       item.innerHTML =
-        '<div class="slot-item-main">' +
-          '<div class="slot-num">' + (i + 1) + '</div>' +
-          '<div class="slot-text-wrap">' +
-            '<input class="slot-name-input" type="text" value="" placeholder="슬롯 ' + (i + 1) + '" onclick="event.stopPropagation()">' +
-          '</div>' +
-          '<button class="slot-save-btn" onclick="saveToSlot(' + i + ')">저장</button>' +
-        '</div>';
+        '<div class="slot-num">' + (i + 1) + '</div>' +
+        '<div class="slot-text-wrap">' +
+          '<span class="slot-empty">비어있음</span>' +
+        '</div>' +
+        '<button class="slot-save-chip" onclick="saveToSlot(' + i + ')">저장</button>';
     } else {
       item.innerHTML =
-        '<div class="slot-item-main">' +
-          '<div class="slot-num filled">' + (i + 1) + '</div>' +
-          '<div class="slot-text-wrap">' +
+        '<div class="slot-num">' + (i + 1) + '</div>' +
+        '<div class="slot-text-wrap">' +
+          '<div class="slot-name-row">' +
             '<input class="slot-name-input" type="text" value="' + name.replace(/"/g, '&quot;') + '" placeholder="슬롯 ' + (i + 1) + '"' +
               ' onchange="renameSlot(' + i + ', this.value)" onclick="event.stopPropagation()">' +
-            '<div class="slot-date-line">' + date + ' 저장</div>' +
+            '<span class="slot-date">' + date + '</span>' +
           '</div>' +
-          '<div class="slot-icon-group">' +
-            '<button class="slot-icon-btn" data-tip="덮어쓰기"' +
-              ' onmouseenter="showSlotTooltip(this)" onmouseleave="hideSlotTooltip()"' +
-              ' onclick="overwriteSlot(' + i + ')">' +
-              '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="var(--text-dim)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' +
-                '<path d="M3 10V13h10v-3"/><path d="M8 3v8M5 6l3-3 3 3"/>' +
-              '</svg>' +
-            '</button>' +
-            '<button class="slot-icon-btn" data-tip="불러오기"' +
-              ' onmouseenter="showSlotTooltip(this)" onmouseleave="hideSlotTooltip()"' +
-              ' onclick="loadFromSlot(' + i + ')">' +
-              '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#7A736B" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' +
-                '<path d="M3 6V3h10v3"/><path d="M8 5v8M5 10l3 3 3-3"/>' +
-              '</svg>' +
-            '</button>' +
-            '<div class="slot-icon-divider"></div>' +
-            '<button class="slot-icon-btn" data-tip="삭제"' +
-              ' onmouseenter="showSlotTooltip(this)" onmouseleave="hideSlotTooltip()"' +
-              ' onclick="deleteSlot(' + i + ')">' +
-              '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#C0392B" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' +
-                '<path d="M3 4h10M6 4V3h4v1M5 4v8a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1V4"/>' +
-                '<line x1="7" y1="7" x2="7" y2="10"/><line x1="9" y1="7" x2="9" y2="10"/>' +
-              '</svg>' +
-            '</button>' +
-          '</div>' +
+        '</div>' +
+        '<div class="slot-icon-group">' +
+          '<button class="slot-icon-btn" data-tip="덮어쓰기"' +
+            ' onmouseenter="showSlotTooltip(this)" onmouseleave="hideSlotTooltip()"' +
+            ' onclick="overwriteSlot(' + i + ')">' +
+            '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' +
+              '<path d="M3 10V13h10v-3"/><path d="M8 3v8M5 6l3-3 3 3"/>' +
+            '</svg>' +
+          '</button>' +
+          '<button class="slot-icon-btn" data-tip="불러오기"' +
+            ' onmouseenter="showSlotTooltip(this)" onmouseleave="hideSlotTooltip()"' +
+            ' onclick="loadFromSlot(' + i + ')">' +
+            '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' +
+              '<path d="M3 6V3h10v3"/><path d="M8 5v8M5 10l3 3 3-3"/>' +
+            '</svg>' +
+          '</button>' +
+          '<div class="slot-icon-divider"></div>' +
+          '<button class="slot-icon-btn danger" data-tip="삭제"' +
+            ' onmouseenter="showSlotTooltip(this)" onmouseleave="hideSlotTooltip()"' +
+            ' onclick="deleteSlot(' + i + ')">' +
+            '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' +
+              '<path d="M3 4h10M6 4V3h4v1M5 4v8a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1V4"/>' +
+              '<line x1="7" y1="7" x2="7" y2="10"/><line x1="9" y1="7" x2="9" y2="10"/>' +
+            '</svg>' +
+          '</button>' +
         '</div>';
     }
     list.appendChild(item);
+  }
+
+  /* 푸터 힌트 갱신 */
+  var filledCount = 0;
+  var latestAt    = '';
+  for (var j = 0; j < 5; j++) {
+    if (slots[j] && slots[j].data) {
+      filledCount++;
+      if (!latestAt || (slots[j].savedAt && slots[j].savedAt > latestAt)) latestAt = slots[j].savedAt;
+    }
+  }
+  var hintEl = document.getElementById('slot-footer-hint');
+  if (hintEl) {
+    hintEl.textContent = filledCount === 0
+      ? '저장된 슬롯 없음'
+      : '슬롯 ' + filledCount + '개 · 마지막 저장 ' + formatDate(latestAt);
   }
 }
 
@@ -370,8 +384,9 @@ function renderSlotList() {
 ══════════════════════════════════════════ */
 function saveToSlot(i) {
   var list   = document.getElementById('slot-list');
-  var inputs = list.querySelectorAll('.slot-name-input');
-  var name   = inputs[i] ? inputs[i].value.trim() : '';
+  var items  = list.querySelectorAll('.slot');
+  var input  = items[i] ? items[i].querySelector('.slot-name-input') : null;
+  var name   = input ? input.value.trim() : '';
   var slots  = loadSlots();
   slots[i] = {
     name:    name || ('슬롯 ' + (i + 1)),
@@ -387,8 +402,9 @@ function saveToSlot(i) {
 function overwriteSlot(i) {
   if (!confirm('슬롯 ' + (i + 1) + '에 현재 내용을 덮어씁니다. 계속할까요?')) return;
   var list   = document.getElementById('slot-list');
-  var inputs = list.querySelectorAll('.slot-name-input');
-  var name   = inputs[i] ? inputs[i].value.trim() : '';
+  var items  = list.querySelectorAll('.slot');
+  var input  = items[i] ? items[i].querySelector('.slot-name-input') : null;
+  var name   = input ? input.value.trim() : '';
   var slots  = loadSlots();
   var prev   = slots[i] || {};
   slots[i] = {

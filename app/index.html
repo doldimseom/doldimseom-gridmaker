@@ -1388,51 +1388,54 @@
   <div class="slot-modal">
     <div class="slot-modal-header">
       <div class="slot-modal-title">
-        <div class="slot-modal-title-badge">
-          <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M13 13V5l-3-3H3v11h10z"/>
-            <path d="M9 2v4h4"/>
-            <rect x="5" y="9" width="6" height="4" rx="0.5"/>
-          </svg>
-        </div>
-        <span id="slot-modal-heading">저장 / 불러오기</span>
+        <div class="slot-modal-title-badge">SL</div>
+        <span>저장 / 불러오기</span>
       </div>
       <button class="slot-modal-close" onclick="closeSlotModal()">
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="3" y1="3" x2="13" y2="13"/>
           <line x1="13" y1="3" x2="3" y2="13"/>
         </svg>
       </button>
     </div>
-    <div class="slot-list" id="slot-list"></div>
-    <div class="slot-notice">
-      <span>슬롯</span> — 레이아웃 임시 보관&nbsp;&nbsp;·&nbsp;&nbsp;<span>JSON</span> — 이미지 포함 전체 저장
-    </div>
-    <div class="slot-export-now">
-      <div class="slot-export-now-text">
-        <div class="slot-export-now-label">현재 작업 내보내기</div>
-        <div class="slot-export-now-desc">이미지 포함 · JSON 파일로 저장</div>
+    <div class="slot-modal-body">
+      <div class="slot-section-pad">
+        <div class="slot-section-label">슬롯<span class="sub">레이아웃 임시 보관</span></div>
+        <div class="slot-list" id="slot-list"></div>
       </div>
-      <button class="slot-export-now-btn" onclick="doExportNow()">
-        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 10V13h10v-3"/><path d="M8 3v8M5 6l3-3 3 3"/>
-        </svg>
-        내보내기
-      </button>
+      <div class="slot-section-pad">
+        <div class="slot-section-label">파일 저장<span class="sub">이미지 포함 JSON</span></div>
+        <div class="backup-grid">
+          <button class="slot-tile-btn" onclick="doExportNow()">
+            <span class="slot-tile-ic">
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 10V13h10v-3"/><path d="M8 3v8M5 6l3-3 3 3"/>
+              </svg>
+            </span>
+            <span class="slot-tile-lbl">내보내기</span>
+            <span class="slot-tile-sub">현재 작업 저장</span>
+          </button>
+          <button class="slot-tile-btn" onclick="openImportModal()">
+            <span class="slot-tile-ic">
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 2H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V6z"/>
+                <path d="M9 2v4h4"/><path d="M8 8v4M5 10l3 3 3-3"/>
+              </svg>
+            </span>
+            <span class="slot-tile-lbl">불러오기</span>
+            <span class="slot-tile-sub">JSON 파일</span>
+          </button>
+        </div>
+      </div>
     </div>
-    <div class="slot-json-bar">
-      <button class="slot-json-btn" onclick="openImportModal()">
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 2H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V6z"/>
-          <path d="M9 2v4h4"/><path d="M8 8v4M5 10l3 3 3-3"/>
-        </svg>
-        JSON 불러오기
-      </button>
-      <button class="slot-json-btn reset-btn" onclick="resetAll()" title="전체 초기화">
+    <div class="slot-footer">
+      <span class="slot-footer-hint" id="slot-footer-hint"></span>
+      <button class="slot-reset-btn" onclick="resetAll()">
         <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 8a5 5 0 1 0 1-3"/>
           <polyline points="1 2 3 8 9 6"/>
         </svg>
+        모두 초기화
       </button>
     </div>
   </div>
